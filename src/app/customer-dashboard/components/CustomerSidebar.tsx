@@ -1,19 +1,18 @@
 'use client';
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
 import { LayoutDashboard, PlusCircle, Package, FileText, User, LogOut, ChevronLeft, ChevronRight, MapPin,  } from 'lucide-react';
-import Icon from '@/components/ui/AppIcon';
 
 
 const NAV_ITEMS = [
-  { id: 'nav-dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/customer-dashboard', badge: null },
-  { id: 'nav-new-order', label: 'New Order', icon: PlusCircle, href: '/customer-dashboard', badge: null },
-  { id: 'nav-orders', label: 'My Orders', icon: Package, href: '/customer-dashboard', badge: '3' },
-  { id: 'nav-track', label: 'Track Order', icon: MapPin, href: '/customer-dashboard', badge: null },
-  { id: 'nav-certificates', label: 'Certificates', icon: FileText, href: '/customer-dashboard', badge: '1' },
-  { id: 'nav-profile', label: 'My Profile', icon: User, href: '/customer-dashboard', badge: null },
+  { id: 'nav-dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/customer/dashboard', badge: null },
+  { id: 'nav-new-order', label: 'New Order', icon: PlusCircle, href: '/customer/new-order', badge: null },
+  { id: 'nav-orders', label: 'My Orders', icon: Package, href: '/customer/orders', badge: '3' },
+  { id: 'nav-track', label: 'Track Order', icon: MapPin, href: '/customer/orders/sample-order-001', badge: null },
+  { id: 'nav-certificates', label: 'Certificates', icon: FileText, href: '/customer/certificates', badge: '1' },
+  { id: 'nav-profile', label: 'My Profile', icon: User, href: '/customer/profile', badge: null },
 ];
 
 interface CustomerSidebarProps {
@@ -52,7 +51,7 @@ export default function CustomerSidebar({ collapsed, onToggle }: CustomerSidebar
         <ul className="space-y-1 px-2">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href && item.id === 'nav-dashboard';
+            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
             return (
               <li key={item.id}>
                 <Link
@@ -100,7 +99,7 @@ export default function CustomerSidebar({ collapsed, onToggle }: CustomerSidebar
           </div>
         )}
         <Link
-          href="/homepage"
+          href="/"
           className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/60 hover:bg-white/10 hover:text-white transition-all duration-150 ${
             collapsed ? 'justify-center' : ''
           }`}

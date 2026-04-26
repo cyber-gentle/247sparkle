@@ -34,7 +34,7 @@ export default function HeroSection() {
           alt="Modern laundry room with washing machines and clean folded clothes"
           fill
           priority
-          className="object-cover object-center"
+          className="object-contain object-right-top translate-y-10 md:translate-y-6 bg-[#0f1634]"
           sizes="100vw" />
 
         <div className="absolute inset-0 gradient-hero" />

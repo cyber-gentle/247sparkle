@@ -76,7 +76,7 @@ export default function PublicFooter() {
             <ul className="space-y-2.5">
               {['Laundry', 'Home Cleaning', 'Office Cleaning', 'Fumigation', 'Pickup & Delivery']?.map((s) => (
                 <li key={`footer-service-${s?.toLowerCase()?.replace(/\s+/g, '-')}`}>
-                  <Link href="/homepage#services" className="text-sm text-white/65 hover:text-white transition-colors">
+                  <Link href="/services" className="text-sm text-white/65 hover:text-white transition-colors">
                     {s}
                   </Link>
                 </li>
@@ -89,11 +89,11 @@ export default function PublicFooter() {
             <h4 className="font-bold text-sm tracking-widest uppercase text-[#F5C200] mb-4">Quick Links</h4>
             <ul className="space-y-2.5">
               {[
-                { label: 'Book a Service', href: '/customer-dashboard' },
-                { label: 'Track Your Order', href: '/customer-dashboard' },
-                { label: 'Become a Partner', href: '/homepage#partner' },
-                { label: 'Verify Certificate', href: '/homepage' },
-                { label: 'Admin Login', href: '/admin-dashboard' },
+                { label: 'Book a Service', href: '/customer/signup' },
+                { label: 'Track Your Order', href: '/customer/orders' },
+                { label: 'Become a Partner', href: '/become-a-partner' },
+                { label: 'Verify Certificate', href: '/verify' },
+                { label: 'Admin Login', href: '/admin/login' },
               ]?.map((link) => (
                 <li key={`footer-link-${link?.label?.toLowerCase()?.replace(/\s+/g, '-')}`}>
                   <Link href={link?.href} className="text-sm text-white/65 hover:text-white transition-colors">
@@ -150,9 +150,9 @@ export default function PublicFooter() {
             © 2026 247 Sparkle Laundry & Cleaning Services. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
-            <Link href="/homepage" className="text-xs text-white/40 hover:text-white/70 transition-colors">Privacy Policy</Link>
-            <Link href="/homepage" className="text-xs text-white/40 hover:text-white/70 transition-colors">Terms of Service</Link>
-            <Link href="/homepage" className="text-xs text-white/40 hover:text-white/70 transition-colors">Refund Policy</Link>
+            <Link href="/" className="text-xs text-white/40 hover:text-white/70 transition-colors">Privacy Policy</Link>
+            <Link href="/" className="text-xs text-white/40 hover:text-white/70 transition-colors">Terms of Service</Link>
+            <Link href="/" className="text-xs text-white/40 hover:text-white/70 transition-colors">Refund Policy</Link>
           </div>
         </div>
       </div>

@@ -5,11 +5,11 @@ import AppLogo from '@/components/ui/AppLogo';
 import { Menu, X, Phone, MessageCircle } from 'lucide-react';
 
 const NAV_LINKS = [
-  { label: 'Home', href: '/homepage' },
-  { label: 'Services', href: '/homepage#services' },
-  { label: 'How It Works', href: '/homepage#how-it-works' },
-  { label: 'Become a Partner', href: '/homepage#partner' },
-  { label: 'Contact', href: '/homepage#contact' },
+  { label: 'Home', href: '/' },
+  { label: 'Services', href: '/services' },
+  { label: 'How It Works', href: '/how-it-works' },
+  { label: 'Become a Partner', href: '/become-a-partner' },
+  { label: 'Contact', href: '/contact' },
 ];
 
 export default function PublicNavbar() {
@@ -32,7 +32,7 @@ export default function PublicNavbar() {
         <div className="max-w-screen-2xl mx-auto px-6 lg:px-10">
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
-            <Link href="/homepage" className="flex items-center gap-2.5 group">
+            <Link href="/" className="flex items-center gap-2.5 group">
               <AppLogo size={40} src="/assets/images/logo-1776946823352.jpeg" />
               <div className="flex flex-col leading-none">
                 <span className={`font-extrabold text-xl tracking-tight transition-colors ${scrolled ? 'text-[#1A0A5E]' : 'text-white'}`}>
@@ -74,7 +74,7 @@ export default function PublicNavbar() {
                 WhatsApp
               </a>
               <Link
-                href="/customer-dashboard"
+                href="/customer/signup"
                 className="bg-[#F5C200] text-[#1A0A5E] font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-[#E6B000] active:scale-95 transition-all duration-150 shadow-gold"
               >
                 Book Now
@@ -120,7 +120,7 @@ export default function PublicNavbar() {
                 09039661885
               </a>
               <Link
-                href="/customer-dashboard"
+                href="/customer/signup"
                 onClick={() => setMobileOpen(false)}
                 className="bg-[#F5C200] text-[#1A0A5E] font-bold px-5 py-3 rounded-xl text-sm text-center hover:bg-[#E6B000] transition-all"
               >

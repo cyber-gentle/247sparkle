@@ -84,15 +84,15 @@ export default function ServicesSection() {
 
                 {/* Image or Gradient Header */}
                 {service?.image ?
-                <div className="relative h-44 overflow-hidden">
+                <div className={`relative ${service?.id === 'service-office-cleaning' ? 'h-52' : 'h-44'} overflow-hidden`}>
                     <AppImage
                     src={service?.image}
                     alt={service?.imageAlt || service?.title}
                     fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    className={`${service?.id === 'service-office-cleaning' ? 'object-contain object-center bg-slate-100 p-2' : 'object-cover group-hover:scale-105'} transition-transform duration-500`}
                     sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw" />
 
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                    <div className={`absolute inset-0 bg-gradient-to-t ${service?.id === 'service-office-cleaning' ? 'from-black/20 to-transparent' : 'from-black/40 to-transparent'}`} />
                     <div
                     className="absolute top-4 left-4 w-10 h-10 rounded-xl flex items-center justify-center"
                     style={{ backgroundColor: service?.accent }}>

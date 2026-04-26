@@ -1,10 +1,9 @@
 'use client';
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
 import { LayoutDashboard, ShoppingBag, Bike, Store, Users, DollarSign, FileText, MessageSquare, Tag, LogOut, ChevronLeft, ChevronRight,  } from 'lucide-react';
-import Icon from '@/components/ui/AppIcon';
 
 
 const NAV_GROUPS = [
@@ -12,27 +11,27 @@ const NAV_GROUPS = [
     id: 'group-overview',
     label: 'Overview',
     items: [
-      { id: 'admin-nav-dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/admin-dashboard', badge: null },
+      { id: 'admin-nav-dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard', badge: null },
     ],
   },
   {
     id: 'group-operations',
     label: 'Operations',
     items: [
-      { id: 'admin-nav-orders', label: 'Orders', icon: ShoppingBag, href: '/admin-dashboard', badge: '12' },
-      { id: 'admin-nav-riders', label: 'Riders', icon: Bike, href: '/admin-dashboard', badge: '3', badgeAlert: true },
-      { id: 'admin-nav-partners', label: 'Partners', icon: Store, href: '/admin-dashboard', badge: '2', badgeAlert: true },
-      { id: 'admin-nav-customers', label: 'Customers', icon: Users, href: '/admin-dashboard', badge: null },
+      { id: 'admin-nav-orders', label: 'Orders', icon: ShoppingBag, href: '/admin/orders', badge: '12' },
+      { id: 'admin-nav-riders', label: 'Riders', icon: Bike, href: '/admin/riders', badge: '3', badgeAlert: true },
+      { id: 'admin-nav-partners', label: 'Partners', icon: Store, href: '/admin/partners', badge: '2', badgeAlert: true },
+      { id: 'admin-nav-customers', label: 'Customers', icon: Users, href: '/admin/customers', badge: null },
     ],
   },
   {
     id: 'group-finance',
     label: 'Finance & Content',
     items: [
-      { id: 'admin-nav-finance', label: 'Finance', icon: DollarSign, href: '/admin-dashboard', badge: null },
-      { id: 'admin-nav-certs', label: 'Certificates', icon: FileText, href: '/admin-dashboard', badge: null },
-      { id: 'admin-nav-quotations', label: 'Quotations', icon: MessageSquare, href: '/admin-dashboard', badge: '5' },
-      { id: 'admin-nav-pricing', label: 'Pricing', icon: Tag, href: '/admin-dashboard', badge: null },
+      { id: 'admin-nav-finance', label: 'Finance', icon: DollarSign, href: '/admin/finance', badge: null },
+      { id: 'admin-nav-certs', label: 'Certificates', icon: FileText, href: '/admin/certificates', badge: null },
+      { id: 'admin-nav-quotations', label: 'Quotations', icon: MessageSquare, href: '/admin/quotations', badge: '5' },
+      { id: 'admin-nav-pricing', label: 'Pricing', icon: Tag, href: '/admin/pricing', badge: null },
     ],
   },
 ];
@@ -77,7 +76,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
             <ul className="space-y-0.5 px-2">
               {group.items.map((item) => {
                 const Icon = item.icon;
-                const isActive = pathname === item.href && item.id === 'admin-nav-dashboard';
+                const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
                 return (
                   <li key={item.id}>
                     <Link
@@ -132,7 +131,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
           </div>
         )}
         <Link
-          href="/homepage"
+          href="/"
           className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/50 hover:bg-white/10 hover:text-white transition-all duration-150 ${
             collapsed ? 'justify-center' : ''
           }`}
