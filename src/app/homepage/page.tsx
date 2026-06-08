@@ -2,6 +2,7 @@ import React from 'react';
 import { Toaster } from 'sonner';
 import PublicNavbar from '@/components/PublicNavbar';
 import PublicFooter from '@/components/PublicFooter';
+import FloatingActionButtons from '@/components/FloatingActionButtons';
 import HeroSection from './components/HeroSection';
 import HowItWorksSection from './components/HowItWorksSection';
 import ServicesSection from './components/ServicesSection';
@@ -16,6 +17,7 @@ export default function HomepagePage() {
     <>
       <Toaster position="bottom-right" richColors />
       <PublicNavbar />
+      <FloatingActionButtons />
       <main>
         <HeroSection />
         <HowItWorksSection />

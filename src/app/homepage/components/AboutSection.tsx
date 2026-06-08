@@ -5,7 +5,7 @@ import { CheckCircle2 } from 'lucide-react';
 const ABOUT_POINTS = [
 'Consistent quality with attention to every detail',
 'Effective cleaning methods that keep fabrics long-lasting',
-'Trusted by thousands of Lagos families and professionals',
+'Trusted by thousands of Otukpo families and professionals',
 'Indigenous Nigerian brand built for local needs'];
 
 
@@ -18,7 +18,7 @@ export default function AboutSection() {
           <div className="relative">
             <div className="relative rounded-3xl overflow-hidden aspect-[4/3] shadow-navy">
               <AppImage
-                src="https://img.rocket.new/generatedImages/rocket_gen_img_165e17689-1776946052843.png"
+                src="/images/equipments.jpeg"
                 alt="247 Sparkle professional cleaning equipment including blue bucket and cleaning supplies"
                 fill
                 className="object-cover"
@@ -44,6 +44,9 @@ export default function AboutSection() {
             <div className="prose prose-gray max-w-none">
               <p className="text-gray-600 leading-relaxed mb-4">
                 247 Sparkle is a proudly indigenous brand committed to delivering reliable, high-quality laundry and apartment cleaning solutions tailored to your everyday needs. We understand the demands of busy schedules, which is why we provide seamless washing, professional cleaning, and convenient pick-up and delivery services designed to save you time and effort.
+              </p>
+              <p className="text-gray-600 leading-relaxed mb-6">
+                Our approach is simple: consistent quality, attention to detail, and customer satisfaction at every touchpoint. Whether it&apos;s your daily wear, office outfits, or special fabrics, we handle every item with care, using effective cleaning methods that keep your clothes fresh, spotless, and long-lasting.
               </p>
               <p className="text-gray-600 leading-relaxed mb-6">
                 With 247 Sparkle, you don&apos;t just get a service — you get peace of mind, knowing your laundry is in trusted hands, delivered back to you clean, crisp, and right on time.

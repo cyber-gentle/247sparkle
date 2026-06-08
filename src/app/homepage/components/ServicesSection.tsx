@@ -2,74 +2,84 @@ import React from 'react';
 import Link from 'next/link';
 import AppImage from '@/components/ui/AppImage';
 import { ArrowRight, Shirt, Home, Building2, Bug } from 'lucide-react';
-import Icon from '@/components/ui/AppIcon';
-
 
 const SERVICES = [
-{
-  id: 'service-laundry',
-  icon: Shirt,
-  title: 'Laundry',
-  subtitle: 'Wash, Iron & Fold',
-  description: 'From everyday wear to delicate fabrics — Lace, Agbada, Jeans, Bedsheets, Curtains and more. Separate white wash available.',
-  image: null,
-  color: 'from-[#F5C200]/10 to-[#F5C200]/5',
-  accent: '#F5C200',
-  tags: ['Wash & Fold', 'Iron', 'Pickup & Delivery'],
-  price: 'From ₦500/item'
-},
-{
-  id: 'service-home-cleaning',
-  icon: Home,
-  title: 'Home Cleaning',
-  subtitle: 'Residential Deep Clean',
-  description: 'Professional cleaners come to your home with all equipment. Bedrooms, kitchen, bathroom, living area — spotless every time.',
-  image: "/assets/images/Home_cleaning-1776946647980.jpeg",
-  imageAlt: 'Professional cleaner scrubbing toilet during residential home cleaning service',
-  color: 'from-[#1A0A5E]/10 to-[#1A0A5E]/5',
-  accent: '#1A0A5E',
-  tags: ['Residential', 'Post-Construction', 'Scheduled'],
-  price: 'Fixed pricing'
-},
-{
-  id: 'service-office-cleaning',
-  icon: Building2,
-  title: 'Office Cleaning',
-  subtitle: 'Commercial Spaces',
-  description: 'Keep your workspace pristine. We clean offices, commercial spaces and corporate environments to the highest professional standard.',
-  image: "/assets/images/Office_cleaning-1776946977872.jpeg",
-  imageAlt: 'Clean modern office space after professional cleaning service',
-  color: 'from-[#CC0000]/10 to-[#CC0000]/5',
-  accent: '#CC0000',
-  tags: ['Office', 'Corporate', 'Quotation-based'],
-  price: 'Get a quote'
-},
-{
-  id: 'service-fumigation',
-  icon: Bug,
-  title: 'Fumigation',
-  subtitle: 'Pest Control & Certification',
-  description: 'Licensed fumigation for homes and offices. Receive a verifiable 247 Sparkle Fumigation Certificate upon completion.',
-  image: null,
-  color: 'from-[#059669]/10 to-[#059669]/5',
-  accent: '#059669',
-  tags: ['Residential', 'Commercial', 'Certificate Issued'],
-  price: 'From ₦8,000'
-}];
-
+  {
+    id: 'service-laundry',
+    icon: Shirt,
+    title: 'Laundry',
+    subtitle: 'Wash, Iron & Fold',
+    description:
+      'Professional care for all fabrics. From everyday wear to delicate Agbada and lace — clean, fresh, and perfectly pressed.',
+    image: '/images/bg-image.jpeg',
+    imageAlt: 'Modern laundry room with washing machines and clean clothes',
+    imagePosition: 'center',
+    color: 'from-[#F5C200]/10 to-[#F5C200]/5',
+    accent: '#F5C200',
+    tags: ['Wash & Fold', 'Iron & Press', 'Free Delivery'],
+    price: 'From ₦500/item',
+  },
+  {
+    id: 'service-home-cleaning',
+    icon: Home,
+    title: 'Home Cleaning',
+    subtitle: 'Residential Deep Clean',
+    description:
+      'Thorough, professional cleaning of bedrooms, kitchens, bathrooms, and living areas. Your home, spotless every time.',
+    image: '/images/home_cleaning__2__.jpeg',
+    imageAlt: 'Professional cleaner scrubbing toilet during residential home cleaning service',
+    imagePosition: 'center',
+    color: 'from-[#1A0A5E]/10 to-[#1A0A5E]/5',
+    accent: '#1A0A5E',
+    tags: ['Residential', 'Weekly/Monthly', 'Equipment Included'],
+    price: 'Fixed pricing',
+  },
+  {
+    id: 'service-office-cleaning',
+    icon: Building2,
+    title: 'Office Cleaning',
+    subtitle: 'Commercial Spaces',
+    description:
+      'Pristine workspaces for better productivity. Professional cleaning for offices and corporate environments, scheduled around your business hours.',
+    image: '/images/Office_cleaning.jpeg',
+    imageAlt: 'Clean modern office space after professional cleaning service',
+    imagePosition: 'center',
+    color: 'from-[#CC0000]/10 to-[#CC0000]/5',
+    accent: '#CC0000',
+    tags: ['Commercial', 'Scheduled', 'Customized Plans'],
+    price: 'Get a quote',
+  },
+  {
+    id: 'service-fumigation',
+    icon: Bug,
+    title: 'Fumigation',
+    subtitle: 'Pest Control & Certification',
+    description:
+      'Licensed fumigation service for homes and offices. Certified professionals using safe, effective methods. Certificate issued upon completion.',
+    image: '/images/equipments.jpeg',
+    imageAlt: 'Professional cleaning and fumigation equipment ready for service',
+    imagePosition: 'center',
+    color: 'from-[#059669]/10 to-[#059669]/5',
+    accent: '#059669',
+    tags: ['Licensed', 'Safe & Effective', 'Certificate Included'],
+    price: 'From ₦8,000',
+  },
+];
 
 export default function ServicesSection() {
   return (
     <section id="services" className="py-20 lg:py-28 bg-gray-50">
       <div className="max-w-screen-2xl mx-auto px-6 lg:px-10">
         {/* Header */}
-        <div className="text-center mb-14">
-          <span className="text-xs font-bold tracking-widest uppercase text-[#CC0000] mb-3 block">What We Offer</span>
+        <div className="text-center mb-16">
+          <span className="text-xs font-bold tracking-widest uppercase text-[#CC0000] mb-3 block">
+            Complete Solutions
+          </span>
           <h2 className="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-[#1A0A5E] mb-4">
-            Our Services
+            One App, All Your Cleaning Needs
           </h2>
-          <p className="text-gray-500 max-w-xl mx-auto text-base leading-relaxed">
-            From your daily wear to your entire apartment — we&apos;ve got every cleaning need covered, delivered right to your door.
+          <p className="text-gray-500 max-w-2xl mx-auto text-base leading-relaxed">
+            Whether it&apos;s laundry, your home, your office, or pest control — we handle everything with the same professional care and attention to detail.
           </p>
         </div>
 
@@ -78,65 +88,46 @@ export default function ServicesSection() {
           {SERVICES?.map((service) => {
             const Icon = service?.icon;
             return (
-              <div
-                key={service?.id}
-                className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 group flex flex-col">
-
-                {/* Image or Gradient Header */}
-                {service?.image ?
-                <div className={`relative ${service?.id === 'service-office-cleaning' ? 'h-52' : 'h-44'} overflow-hidden`}>
-                    <AppImage
+              <div key={service?.id} className="public-card public-card-hover group flex flex-col">
+                <div className="relative h-60 overflow-hidden bg-slate-100">
+                  <AppImage
                     src={service?.image}
                     alt={service?.imageAlt || service?.title}
                     fill
-                    className={`${service?.id === 'service-office-cleaning' ? 'object-contain object-center bg-slate-100 p-2' : 'object-cover group-hover:scale-105'} transition-transform duration-500`}
-                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw" />
-
-                    <div className={`absolute inset-0 bg-gradient-to-t ${service?.id === 'service-office-cleaning' ? 'from-black/20 to-transparent' : 'from-black/40 to-transparent'}`} />
-                    <div
-                    className="absolute top-4 left-4 w-10 h-10 rounded-xl flex items-center justify-center"
-                    style={{ backgroundColor: service?.accent }}>
-
-                      <Icon size={20} className="text-white" />
-                    </div>
-                  </div> :
-
-                <div className={`h-44 bg-gradient-to-br ${service?.color} flex items-center justify-center relative overflow-hidden`}>
-                    <div
-                    className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg"
-                    style={{ backgroundColor: service?.accent }}>
-
-                      <Icon size={36} className="text-white" />
-                    </div>
-                    {/* Decorative circles */}
-                    <div
-                    className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-10"
-                    style={{ backgroundColor: service?.accent }} />
-
-                    <div
-                    className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full opacity-10"
-                    style={{ backgroundColor: service?.accent }} />
-
+                    className="transition-transform duration-500 group-hover:scale-[1.04]"
+                    style={{ objectFit: 'cover', objectPosition: service?.imagePosition }}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/15 via-transparent to-transparent" />
+                  <div
+                    className="absolute top-4 left-4 flex h-10 w-10 items-center justify-center rounded-xl shadow-lg"
+                    style={{ backgroundColor: service?.accent }}
+                  >
+                    <Icon size={20} className="text-white" />
                   </div>
-                }
+                </div>
                 {/* Content */}
-                <div className="p-5 flex flex-col flex-1">
+                <div className="flex flex-1 flex-col p-5">
                   <div className="mb-1">
-                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{service?.subtitle}</span>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                      {service?.subtitle}
+                    </span>
                   </div>
                   <h3 className="text-lg font-bold text-[#1A0A5E] mb-2">{service?.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed mb-4 flex-1">{service?.description}</p>
+                  <p className="text-sm text-gray-500 leading-relaxed mb-4 flex-1">
+                    {service?.description}
+                  </p>
 
                   {/* Tags */}
                   <div className="flex flex-wrap gap-1.5 mb-4">
-                    {service?.tags?.map((tag) =>
-                    <span
-                      key={`${service?.id}-tag-${tag?.toLowerCase()?.replace(/\s+/g, '-')}`}
-                      className="text-[10px] font-semibold px-2 py-1 rounded-full bg-gray-100 text-gray-600">
-
+                    {service?.tags?.map((tag) => (
+                      <span
+                        key={`${service?.id}-tag-${tag?.toLowerCase()?.replace(/\s+/g, '-')}`}
+                        className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-600"
+                      >
                         {tag}
                       </span>
-                    )}
+                    ))}
                   </div>
 
                   {/* Price + CTA */}
@@ -145,19 +136,19 @@ export default function ServicesSection() {
                       {service?.price}
                     </span>
                     <Link
-                      href="/customer-dashboard"
-                      className="flex items-center gap-1 text-sm font-bold text-[#1A0A5E] hover:text-[#CC0000] transition-colors group-hover:gap-2">
-
+                      href="/customer/signup"
+                      className="flex items-center gap-1 text-sm font-bold text-[#1A0A5E] hover:text-[#CC0000] transition-colors group-hover:gap-2"
+                    >
                       Book Now
                       <ArrowRight size={14} />
                     </Link>
                   </div>
                 </div>
-              </div>);
-
+              </div>
+            );
           })}
         </div>
       </div>
-    </section>);
-
+    </section>
+  );
 }

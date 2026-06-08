@@ -49,7 +49,12 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-weight: 700;
   }
@@ -66,19 +71,56 @@
   }
 
   .gradient-gold {
-    background: linear-gradient(135deg, #F5C200 0%, #E6A800 100%);
+    background: linear-gradient(135deg, #f5c200 0%, #e6a800 100%);
   }
 
   .gradient-navy {
-    background: linear-gradient(135deg, #1A0A5E 0%, #2D1B8E 100%);
+    background: linear-gradient(135deg, #1a0a5e 0%, #2d1b8e 100%);
   }
 
   .gradient-hero {
-    background: linear-gradient(to bottom, rgba(26, 10, 94, 0.45) 0%, rgba(26, 10, 94, 0.28) 50%, rgba(26, 10, 94, 0.5) 100%);
+    background: linear-gradient(
+      to bottom,
+      rgba(26, 10, 94, 0.45) 0%,
+      rgba(26, 10, 94, 0.28) 50%,
+      rgba(26, 10, 94, 0.5) 100%
+    );
   }
 
   .sparkle-card {
     @apply bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300;
+  }
+
+  .public-card {
+    @apply relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_24px_65px_rgba(15,23,42,0.14)] ring-1 ring-slate-900/[0.03] transition-all duration-300;
+  }
+
+  .public-card-hover {
+    @apply hover:-translate-y-2 hover:border-[#F5C200]/60 hover:shadow-[0_34px_90px_rgba(26,10,94,0.2)];
+  }
+
+  .public-card-accent::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 4px;
+    background: linear-gradient(90deg, #f5c200 0%, #cc0000 45%, #1a0a5e 100%);
+  }
+
+  .public-card-body {
+    @apply relative p-6 sm:p-7;
+  }
+
+  .public-field {
+    @apply w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-[#1A0A5E] focus:ring-2 focus:ring-[#F5C200]/25;
+  }
+
+  .public-field-with-icon {
+    @apply w-full rounded-xl border border-slate-300 bg-white py-3 pl-12 pr-4 text-sm outline-none transition focus:border-[#1A0A5E] focus:ring-2 focus:ring-[#F5C200]/25;
+  }
+
+  .public-pill {
+    @apply inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-600;
   }
 
   .status-badge {
@@ -111,18 +153,33 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes pulse-highlight {
-  0%, 100% { background-color: transparent; }
-  50% { background-color: rgba(245, 194, 0, 0.15); }
+  0%,
+  100% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: rgba(245, 194, 0, 0.15);
+  }
 }
 
 .pulse-highlight {

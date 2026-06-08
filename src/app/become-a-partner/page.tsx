@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { Bike, CheckCircle2, Store } from 'lucide-react';
+
 import PublicFooter from '@/components/PublicFooter';
 import PublicNavbar from '@/components/PublicNavbar';
 
@@ -22,42 +24,72 @@ export default function BecomeAPartnerPage() {
           </div>
 
           <div className="grid gap-5 md:grid-cols-2">
-            <article className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
-              <h2 className="text-2xl font-bold text-[#1A0A5E]">Laundry Business Partner</h2>
-              <p className="mt-3 text-sm text-slate-600">
-                Receive routed orders, set your operational hours, and grow predictable monthly
-                revenue through the platform.
-              </p>
-              <ul className="mt-4 space-y-2 text-sm text-slate-700">
-                <li>- Order visibility from partner dashboard</li>
-                <li>- Workload status for better route allocation</li>
-                <li>- Revenue and commission tracking</li>
-              </ul>
-              <Link
-                href="/partner/signup"
-                className="mt-6 inline-flex rounded-xl bg-[#1A0A5E] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#120843]"
-              >
-                Register as Laundry Business
-              </Link>
+            <article className="public-card public-card-hover public-card-accent">
+              <div className="public-card-body flex h-full flex-col">
+                <div className="mb-5 flex items-start justify-between gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#1A0A5E] text-white">
+                    <Store size={22} />
+                  </div>
+                  <span className="public-pill">Business</span>
+                </div>
+                <h2 className="text-2xl font-bold text-[#1A0A5E]">Laundry Business Partner</h2>
+                <p className="mt-3 text-sm leading-6 text-slate-600">
+                  Receive routed orders, set your operational hours, and grow predictable monthly
+                  revenue through the platform.
+                </p>
+                <ul className="mt-5 space-y-3 text-sm text-slate-700">
+                  {[
+                    'Order visibility from partner dashboard',
+                    'Workload status for better route allocation',
+                    'Revenue and commission tracking',
+                  ].map((item) => (
+                    <li key={item} className="flex gap-2">
+                      <CheckCircle2 className="mt-0.5 shrink-0 text-[#F5C200]" size={16} />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href="/partner/signup"
+                  className="mt-7 inline-flex w-fit rounded-xl bg-[#1A0A5E] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#120843]"
+                >
+                  Register as Laundry Business
+                </Link>
+              </div>
             </article>
 
-            <article className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
-              <h2 className="text-2xl font-bold text-[#1A0A5E]">Rider Partner</h2>
-              <p className="mt-3 text-sm text-slate-600">
-                Handle pickup and delivery tasks across Lagos, track commissions, and request
-                withdrawals from your rider portal.
-              </p>
-              <ul className="mt-4 space-y-2 text-sm text-slate-700">
-                <li>- Job assignment and status updates</li>
-                <li>- Earnings dashboard with history</li>
-                <li>- Availability toggle for dispatch routing</li>
-              </ul>
-              <Link
-                href="/rider/signup"
-                className="mt-6 inline-flex rounded-xl bg-[#CC0000] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#b70000]"
-              >
-                Register as Rider
-              </Link>
+            <article className="public-card public-card-hover public-card-accent">
+              <div className="public-card-body flex h-full flex-col">
+                <div className="mb-5 flex items-start justify-between gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#CC0000] text-white">
+                    <Bike size={22} />
+                  </div>
+                  <span className="public-pill">Rider</span>
+                </div>
+                <h2 className="text-2xl font-bold text-[#1A0A5E]">Rider Partner</h2>
+                <p className="mt-3 text-sm leading-6 text-slate-600">
+                  Handle pickup and delivery tasks across Otukpo, track commissions, and request
+                  withdrawals from your rider portal.
+                </p>
+                <ul className="mt-5 space-y-3 text-sm text-slate-700">
+                  {[
+                    'Job assignment and status updates',
+                    'Earnings dashboard with history',
+                    'Availability toggle for dispatch routing',
+                  ].map((item) => (
+                    <li key={item} className="flex gap-2">
+                      <CheckCircle2 className="mt-0.5 shrink-0 text-[#F5C200]" size={16} />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href="/rider/signup"
+                  className="mt-7 inline-flex w-fit rounded-xl bg-[#CC0000] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#b70000]"
+                >
+                  Register as Rider
+                </Link>
+              </div>
             </article>
           </div>
         </section>

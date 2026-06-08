@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
 import { Menu, X, Phone, MessageCircle } from 'lucide-react';
 
@@ -15,6 +16,8 @@ const NAV_LINKS = [
 export default function PublicNavbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
+  const solidNavbar = scrolled || pathname !== '/';
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -26,20 +29,24 @@ export default function PublicNavbar() {
     <>
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? 'bg-white/95 backdrop-blur-md shadow-md' : 'bg-transparent'
+          solidNavbar ? 'bg-white/95 backdrop-blur-md shadow-md' : 'bg-transparent'
         }`}
       >
         <div className="max-w-screen-2xl mx-auto px-6 lg:px-10">
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2.5 group">
-              <AppLogo size={40} src="/assets/images/logo-1776946823352.jpeg" />
+              <AppLogo size={40} src="/images/logo.jpeg" />
               <div className="flex flex-col leading-none">
-                <span className={`font-extrabold text-xl tracking-tight transition-colors ${scrolled ? 'text-[#1A0A5E]' : 'text-white'}`}>
+                <span
+                  className={`font-extrabold text-xl tracking-tight transition-colors ${solidNavbar ? 'text-[#1A0A5E]' : 'text-white'}`}
+                >
                   <span className="text-[#F5C200]">247</span>
                   <span className="text-[#CC0000]"> Sparkle</span>
                 </span>
-                <span className={`text-[10px] font-medium tracking-widest uppercase transition-colors ${scrolled ? 'text-gray-500' : 'text-white/70'}`}>
+                <span
+                  className={`text-[10px] font-medium tracking-widest uppercase transition-colors ${solidNavbar ? 'text-gray-500' : 'text-white/70'}`}
+                >
                   Laundry & Cleaning
                 </span>
               </div>
@@ -52,7 +59,9 @@ export default function PublicNavbar() {
                   key={`nav-${link?.label?.toLowerCase()?.replace(/\s+/g, '-')}`}
                   href={link?.href}
                   className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150 hover:bg-white/10 ${
-                    scrolled ? 'text-[#1A0A5E] hover:bg-[#1A0A5E]/5' : 'text-white hover:bg-white/10'
+                    solidNavbar
+                      ? 'text-[#1A0A5E] hover:bg-[#1A0A5E]/5'
+                      : 'text-white hover:bg-white/10'
                   }`}
                 >
                   {link?.label}
@@ -67,7 +76,9 @@ export default function PublicNavbar() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`flex items-center gap-1.5 text-sm font-semibold transition-colors ${
-                  scrolled ? 'text-gray-600 hover:text-[#25D366]' : 'text-white/80 hover:text-white'
+                  solidNavbar
+                    ? 'text-gray-600 hover:text-[#25D366]'
+                    : 'text-white/80 hover:text-white'
                 }`}
               >
                 <MessageCircle size={16} />
@@ -85,7 +96,7 @@ export default function PublicNavbar() {
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               className={`lg:hidden p-2 rounded-lg transition-colors ${
-                scrolled ? 'text-[#1A0A5E] hover:bg-gray-100' : 'text-white hover:bg-white/10'
+                solidNavbar ? 'text-[#1A0A5E] hover:bg-gray-100' : 'text-white hover:bg-white/10'
               }`}
               aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
             >

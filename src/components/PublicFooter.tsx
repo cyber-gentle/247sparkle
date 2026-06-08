@@ -29,7 +29,7 @@ export default function PublicFooter() {
           {/* Brand */}
           <div className="lg:col-span-1">
             <div className="flex items-center gap-2.5 mb-4">
-              <AppLogo size={44} src="/assets/images/logo-1776946823352.jpeg" />
+              <AppLogo size={44} src="/images/logo.jpeg" />
               <div className="flex flex-col leading-none">
                 <span className="font-extrabold text-xl">
                   <span className="text-[#F5C200]">247</span>
@@ -41,7 +41,7 @@ export default function PublicFooter() {
               </div>
             </div>
             <p className="text-sm text-white/65 leading-relaxed mb-5">
-              Lagos&apos;s most reliable on-demand laundry, home cleaning and fumigation service. Delivered to you clean, crisp, and right on time.
+              Otukpo&apos;s most reliable on-demand laundry, home cleaning and fumigation service. Delivered to you clean, crisp, and right on time.
             </p>
             <div className="flex items-center gap-3">
               <a
@@ -110,7 +110,7 @@ export default function PublicFooter() {
             <ul className="space-y-3">
               <li className="flex items-start gap-2.5 text-sm text-white/65">
                 <MapPin size={16} className="mt-0.5 shrink-0 text-[#F5C200]" />
-                Lagos, Nigeria
+                Otukpo, Benue State
               </li>
               <li>
                 <a href="tel:09039661885" className="flex items-center gap-2.5 text-sm text-white/65 hover:text-white transition-colors">

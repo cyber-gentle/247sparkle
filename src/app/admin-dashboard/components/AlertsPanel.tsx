@@ -17,7 +17,7 @@ const PENDING_PARTNERS = [
 
 const QUOTATION_REQUESTS = [
   { id: 'quote-001', type: 'Office Cleaning', business: 'Zenith Technologies Ltd', contact: 'Bola Adesanya', time: '30 mins ago' },
-  { id: 'quote-002', type: 'Commercial Fumigation', business: 'Lagos Suites Hotel', contact: 'Mr. Eze', time: '2 hrs ago' },
+  { id: 'quote-002', type: 'Commercial Fumigation', business: 'Otukpo Suites Hotel', contact: 'Mr. Eze', time: '2 hrs ago' },
   { id: 'quote-003', type: 'Office Cleaning', business: 'TechBridge Consulting', contact: 'Aisha Mohammed', time: '3 hrs ago' },
   { id: 'quote-004', type: 'Office Fumigation', business: 'Greenfield Pharmacy', contact: 'Dr. Obi', time: '5 hrs ago' },
   { id: 'quote-005', type: 'Commercial Fumigation', business: 'Mega Warehouse, Apapa', contact: 'Logistics Mgr', time: 'Yesterday' },

@@ -1,7 +1,5 @@
 import React from 'react';
 import { Shield, Truck, Lock, MapPin, Clock, Award } from 'lucide-react';
-import Icon from '@/components/ui/AppIcon';
-
 
 const TRUST_ITEMS = [
   {
@@ -32,13 +30,15 @@ const TRUST_ITEMS = [
     id: 'trust-time',
     icon: Clock,
     title: 'On-time, Every Time',
-    description: '98% of orders delivered within the promised time window. We respect your schedule.',
+    description:
+      '98% of orders delivered within the promised time window. We respect your schedule.',
   },
   {
     id: 'trust-secure',
     icon: Lock,
     title: 'Secure Payments',
-    description: 'Pay safely via Paystack — Nigeria\'s most trusted payment gateway. No cash required.',
+    description:
+      "Pay safely via Paystack — Nigeria's most trusted payment gateway. No cash required.",
   },
 ];
 
@@ -47,13 +47,15 @@ export default function TrustSection() {
     <section className="py-20 lg:py-28 bg-[#1A0A5E]">
       <div className="max-w-screen-2xl mx-auto px-6 lg:px-10">
         {/* Header */}
-        <div className="text-center mb-14">
-          <span className="text-xs font-bold tracking-widest uppercase text-[#F5C200] mb-3 block">Why Choose Us</span>
+        <div className="text-center mb-16">
+          <span className="text-xs font-bold tracking-widest uppercase text-[#F5C200] mb-3 block">
+            Why Choose Us
+          </span>
           <h2 className="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white mb-4">
-            The 247 Sparkle Promise
+            The 247 Sparkle Difference
           </h2>
-          <p className="text-white/60 max-w-xl mx-auto text-base leading-relaxed">
-            We built 247 Sparkle on one principle: you deserve service you can trust, every single time.
+          <p className="text-white/70 max-w-2xl mx-auto text-base leading-relaxed">
+            We&apos;re not just a cleaning service—we&apos;re your trusted partner in maintaining a clean, healthy, and organized life. Here&apos;s what makes us different.
           </p>
         </div>
 
@@ -64,7 +66,7 @@ export default function TrustSection() {
             return (
               <div
                 key={item?.id}
-                className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl p-6 group transition-all duration-300 hover:-translate-y-1"
+                className="group rounded-2xl border border-white/15 bg-white/[0.07] p-6 shadow-[0_18px_45px_rgba(0,0,0,0.12)] transition-all duration-300 hover:-translate-y-1 hover:bg-white/10"
               >
                 <div className="w-12 h-12 rounded-xl bg-[#F5C200] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                   <Icon size={22} className="text-[#1A0A5E]" />

@@ -45,7 +45,7 @@ export default function AdminDashboardPage() {
                 Platform Overview
               </h1>
               <p className="text-sm text-gray-500 mt-1">
-                Thursday, 23 April 2026 — Lagos, Nigeria
+                Thursday, 23 April 2026 — Otukpo, Benue State
               </p>
             </div>
             <div className="flex items-center gap-3">

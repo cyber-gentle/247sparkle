@@ -1,4 +1,4 @@
-# Next.js
+# sparkle_247
 
 A modern Next.js 15 application built with TypeScript and Tailwind CSS.
 
@@ -89,3 +89,10 @@ You can check out the [Next.js GitHub repository](https://github.com/vercel/next
 - Styled with Tailwind CSS
 
 Built with ❤️ on Rocket.new
+## 🔎 Verify Certificate Flow (Current Dev Data)
+
+After running the app, open `http://localhost:4028/verify` and test with:
+
+- `SPKFUM-2026-00001` (valid)
+- `SPKFUM-2026-00002` (valid)
+- Any other number (invalid)

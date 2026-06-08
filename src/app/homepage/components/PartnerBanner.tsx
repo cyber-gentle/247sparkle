@@ -15,29 +15,34 @@ export default function PartnerBanner() {
           <div className="relative z-10 text-center">
             <div className="inline-flex items-center gap-2 bg-[#F5C200]/20 border border-[#F5C200]/30 rounded-full px-4 py-1.5 mb-6">
               <TrendingUp size={14} className="text-[#F5C200]" />
-              <span className="text-[#F5C200] text-xs font-bold tracking-widest uppercase">Join Our Network</span>
+              <span className="text-[#F5C200] text-xs font-bold tracking-widest uppercase">
+                Join Our Network
+              </span>
             </div>
             <h2 className="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white mb-4 max-w-3xl mx-auto leading-tight">
-              Grow Your Revenue with{' '}
-              <span className="text-[#F5C200]">247 Sparkle</span>
+              Grow Your Revenue with <span className="text-[#F5C200]">247 Sparkle</span>
             </h2>
             <p className="text-white/70 text-base lg:text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
-              Are you a laundry business or looking to earn as a delivery rider in Lagos? Join our growing network and access a steady stream of customers from day one.
+              Are you a laundry business or looking to earn as a delivery rider in Otukpo? Join our
+              growing network and access a steady stream of customers from day one.
             </p>
 
             {/* Two Partner Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
               {/* Laundry Business */}
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 text-left hover:bg-white/15 transition-all duration-300 group">
+              <div className="group rounded-2xl border border-white/20 bg-white/10 p-6 text-left shadow-[0_18px_45px_rgba(0,0,0,0.14)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:bg-white/15">
                 <div className="w-12 h-12 rounded-xl bg-[#F5C200] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <Store size={22} className="text-[#1A0A5E]" />
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">Register as a Laundry Business</h3>
+                <h3 className="text-lg font-bold text-white mb-2">
+                  Register as a Laundry Business
+                </h3>
                 <p className="text-white/60 text-sm mb-5 leading-relaxed">
-                  List your shop on the 247 Sparkle platform. We send you overflow orders and handle customer acquisition — you focus on cleaning.
+                  List your shop on the 247 Sparkle platform. We send you overflow orders and handle
+                  customer acquisition — you focus on cleaning.
                 </p>
                 <Link
-                  href="/admin-dashboard"
+                  href="/partner/signup"
                   className="inline-flex items-center gap-2 bg-[#F5C200] text-[#1A0A5E] font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-[#E6B000] active:scale-95 transition-all"
                 >
                   Register as Partner
@@ -46,16 +51,17 @@ export default function PartnerBanner() {
               </div>
 
               {/* Rider */}
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 text-left hover:bg-white/15 transition-all duration-300 group">
+              <div className="group rounded-2xl border border-white/20 bg-white/10 p-6 text-left shadow-[0_18px_45px_rgba(0,0,0,0.14)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:bg-white/15">
                 <div className="w-12 h-12 rounded-xl bg-[#CC0000] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <Bike size={22} className="text-white" />
                 </div>
                 <h3 className="text-lg font-bold text-white mb-2">Register as a Rider</h3>
                 <p className="text-white/60 text-sm mb-5 leading-relaxed">
-                  Earn money on your own schedule. Pick up and deliver laundry orders across Lagos. Earn 20% commission on every completed delivery.
+                  Earn money on your own schedule. Pick up and deliver laundry orders across Otukpo.
+                  Earn 20% commission on every completed delivery.
                 </p>
                 <Link
-                  href="/admin-dashboard"
+                  href="/rider/signup"
                   className="inline-flex items-center gap-2 bg-[#CC0000] text-white font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-[#AA0000] active:scale-95 transition-all"
                 >
                   Register as Rider
