@@ -21,25 +21,44 @@ export async function middleware(request: NextRequest) {
     '/admin/login',
   ];
 
+  // Public API routes — callable without a token. Admin-only operations within
+  // these routes (e.g. listing/updating quotations) are still protected at the
+  // route-handler level via the x-user-role header.
+  const publicApiRoutes = [
+    '/api/quotations', // POST is public (contact form); GET is admin-gated in the handler
+    '/api/certificates/verify', // public certificate lookup (no login required)
+    '/api/pricing', // public price list for the booking flow
+  ];
+
   // Check if route is public
-  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
-  
+  const isPublicRoute =
+    publicRoutes.some(route => pathname.startsWith(route)) ||
+    publicApiRoutes.some(route => pathname === route || pathname.startsWith(route + '/'));
+
   if (isPublicRoute) {
     return NextResponse.next();
   }
 
   // For protected routes, verify token
   const token = request.cookies.get('auth_token')?.value;
+  const isApiRoute = pathname.startsWith('/api/');
+
+  // API routes expect a JSON 401 (not an HTML redirect) so fetch callers can
+  // react to it — e.g. by routing to the portal login page.
+  const unauthorized = () =>
+    isApiRoute
+      ? NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      : NextResponse.redirect(new URL('/customer/login', request.url));
 
   if (!token) {
-    return NextResponse.redirect(new URL('/customer/login', request.url));
+    return unauthorized();
   }
 
   try {
     const payload = await verifyToken(token);
-    
+
     if (!payload) {
-      return NextResponse.redirect(new URL('/customer/login', request.url));
+      return unauthorized();
     }
 
     // Add payload to request headers for use in API routes
@@ -54,7 +73,7 @@ export async function middleware(request: NextRequest) {
       },
     });
   } catch (error) {
-    return NextResponse.redirect(new URL('/customer/login', request.url));
+    return unauthorized();
   }
 }
 

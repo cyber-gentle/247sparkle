@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 type Certificate = {
@@ -11,7 +12,20 @@ type Certificate = {
   serviceDate: string;
 };
 
+function formatServiceDate(dateString: string) {
+  const parsed = new Date(dateString);
+  if (Number.isNaN(parsed.getTime())) {
+    return dateString;
+  }
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(parsed);
+}
+
 export default function CustomerCertificatesPage() {
+  const router = useRouter();
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -19,7 +33,15 @@ export default function CustomerCertificatesPage() {
   useEffect(() => {
     async function loadCertificates() {
       try {
-        const response = await fetch('/api/certificates/customer/demo-user');
+        const response = await fetch('/api/certificates/customer/me', {
+          credentials: 'include',
+        });
+
+        if (response.status === 401) {
+          router.push('/customer/login');
+          return;
+        }
+
         const data = (await response.json()) as { certificates?: Certificate[] };
         setCertificates(data.certificates ?? []);
       } catch {
@@ -30,7 +52,7 @@ export default function CustomerCertificatesPage() {
     }
 
     loadCertificates();
-  }, []);
+  }, [router]);
 
   return (
     <main className="min-h-screen bg-slate-50 px-6 py-10">
@@ -85,7 +107,7 @@ export default function CustomerCertificatesPage() {
                       </td>
                       <td className="py-3 pr-4">{item.propertyAddress}</td>
                       <td className="py-3 pr-4">{item.propertyType}</td>
-                      <td className="py-3 pr-4">{item.serviceDate}</td>
+                      <td className="py-3 pr-4">{formatServiceDate(item.serviceDate)}</td>
                       <td className="py-3">
                         <Link
                           href={`/verify?number=${encodeURIComponent(item.certificateNumber)}`}

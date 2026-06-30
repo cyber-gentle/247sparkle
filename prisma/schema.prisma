@@ -1,4 +1,4 @@
-// This is your Prisma schema file,
+// This is your Prisma schema file (SQLite-compatible for local development)
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -17,7 +17,7 @@ model User {
   email         String     @unique
   phone         String?
   passwordHash  String
-  role          UserRole   @default(CUSTOMER)
+  role          String     @default("CUSTOMER") // CUSTOMER | RIDER | PARTNER | ADMIN
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
@@ -27,13 +27,6 @@ model User {
   partner       Partner?
 
   @@map("users")
-}
-
-enum UserRole {
-  CUSTOMER
-  RIDER
-  PARTNER
-  ADMIN
 }
 
 model Customer {
@@ -75,8 +68,8 @@ model Rider {
   user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   address          String?
   facePhotoUrl     String?      // Cloudinary URL
-  approvalStatus   ApprovalStatus @default(PENDING)
-  availabilityStatus AvailabilityStatus @default(OFF_DUTY)
+  approvalStatus   String       @default("PENDING") // PENDING | APPROVED | SUSPENDED | REJECTED
+  availabilityStatus String     @default("OFF_DUTY") // WORKING | OFF_DUTY
 
   // Location tracking
   currentLatitude  Float?
@@ -103,35 +96,23 @@ model Rider {
   @@map("riders")
 }
 
-enum ApprovalStatus {
-  PENDING
-  APPROVED
-  SUSPENDED
-  REJECTED
-}
-
-enum AvailabilityStatus {
-  WORKING
-  OFF_DUTY
-}
-
 // ============= PARTNERS (Laundry Businesses) =============
 model Partner {
   id               String       @id @default(cuid())
   userId           String       @unique
   user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   businessName     String
   ownerName        String
   ownerPhotoUrl    String?      // Cloudinary URL
   address          String
-  
+
   openingTime      String?      // HH:MM format
   closingTime      String?      // HH:MM format
-  daysOfOpening    String[]     // ["Mon", "Tue", "Wed", ...]
-  
-  workloadStatus   WorkloadStatus @default(AVAILABLE)
-  approvalStatus   ApprovalStatus @default(PENDING)
+  daysOfOpening    String?      // JSON string: "[\"Mon\", \"Tue\", \"Wed\"]"
+
+  workloadStatus   String       @default("AVAILABLE") // AVAILABLE | BUSY
+  approvalStatus   String       @default("PENDING") // PENDING | APPROVED | SUSPENDED | REJECTED
 
   // Bank details
   bankName         String?
@@ -149,53 +130,48 @@ model Partner {
   @@map("partners")
 }
 
-enum WorkloadStatus {
-  AVAILABLE
-  BUSY
-}
-
 // ============= ORDERS =============
 model Order {
   id                String      @id @default(cuid())
   customerId        String
   customer          Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  
-  serviceType       ServiceType
-  status            OrderStatus @default(PENDING)
-  paymentStatus     PaymentStatus @default(UNPAID)
-  
+
+  serviceType       String      // LAUNDRY | HOME_CLEANING | OFFICE_CLEANING | FUMIGATION
+  status            String      @default("PENDING") // PENDING | RIDER_ASSIGNED | PICKED_UP | IN_CLEANING | OUT_FOR_DELIVERY | COMPLETED | CANCELLED
+  paymentStatus     String      @default("UNPAID") // UNPAID | PAID | FAILED
+
   // Pickup & Delivery
-  pickupOption      PickupOption?
+  pickupOption      String?     // HOME_PICKUP | PARTNER_DROPOFF | ON_SITE
   pickupAddress     String?
   deliveryAddress   String?
   pickupLatitude    Float?
   pickupLongitude   Float?
   deliveryLatitude  Float?
   deliveryLongitude Float?
-  
+
   // Scheduling
   scheduledDate     DateTime?
   scheduledTime     String?     // HH:MM format
-  
+
   // Pricing
   totalAmount       Float
   paystackReference String?
-  
+
   // Rider & Partner assignment
   riderId           String?
   rider             Rider?      @relation(fields: [riderId], references: [id], onDelete: SetNull)
   partnerId         String?
   partner           Partner?    @relation(fields: [partnerId], references: [id], onDelete: SetNull)
-  
+
   // Order items (for laundry)
   items             OrderItem[]
-  
+
   // Fumigation certificate
   certificate       Certificate?
-  
+
   // Commissions
   commissions       Commission[]
-  
+
   // Quotations
   quotation         Quotation?
 
@@ -205,41 +181,12 @@ model Order {
   @@map("orders")
 }
 
-enum ServiceType {
-  LAUNDRY
-  HOME_CLEANING
-  OFFICE_CLEANING
-  FUMIGATION
-}
-
-enum OrderStatus {
-  PENDING
-  RIDER_ASSIGNED
-  PICKED_UP
-  IN_CLEANING
-  OUT_FOR_DELIVERY
-  COMPLETED
-  CANCELLED
-}
-
-enum PaymentStatus {
-  UNPAID
-  PAID
-  FAILED
-}
-
-enum PickupOption {
-  HOME_PICKUP
-  PARTNER_DROPOFF
-  ON_SITE
-}
-
 // ============= ORDER ITEMS (Laundry) =============
 model OrderItem {
   id          String  @id @default(cuid())
   orderId     String
   order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
+
   itemName    String  // "Lace", "Jeans", "T-shirt", etc.
   isWhiteGroup Boolean @default(false)
   quantity    Int
@@ -254,7 +201,7 @@ model OrderItem {
 // ============= PRICING =============
 model Pricing {
   id            String  @id @default(cuid())
-  serviceType   ServiceType
+  serviceType   String  // LAUNDRY | HOME_CLEANING | OFFICE_CLEANING | FUMIGATION
   itemName      String  // For laundry items or fumigation property types
   unitPrice     Float
   description   String?
@@ -270,15 +217,15 @@ model Commission {
   id        String  @id @default(cuid())
   orderId   String
   order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
+
   riderId   String?
   rider     Rider?  @relation(fields: [riderId], references: [id], onDelete: SetNull)
-  
+
   partnerId String?
-  partner   Partner? @relation(fields: [partnerId], references: [id], onDelete: SetNull)
-  
+  partner   Partner?    @relation(fields: [partnerId], references: [id], onDelete: SetNull)
+
   amount    Float
-  status    CommissionStatus @default(PENDING)
+  status    String  @default("PENDING") // PENDING | PAID | REJECTED
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -286,32 +233,19 @@ model Commission {
   @@map("commissions")
 }
 
-enum CommissionStatus {
-  PENDING
-  PAID
-  REJECTED
-}
-
 // ============= WITHDRAWAL REQUESTS (Riders) =============
 model WithdrawalRequest {
   id        String  @id @default(cuid())
   riderId   String
   rider     Rider   @relation(fields: [riderId], references: [id], onDelete: Cascade)
-  
+
   amount    Float
-  status    WithdrawalStatus @default(PENDING)
-  
+  status    String  @default("PENDING") // PENDING | APPROVED | PAID | REJECTED
+
   requestedAt DateTime @default(now())
   processedAt DateTime?
 
   @@map("withdrawal_requests")
-}
-
-enum WithdrawalStatus {
-  PENDING
-  APPROVED
-  PAID
-  REJECTED
 }
 
 // ============= FUMIGATION CERTIFICATES =============
@@ -319,16 +253,16 @@ model Certificate {
   id                String   @id @default(cuid())
   orderId           String   @unique
   order             Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
+
   customerId        String
   customer          Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  
+
   certificateNumber String   @unique // SPKFUM-YYYY-XXXXX
   customerName      String
   propertyAddress   String
   propertyType      String   // "Single Room", "2 Rooms Apartment", etc.
   serviceDate       DateTime
-  
+
   issuedAt          DateTime @default(now())
 
   @@map("certificates")
@@ -339,35 +273,22 @@ model Quotation {
   id          String    @id @default(cuid())
   orderId     String?   @unique
   order       Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
-  
-  serviceType QuotationServiceType
+
+  serviceType String    // OFFICE_CLEANING | OFFICE_FUMIGATION | COMMERCIAL_FUMIGATION
   contactName String?
   businessName String?
   address     String?
   phone       String?
   email       String?
   message     String?
-  
+
   quotedPrice Float?
-  status      QuotationStatus @default(NEW)
-  
+  status      String    @default("NEW") // NEW | RESPONDED | CONVERTED | EXPIRED
+
   createdAt DateTime @default(now())
   respondedAt DateTime?
 
   @@map("quotations")
-}
-
-enum QuotationServiceType {
-  OFFICE_CLEANING
-  OFFICE_FUMIGATION
-  COMMERCIAL_FUMIGATION
-}
-
-enum QuotationStatus {
-  NEW
-  RESPONDED
-  CONVERTED
-  EXPIRED
 }
 
 // ============= ADMIN LOG =============
@@ -378,7 +299,7 @@ model AuditLog {
   entityId  String?
   changes   String?  // JSON string of changes
   userId    String?
-  
+
   createdAt DateTime @default(now())
 
   @@map("audit_logs")

@@ -71,6 +71,51 @@ async function main() {
 
   console.log('✓ Fumigation pricing created');
 
+  // Demo customer + completed fumigation order + certificate.
+  // Provides an end-to-end demonstrable record for the public certificate
+  // verification page (/verify) and the customer certificates page.
+  const demoPassword = await hash('password123', 10);
+  const demoUser = await prisma.user.create({
+    data: {
+      fullName: 'Adaeze Okonkwo',
+      email: 'customer@test.com',
+      phone: '09012345678',
+      passwordHash: demoPassword,
+      role: 'CUSTOMER',
+    },
+  });
+
+  const demoCustomer = await prisma.customer.create({
+    data: { userId: demoUser.id },
+  });
+
+  const demoOrder = await prisma.order.create({
+    data: {
+      customerId: demoCustomer.id,
+      serviceType: 'FUMIGATION',
+      status: 'COMPLETED',
+      paymentStatus: 'PAID',
+      pickupOption: 'ON_SITE',
+      deliveryAddress: '12 Ochacho Avenue, Otukpo, Benue State',
+      totalAmount: 35000,
+      scheduledDate: new Date('2026-04-24'),
+    },
+  });
+
+  await prisma.certificate.create({
+    data: {
+      orderId: demoOrder.id,
+      customerId: demoCustomer.id,
+      certificateNumber: 'SPKFUM-2026-00001',
+      customerName: demoUser.fullName,
+      propertyAddress: '12 Ochacho Avenue, Otukpo, Benue State',
+      propertyType: '2 Rooms Apartment',
+      serviceDate: new Date('2026-04-24'),
+    },
+  });
+
+  console.log('✓ Demo customer + fumigation certificate created');
+
   console.log('\n✨ Database seeded successfully!');
   console.log('\nDefault admin credentials:');
   console.log('Email: admin@247sparkle.com');

@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
             address: validatedData.address,
             openingTime: validatedData.openingTime,
             closingTime: validatedData.closingTime,
-            daysOfOpening: validatedData.daysOfOpening || [],
+            daysOfOpening: validatedData.daysOfOpening ? JSON.stringify(validatedData.daysOfOpening) : null,
             bankName: validatedData.bankName,
             bankCode: validatedData.bankCode,
             accountNumber: validatedData.accountNumber,
