@@ -1,5 +1,10 @@
-import jwt from 'jsonwebtoken';
+import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
+
+// jose is Web-Crypto based and runs in both the Edge Runtime (middleware) and
+// the Node Runtime (route handlers). jsonwebtoken was used previously but its
+// reliance on Node's crypto module caused verifyToken() to fail inside the
+// middleware, breaking every protected route even with a valid token.
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 const JWT_EXPIRY = '7d';
@@ -10,14 +15,19 @@ export type JWTPayload = {
   role: 'CUSTOMER' | 'RIDER' | 'PARTNER' | 'ADMIN';
 };
 
+function getSecretKey(): Uint8Array {
+  return new TextEncoder().encode(JWT_SECRET);
+}
+
 /**
  * Sign a JWT token
  */
 export async function signToken(payload: JWTPayload): Promise<string> {
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRY,
-    algorithm: 'HS256',
-  });
+  return new SignJWT({ ...payload })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime(JWT_EXPIRY)
+    .sign(getSecretKey());
 }
 
 /**
@@ -25,10 +35,10 @@ export async function signToken(payload: JWTPayload): Promise<string> {
  */
 export async function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET, {
+    const { payload } = await jwtVerify(token, getSecretKey(), {
       algorithms: ['HS256'],
     });
-    return decoded as JWTPayload;
+    return payload as unknown as JWTPayload;
   } catch (err) {
     return null;
   }

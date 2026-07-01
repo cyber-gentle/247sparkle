@@ -1,45 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken, JWTPayload } from '@/lib/auth';
+import { verifyToken } from '@/lib/auth';
+
+// Routes a user may visit WITHOUT being authenticated (no auth_token cookie).
+const publicRoutes = [
+  '/',
+  '/services',
+  '/how-it-works',
+  '/become-a-partner',
+  '/contact',
+  '/verify',
+  '/customer/login',
+  '/customer/signup',
+  '/rider/login',
+  '/rider/signup',
+  '/partner/login',
+  '/partner/signup',
+  '/admin/login',
+];
+
+// API paths whose primary action is public. These are allowed through without a
+// token, but the middleware STILL verifies any token that is present and sets
+// the x-user-* headers — so admin-gated verbs on the same path (e.g. GET
+// /api/quotations) can enforce role checks inside the route handler.
+const publicApiRoutes = [
+  '/api/quotations', // POST (contact form) is public; GET is admin-gated in the handler
+  '/api/certificates/verify', // public certificate lookup (no login required)
+  '/api/pricing', // public price list for the booking flow
+];
+
+const isPublicPath = (pathname: string) =>
+  publicRoutes.some((route) => pathname.startsWith(route)) ||
+  publicApiRoutes.some((route) => pathname === route || pathname.startsWith(route + '/'));
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-
-  // Public routes that don't require auth
-  const publicRoutes = [
-    '/',
-    '/services',
-    '/how-it-works',
-    '/become-a-partner',
-    '/contact',
-    '/verify',
-    '/customer/login',
-    '/customer/signup',
-    '/rider/login',
-    '/rider/signup',
-    '/partner/login',
-    '/partner/signup',
-    '/admin/login',
-  ];
-
-  // Public API routes — callable without a token. Admin-only operations within
-  // these routes (e.g. listing/updating quotations) are still protected at the
-  // route-handler level via the x-user-role header.
-  const publicApiRoutes = [
-    '/api/quotations', // POST is public (contact form); GET is admin-gated in the handler
-    '/api/certificates/verify', // public certificate lookup (no login required)
-    '/api/pricing', // public price list for the booking flow
-  ];
-
-  // Check if route is public
-  const isPublicRoute =
-    publicRoutes.some(route => pathname.startsWith(route)) ||
-    publicApiRoutes.some(route => pathname === route || pathname.startsWith(route + '/'));
-
-  if (isPublicRoute) {
-    return NextResponse.next();
-  }
-
-  // For protected routes, verify token
   const token = request.cookies.get('auth_token')?.value;
   const isApiRoute = pathname.startsWith('/api/');
 
@@ -50,31 +44,42 @@ export async function middleware(request: NextRequest) {
       ? NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       : NextResponse.redirect(new URL('/customer/login', request.url));
 
-  if (!token) {
+  // Always try to decode the token so we can attach the user identity to the
+  // request headers for downstream handlers — even on public routes (a logged-in
+  // admin hitting GET /api/quotations needs the x-user-role header to be set).
+  let payload = null;
+  if (token) {
+    try {
+      payload = await verifyToken(token);
+    } catch {
+      payload = null;
+    }
+  }
+
+  // A present-but-invalid token means the session is stale. For API routes and
+  // protected pages that's an auth failure; for public pages we ignore it so a
+  // visitor with an expired cookie can still browse the marketing site.
+  if (token && !payload && (isApiRoute || !isPublicPath(pathname))) {
     return unauthorized();
   }
 
-  try {
-    const payload = await verifyToken(token);
+  if (!payload && !isPublicPath(pathname)) {
+    return unauthorized();
+  }
 
-    if (!payload) {
-      return unauthorized();
-    }
-
-    // Add payload to request headers for use in API routes
-    const requestHeaders = new Headers(request.headers);
+  // Attach identity headers for route handlers (null-safe when anonymous).
+  const requestHeaders = new Headers(request.headers);
+  if (payload) {
     requestHeaders.set('x-user-id', payload.userId);
     requestHeaders.set('x-user-email', payload.email);
     requestHeaders.set('x-user-role', payload.role);
-
-    return NextResponse.next({
-      request: {
-        headers: requestHeaders,
-      },
-    });
-  } catch (error) {
-    return unauthorized();
   }
+
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 export const config = {
