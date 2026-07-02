@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Clock, ShieldAlert, CheckCircle, User, ArrowRight, Power, Loader } from 'lucide-react';
+import { Clock, ShieldAlert, CheckCircle, User, ArrowRight, Power, Loader, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import AppLogo from '@/components/ui/AppLogo';
 
@@ -24,6 +24,11 @@ export default function PartnerDashboardPage() {
   useEffect(() => {
     fetchProfile();
   }, []);
+
+  async function handleLogout() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    router.push('/partner/login');
+  }
 
   const fetchProfile = async () => {
     try {
@@ -100,6 +105,9 @@ export default function PartnerDashboardPage() {
           <Link href="/partner/profile" className="text-sm font-semibold text-[#1A0A5E] hover:underline flex items-center gap-1">
             <User size={16} /> Profile
           </Link>
+          <button onClick={handleLogout} className="text-sm font-semibold text-red-600 hover:underline flex items-center gap-1">
+            <LogOut size={16} /> Sign Out
+          </button>
         </div>
       </header>
 

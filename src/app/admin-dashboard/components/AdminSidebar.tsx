@@ -1,9 +1,10 @@
 'use client';
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
-import { LayoutDashboard, ShoppingBag, Bike, Store, Users, DollarSign, FileText, MessageSquare, Tag, LogOut, ChevronLeft, ChevronRight,  } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Bike, Store, Users, DollarSign, FileText, MessageSquare, Tag, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
+import { toast } from 'sonner';
 
 
 const NAV_GROUPS = [
@@ -43,6 +44,13 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleLogout() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    toast.success('Signed out');
+    router.push('/admin/login');
+  }
 
   return (
     <aside
@@ -130,16 +138,16 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
             </div>
           </div>
         )}
-        <Link
-          href="/"
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/50 hover:bg-white/10 hover:text-white transition-all duration-150 ${
+        <button
+          onClick={handleLogout}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/50 hover:bg-white/10 hover:text-white transition-all duration-150 ${
             collapsed ? 'justify-center' : ''
           }`}
           title={collapsed ? 'Sign Out' : undefined}
         >
           <LogOut size={17} className="shrink-0" />
           {!collapsed && <span className="text-sm font-semibold">Sign Out</span>}
-        </Link>
+        </button>
       </div>
 
       {/* Collapse Toggle */}

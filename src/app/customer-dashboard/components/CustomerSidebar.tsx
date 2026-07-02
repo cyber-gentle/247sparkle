@@ -1,9 +1,10 @@
 'use client';
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
-import { LayoutDashboard, PlusCircle, Package, FileText, User, LogOut, ChevronLeft, ChevronRight, MapPin,  } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, Package, FileText, User, LogOut, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
+import { toast } from 'sonner';
 
 
 const NAV_ITEMS = [
@@ -22,6 +23,13 @@ interface CustomerSidebarProps {
 
 export default function CustomerSidebar({ collapsed, onToggle }: CustomerSidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleLogout() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    toast.success('Signed out');
+    router.push('/customer/login');
+  }
 
   return (
     <aside
@@ -98,16 +106,16 @@ export default function CustomerSidebar({ collapsed, onToggle }: CustomerSidebar
             </div>
           </div>
         )}
-        <Link
-          href="/"
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/60 hover:bg-white/10 hover:text-white transition-all duration-150 ${
+        <button
+          onClick={handleLogout}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/60 hover:bg-white/10 hover:text-white transition-all duration-150 ${
             collapsed ? 'justify-center' : ''
           }`}
           title={collapsed ? 'Sign Out' : undefined}
         >
           <LogOut size={18} className="shrink-0" />
           {!collapsed && <span className="text-sm font-semibold">Sign Out</span>}
-        </Link>
+        </button>
       </div>
 
       {/* Collapse Toggle */}

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { MapPin, Phone, Clock, ArrowRight, Loader, AlertCircle, User, DollarSign } from 'lucide-react';
+import { MapPin, Phone, Clock, ArrowRight, Loader, AlertCircle, User, DollarSign, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import AppLogo from '@/components/ui/AppLogo';
 
@@ -49,6 +49,11 @@ export default function RiderDashboardPage() {
     fetchJobs();
   }, []);
 
+  async function handleLogout() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    router.push('/rider/login');
+  }
+
   const handleAcceptJob = async (jobId: string) => {
     setAcceptingJobId(jobId);
     try {
@@ -87,6 +92,9 @@ export default function RiderDashboardPage() {
           <Link href="/rider/profile" className="text-sm font-semibold text-[#1A0A5E] hover:underline flex items-center gap-1">
             <User size={16} /> Profile
           </Link>
+          <button onClick={handleLogout} className="text-sm font-semibold text-red-600 hover:underline flex items-center gap-1">
+            <LogOut size={16} /> Sign Out
+          </button>
         </div>
       </header>
       <div className="max-w-6xl mx-auto py-8 px-4">
