@@ -12,7 +12,8 @@ type CustomerRow = {
   phone: string;
   totalOrders: number;
   totalSpend: number;
-  lastOrderDate: string;
+  lastOrderDate: string | null;
+  joinedAt: string;
 };
 
 export default function AdminCustomersPage() {
@@ -24,34 +25,9 @@ export default function AdminCustomersPage() {
 
   async function load() {
     try {
-      const res = await fetch('/api/admin/orders');
+      const res = await fetch('/api/admin/customers');
       const data = await res.json();
-      const orders: any[] = data.orders ?? [];
-
-      // Aggregate customers from orders
-      const map = new Map<string, CustomerRow>();
-      for (const order of orders) {
-        const u = order.customer?.user;
-        const cid = order.customer?.id ?? order.customerId;
-        if (!u || !cid) continue;
-        if (!map.has(cid)) {
-          map.set(cid, {
-            id: cid,
-            fullName: u.fullName,
-            email: u.email,
-            phone: u.phone ?? '—',
-            totalOrders: 0,
-            totalSpend: 0,
-            lastOrderDate: order.createdAt,
-          });
-        }
-        const row = map.get(cid)!;
-        row.totalOrders += 1;
-        if (order.paymentStatus === 'PAID') row.totalSpend += order.totalAmount;
-        if (order.createdAt > row.lastOrderDate) row.lastOrderDate = order.createdAt;
-      }
-
-      setCustomers(Array.from(map.values()).sort((a, b) => b.totalOrders - a.totalOrders));
+      setCustomers(data.customers ?? []);
     } catch {
       toast.error('Failed to load customers');
     } finally {
@@ -105,6 +81,7 @@ export default function AdminCustomersPage() {
                     <th className="px-5 py-3">Total Orders</th>
                     <th className="px-5 py-3">Total Spend</th>
                     <th className="px-5 py-3">Last Order</th>
+                    <th className="px-5 py-3">Joined</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -117,7 +94,8 @@ export default function AdminCustomersPage() {
                       <td className="px-5 py-4 text-slate-600">{c.phone}</td>
                       <td className="px-5 py-4 text-slate-700 font-semibold">{c.totalOrders}</td>
                       <td className="px-5 py-4 font-semibold text-[#1A0A5E]">₦{c.totalSpend.toLocaleString()}</td>
-                      <td className="px-5 py-4 text-slate-500">{new Date(c.lastOrderDate).toLocaleDateString()}</td>
+                      <td className="px-5 py-4 text-slate-500">{c.lastOrderDate ? new Date(c.lastOrderDate).toLocaleDateString() : '—'}</td>
+                      <td className="px-5 py-4 text-slate-500">{new Date(c.joinedAt).toLocaleDateString()}</td>
                     </tr>
                   ))}
                 </tbody>
