@@ -114,7 +114,62 @@ async function main() {
     },
   });
 
+  // Second demo certificate (SPKFUM-2026-00002)
+  const demoUser2 = await prisma.user.create({
+    data: {
+      fullName: 'Tunde Afolayan',
+      email: 'customer2@test.com',
+      phone: '08034567890',
+      passwordHash: demoPassword,
+      role: 'CUSTOMER',
+    },
+  });
+  const demoCustomer2 = await prisma.customer.create({ data: { userId: demoUser2.id } });
+  const demoOrder2 = await prisma.order.create({
+    data: {
+      customerId: demoCustomer2.id,
+      serviceType: 'FUMIGATION',
+      status: 'COMPLETED',
+      paymentStatus: 'PAID',
+      pickupOption: 'ON_SITE',
+      deliveryAddress: '45 Upu Road, Otukpo, Benue State',
+      totalAmount: 20000,
+      scheduledDate: new Date('2026-05-02'),
+    },
+  });
+  await prisma.certificate.create({
+    data: {
+      orderId: demoOrder2.id,
+      customerId: demoCustomer2.id,
+      certificateNumber: 'SPKFUM-2026-00002',
+      customerName: demoUser2.fullName,
+      propertyAddress: '45 Upu Road, Otukpo, Benue State',
+      propertyType: 'Office',
+      serviceDate: new Date('2026-05-02'),
+    },
+  });
+
+  // Demo rider (pre-approved for testing)
+  const riderPassword = await hash('password123', 10);
+  const riderUser = await prisma.user.create({
+    data: {
+      fullName: 'Test Rider',
+      email: 'rider@test.com',
+      phone: '08087654321',
+      passwordHash: riderPassword,
+      role: 'RIDER',
+      rider: {
+        create: {
+          approvalStatus: 'APPROVED',
+          availabilityStatus: 'OFF_DUTY',
+        },
+      },
+    },
+  });
+
   console.log('✓ Demo customer + fumigation certificate created');
+  console.log('✓ Second demo certificate (SPKFUM-2026-00002) created');
+  console.log('✓ Demo rider created (rider@test.com / password123)');
 
   console.log('\n✨ Database seeded successfully!');
   console.log('\nDefault admin credentials:');

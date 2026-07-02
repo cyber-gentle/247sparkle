@@ -13,13 +13,10 @@ import {
   Phone,
   User,
   MapPin,
-  Banknote,
-  Building2,
   CheckCircle2,
   AlertCircle,
   Store,
   Shield,
-  CreditCard,
   TrendingUp,
   Clock,
 } from 'lucide-react';
@@ -75,10 +72,6 @@ const partnerSignupSchema = z
     address: z.string().min(5, 'Business address is required'),
     openingTime: z.string().min(1, 'Opening time is required'),
     closingTime: z.string().min(1, 'Closing time is required'),
-    bankName: z.string().min(1, 'Bank name is required'),
-    bankCode: z.string().min(3, 'Bank code is required'),
-    accountNumber: z.string().min(10, 'Account number must be 10 digits'),
-    accountName: z.string().min(2, 'Account name is required'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
     confirmPassword: z.string(),
   })
@@ -98,7 +91,6 @@ export default function PartnerSignupPage() {
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm<PartnerSignupFormData>({
     resolver: zodResolver(partnerSignupSchema),
@@ -398,102 +390,6 @@ export default function PartnerSignupPage() {
                         {day}
                       </button>
                     ))}
-                  </div>
-                </div>
-              </section>
-
-              {/* Bank Information */}
-              <section>
-                <h3 className="text-xs font-bold text-[#1A0A5E] mb-3 uppercase tracking-wide">
-                  Bank Information
-                </h3>
-                <div className="space-y-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">
-                        Bank Name
-                      </label>
-                      <div className="relative">
-                        <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                        <select
-                          {...register('bankName')}
-                          onChange={(e) => {
-                            const bank = NIGERIAN_BANKS.find((b) => b.name === e.target.value);
-                            if (bank) setValue('bankCode', bank.code);
-                          }}
-                          className={inputClass(!!errors.bankName)}
-                        >
-                          <option value="">Select Bank</option>
-                          {NIGERIAN_BANKS.map((b) => (
-                            <option key={b.code} value={b.name}>
-                              {b.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      {errors.bankName && (
-                        <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                          <AlertCircle size={14} /> {errors.bankName.message}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">
-                        Bank Code
-                      </label>
-                      <div className="relative">
-                        <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                        <input
-                          {...register('bankCode')}
-                          type="text"
-                          placeholder="Auto-filled"
-                          readOnly
-                          className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">
-                        Account Number
-                      </label>
-                      <div className="relative">
-                        <Banknote className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                        <input
-                          {...register('accountNumber')}
-                          type="text"
-                          placeholder="0123456789"
-                          maxLength={10}
-                          className={inputClass(!!errors.accountNumber)}
-                        />
-                      </div>
-                      {errors.accountNumber && (
-                        <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                          <AlertCircle size={14} /> {errors.accountNumber.message}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">
-                        Account Name
-                      </label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                        <input
-                          {...register('accountName')}
-                          type="text"
-                          placeholder="John Doe"
-                          className={inputClass(!!errors.accountName)}
-                        />
-                      </div>
-                      {errors.accountName && (
-                        <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                          <AlertCircle size={14} /> {errors.accountName.message}
-                        </p>
-                      )}
-                    </div>
                   </div>
                 </div>
               </section>

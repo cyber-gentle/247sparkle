@@ -93,6 +93,16 @@ Built with ❤️ on Rocket.new
 
 After running the app, open `http://localhost:4028/verify` and test with:
 
-- `SPKFUM-2026-00001` (valid)
-- `SPKFUM-2026-00002` (valid)
+- `SPKFUM-2026-00001` (valid — Adaeze Okonkwo, 2 Rooms Apartment)
+- `SPKFUM-2026-00002` (valid — Tunde Afolayan, Office)
 - Any other number (invalid)
+
+> These certificates are seeded by `npm run db:seed`.
+
+## 🔑 Test Credentials (after `npm run db:seed`)
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@247sparkle.com | admin123 |
+| Customer | customer@test.com | password123 |
+| Rider (approved) | rider@test.com | password123 |

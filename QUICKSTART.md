@@ -1,65 +1,22 @@
-# 247 Sparkle MVP - Quick Start Guide
+# 247 Sparkle — Quick Start Guide
 
-## 🎯 What Has Been Built
-
-### Backend Infrastructure (✅ Complete)
-- **Prisma ORM** with PostgreSQL schema for all models
-- **JWT Authentication** for all 4 user roles (Customer, Rider, Partner, Admin)
-- **Paystack Payment Integration** with verification
-- **Admin Management APIs** for riders, partners, and orders
-- **Order Management System** with status tracking
-- **Dynamic Pricing System** for laundry and fumigation services
-- **Auth Middleware** to protect routes
-
-### Frontend Structure (✅ Ready for Forms)
-- All page layouts and components in place
-- Responsive design with Tailwind CSS
-- Navigation between portals
-- Public website fully styled
-
-### Database (✅ Schema Ready)
-- 14 Prisma models defined
-- Relationships configured
-- Seed script with default data
+**Last Updated**: June 2026
 
 ---
 
-## 🚀 To Get Started Developing
+## 🚀 Get Running in 5 Minutes
 
-### Step 1: Set Up Local Database
 ```bash
-# Create PostgreSQL database
-createdb sparkle247
+# 1. Install dependencies
+npm install
 
-# Or use psql:
-psql -U postgres -c "CREATE DATABASE sparkle247;"
-```
-
-### Step 2: Configure Environment
-```bash
-# Copy example env file
-cp .env.example .env.local
-
-# Edit .env.local and add:
-DATABASE_URL="postgresql://user:password@localhost:5432/sparkle247"
-JWT_SECRET="your-secret-key-here"
-PAYSTACK_SECRET_KEY="sk_test_xxx"  # From Paystack dashboard
-```
-
-### Step 3: Initialize Database
-```bash
-# Generate Prisma client
-npm run prisma:generate
-
-# Push schema to database
+# 2. Initialize SQLite database and push schema
 npm run db:push
 
-# Seed with default data
+# 3. Seed default admin + pricing data
 npm run db:seed
-```
 
-### Step 4: Start Development
-```bash
+# 4. Start dev server
 npm run dev
 ```
 
@@ -67,247 +24,152 @@ Visit: **http://localhost:4028**
 
 ---
 
-## 📚 API Endpoints Available
+## 🔑 Default Credentials
 
-### Customer Signup/Login
-```bash
+| Role | Email | Password | Login URL |
+|------|-------|----------|-----------|
+| Admin | admin@247sparkle.com | admin123 | `/admin/login` |
+
+---
+
+## 🗄️ Database
+
+- **Dev**: SQLite — file at `prisma/dev.db` (created automatically by `db:push`)
+- **Production**: Change `schema.prisma` provider to `postgresql` and update `DATABASE_URL`
+
+See `DATABASE_SETUP.md` for full details.
+
+---
+
+## 📚 API Reference
+
+### Authentication
+```
 POST /api/auth/customer/signup
 POST /api/auth/customer/login
+POST /api/auth/rider/signup
+POST /api/auth/rider/login
+POST /api/auth/partner/signup
+POST /api/auth/partner/login
+POST /api/auth/admin/login
 ```
 
-**Request body:**
-```json
-{
-  "email": "customer@example.com",
-  "password": "password123",
-  "fullName": "John Doe",
-  "phone": "09012345678"
-}
+### Orders
+```
+POST /api/orders                    # Create order (customer, auth required)
+GET  /api/orders                    # Customer's own orders
+GET  /api/orders/[id]               # Single order detail
+POST /api/orders/[id]/status        # Update order status (rider/admin)
 ```
 
-### Create Order
-```bash
-POST /api/orders
-Headers: Authorization Bearer <token>
+### Rider Jobs
+```
+GET  /api/riders/jobs               # Available jobs (rider auth)
+POST /api/riders/jobs/[id]/accept   # Accept a job
+POST /api/riders/location           # Update GPS location
+GET  /api/riders/location           # Get current location
 ```
 
-**Request body:**
-```json
-{
-  "serviceType": "LAUNDRY",
-  "pickupOption": "HOME_PICKUP",
-  "pickupAddress": "123 Main Street",
-  "deliveryAddress": "123 Main Street",
-  "scheduledDate": "2026-06-15",
-  "scheduledTime": "10:00",
-  "items": [
-    {
-      "itemName": "T-shirt",
-      "quantity": 3,
-      "isWhiteGroup": false
-    }
-  ]
-}
+### Rider Profile
+```
+GET/PUT  /api/rider/profile
+GET/POST /api/rider/withdrawals
+GET      /api/rider/earnings
+PUT      /api/rider/availability
+PUT      /api/rider/password
 ```
 
-### Admin Approve Rider
-```bash
-PUT /api/admin/riders/:id
-Headers: Authorization Bearer <admin_token>
+### Customer Profile
+```
+GET/PUT  /api/customer/profile
+GET/POST /api/customer/addresses
+PUT      /api/customer/password
 ```
 
-**Request body:**
-```json
-{
-  "action": "APPROVE"  // or "REJECT", "SUSPEND"
-}
+### Partner Profile
+```
+GET/PUT /api/partner/profile
+PUT     /api/partner/password
 ```
 
----
-
-## 🔑 Default Admin Credentials
-
-After running `npm run db:seed`:
-
+### Admin
 ```
-Email: admin@247sparkle.com
-Password: admin123
+GET /api/admin/riders
+PUT /api/admin/riders/[id]          # body: { "action": "APPROVE" | "REJECT" | "SUSPEND" }
+GET /api/admin/partners
+PUT /api/admin/partners/[id]        # body: { "action": "APPROVE" | "REJECT" | "SUSPEND" }
+GET /api/admin/orders
 ```
 
-Login at: `/admin/login`
+### Pricing & Certificates
+```
+GET /api/pricing                    # Public — all pricing
+PUT /api/pricing                    # Admin only — update pricing
+GET /api/certificates/verify/[number]   # Public — verify fumigation cert
+GET /api/certificates/customer/[userId] # Customer's own certificates
+```
 
----
+### Quotations
+```
+POST /api/quotations                # Public — submit quotation request
+GET  /api/quotations                # Admin only — list all quotations
+PUT  /api/quotations/[id]           # Admin only — update status
+```
 
-## 📂 Key Files to Know
-
-### Backend Logic
-- `src/lib/auth.ts` - JWT token handling
-- `src/lib/db.ts` - Prisma client setup
-- `src/lib/paystack.ts` - Payment integration
-- `src/middleware.ts` - Route protection
-
-### API Routes
-- `src/app/api/auth/` - Authentication endpoints
-- `src/app/api/orders/` - Order management
-- `src/app/api/admin/` - Admin endpoints
-- `src/app/api/payment/` - Payment verification
-- `src/app/api/pricing/` - Pricing management
-
-### Database
-- `prisma/schema.prisma` - Data models
-- `prisma/seed.ts` - Seed script
-
-### Configuration
-- `.env.local` - Environment variables (create this)
-- `package.json` - Dependencies and scripts
+### Payments
+```
+GET /api/payment/verify/[reference] # Verify Paystack payment
+```
 
 ---
 
 ## 🛠️ Common Commands
 
 ```bash
-# Development
-npm run dev                # Start dev server
+npm run dev              # Start dev server (port 4028)
+npm run build            # Production build
+npm run serve            # Run production build
 
-# Type checking
-npm run type-check         # Check TypeScript errors
-npm run lint              # Run ESLint
+npm run db:push          # Push Prisma schema to DB
+npm run db:seed          # Seed default data
+npm run prisma:generate  # Regenerate Prisma client
 
-# Database
-npm run prisma:generate   # Generate Prisma client
-npm run db:push          # Push schema to DB
-npm run db:seed          # Run seed script
-npm run db:migrate       # Create migrations
-
-# Build & Production
-npm run build             # Build for production
-npm run serve             # Run production build locally
-
-# Code quality
-npm run lint:fix          # Fix linting issues
-npm run format            # Format code with Prettier
+npm run type-check       # TypeScript check
+npm run lint             # ESLint
+npm run lint:fix         # Auto-fix lint issues
+npm run format           # Prettier format
 ```
 
 ---
 
-## 📋 Next Development Tasks
+## 🔍 Verify Certificate (Test)
 
-### Immediate (1-2 weeks)
-1. Set up database connection
-2. Build customer signup/login forms
-3. Build laundry order form
-4. Add loading & error states to forms
-5. Test payment flow end-to-end
+Open `http://localhost:4028/verify` and test with:
+- `SPKFUM-2026-00001` (valid — seeded)
+- `SPKFUM-2026-00002` (valid — seeded)
+- Any other value → invalid
 
-### Short term (2-4 weeks)
-6. Build rider dashboard and job acceptance
-7. Build admin approval workflow UI
-8. Add order tracking page
-9. Implement real-time updates with Socket.io
-10. Add file upload for photos
-
-### Medium term (1-2 months)
-11. Google Maps integration
-12. PDF certificate generation
-13. Email & SMS notifications
-14. Comprehensive testing
-15. Security hardening
+> Note: These certificates only exist after running `npm run db:seed`.
 
 ---
 
-## 🔐 Security Notes
+## 📋 Known Issues
 
-✅ **Implemented:**
-- Password hashing with bcryptjs
-- JWT token authentication
-- HTTP-only cookies
-- Role-based access control
-- Input validation with Zod
+See `MVP_STATUS.md` for the full list. Key items:
 
-⚠️ **Still Need:**
-- Rate limiting on auth endpoints
-- CORS configuration
-- CSRF protection
-- SQL injection prevention (Prisma handles this)
-- XSS prevention
+- No logout endpoint yet (`POST /api/auth/logout` missing) — ✅ Now added
+- Admin approval uses `PUT` (not `POST` as some older docs state)
+- Commission rate inconsistency (15% vs 20%) — needs confirmation
+- `/admin/finance` and `/admin/dashboard` KPIs use static/mock data (no stats API yet)
 
 ---
 
-## 🐛 Troubleshooting
+## 📖 Other Docs
 
-### "Cannot connect to database"
-```bash
-# Check if PostgreSQL is running
-psql -U postgres
-
-# Verify DATABASE_URL in .env.local
-# Format: postgresql://user:password@localhost:5432/sparkle247
-```
-
-### "Prisma types not found"
-```bash
-npm run prisma:generate
-```
-
-### "Port 4028 already in use"
-```bash
-# Use a different port
-PORT=3000 npm run dev
-```
-
-### TypeScript errors
-```bash
-npm run type-check    # See all errors
-npm run lint:fix      # Auto-fix some issues
-```
-
----
-
-## 📞 API Testing
-
-Use Postman or curl to test endpoints:
-
-```bash
-# Customer signup
-curl -X POST http://localhost:4028/api/auth/customer/signup \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"pass123","fullName":"Test User","phone":"09012345678"}'
-
-# Customer login
-curl -X POST http://localhost:4028/api/auth/customer/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"pass123"}'
-
-# Get pricing
-curl http://localhost:4028/api/pricing
-```
-
----
-
-## 📖 Documentation Files
-
-- `SETUP.md` - Detailed setup guide
-- `MVP_STATUS.md` - Project status and progress
-- `prompt.md` - Original project requirements
-- `README.md` - Project overview
-
----
-
-## 🎉 You're All Set!
-
-The MVP backend is ready to go. All you need to do is:
-
-1. ✅ Install dependencies (already done)
-2. ⏳ Create PostgreSQL database
-3. ⏳ Configure `.env.local`
-4. ⏳ Run `npm run db:push && npm run db:seed`
-5. ⏳ Start `npm run dev`
-6. 🎨 Build the frontend forms and pages
-
-**Happy coding! 🚀**
-
----
-
-For questions or issues, refer to the main project documentation or check the SETUP.md file.
-
-Last Updated: May 31, 2026
+| File | Purpose |
+|------|---------|
+| `MVP_STATUS.md` | Full feature status & known issues |
+| `DATABASE_SETUP.md` | DB setup, commands, SQLite → PostgreSQL migration |
+| `TESTING.md` | Manual testing walkthrough |
+| `SETUP.md` | Full environment setup guide |
+| `MVP_BUILD_SUMMARY.md` | Original build summary (may have minor inaccuracies) |

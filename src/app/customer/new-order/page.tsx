@@ -47,9 +47,8 @@ type Step4Data = z.infer<typeof step4Schema>;
 interface PricingItem {
   id: string;
   itemName: string;
-  category: string;
-  price: number;
-  unit: string;
+  serviceType: string;
+  unitPrice: number;
 }
 
 export default function CustomerNewOrderPage() {
@@ -74,7 +73,7 @@ export default function CustomerNewOrderPage() {
         const response = await fetch('/api/pricing');
         if (!response.ok) throw new Error('Failed to fetch pricing');
         const data = await response.json();
-        setPricingData(data);
+        setPricingData(data.pricing ?? []);
       } catch (error) {
         toast.error('Failed to load pricing data');
       }
@@ -103,9 +102,9 @@ export default function CustomerNewOrderPage() {
   const onStep2Submit = () => {
     const selectedItemsArray = Array.from(selectedItems.entries()).map(([id, qty]) => {
       const item = pricingData.find((p) => p.id === id);
-      return { id, quantity: qty, price: item?.price || 0 };
+      return { id, itemName: item?.itemName || id, quantity: qty, unitPrice: item?.unitPrice || 0 };
     });
-    const total = selectedItemsArray.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const total = selectedItemsArray.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
 
     setOrderSummary((prev) => ({
       ...prev,
@@ -149,12 +148,13 @@ export default function CustomerNewOrderPage() {
       const payload = {
         serviceType: orderSummary.serviceType,
         items: orderSummary.items.map((item) => ({
-          itemId: item.id,
+          itemName: item.itemName,
           quantity: item.quantity,
+          isWhiteGroup: false,
         })),
         pickupOption: orderSummary.pickupOption,
         deliveryAddress: orderSummary.address,
-        desiredDeliveryDate: orderSummary.deliveryDate,
+        scheduledDate: orderSummary.deliveryDate,
       };
 
       const response = await fetch('/api/orders', {
@@ -171,15 +171,10 @@ export default function CustomerNewOrderPage() {
 
       toast.success('Order created successfully!');
 
-      // Redirect to Paystack payment if needed
-      if (result.paystackAuthorizationUrl) {
-        setTimeout(() => {
-          window.location.href = result.paystackAuthorizationUrl;
-        }, 1500);
+      if (result.order?.paymentUrl) {
+        window.location.href = result.order.paymentUrl;
       } else {
-        setTimeout(() => {
-          router.push('/customer/orders');
-        }, 1500);
+        router.push('/customer/orders');
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to create order');
@@ -260,7 +255,7 @@ export default function CustomerNewOrderPage() {
             <h2 className="text-2xl font-bold mb-6">Select Items</h2>
             <div className="space-y-4 mb-6">
               {pricingData
-                .filter((item) => item.category === 'LAUNDRY')
+                .filter((item) => item.serviceType === 'LAUNDRY')
                 .map((item) => (
                   <div
                     key={item.id}
@@ -268,9 +263,7 @@ export default function CustomerNewOrderPage() {
                   >
                     <div>
                       <h3 className="font-semibold">{item.itemName}</h3>
-                      <p className="text-gray-600">
-                        ₦{item.price} per {item.unit}
-                      </p>
+                      <p className="text-gray-600">₦{item.unitPrice.toLocaleString()} per item</p>
                     </div>
                     <input
                       type="number"
@@ -412,8 +405,8 @@ export default function CustomerNewOrderPage() {
                   <p className="text-sm text-gray-600 mb-2">Items</p>
                   {orderSummary.items.map((item) => (
                     <p key={item.id} className="text-gray-700">
-                      {item.id} x {item.quantity} = ₦{item.price * item.quantity}
-                    </p>
+                    {item.itemName} × {item.quantity} = ₦{(item.unitPrice * item.quantity).toLocaleString()}
+                  </p>
                   ))}
                 </div>
               )}

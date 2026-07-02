@@ -14,6 +14,7 @@ const updateProfileSchema = z.object({
   bankCode: z.string().optional(),
   accountNumber: z.string().optional(),
   accountName: z.string().optional(),
+  workloadStatus: z.enum(['AVAILABLE', 'BUSY']).optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -81,6 +82,7 @@ export async function PUT(request: NextRequest) {
         bankCode: data.bankCode,
         accountNumber: data.accountNumber,
         accountName: data.accountName,
+        ...(data.workloadStatus ? { workloadStatus: data.workloadStatus } : {}),
       },
     });
 

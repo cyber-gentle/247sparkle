@@ -18,6 +18,9 @@ const publicRoutes = [
   '/admin/login',
 ];
 
+// Always allow the logout endpoint — it clears the cookie regardless of token state.
+const logoutPath = '/api/auth/logout';
+
 // API paths whose primary action is public. These are allowed through without a
 // token, but the middleware STILL verifies any token that is present and sets
 // the x-user-* headers — so admin-gated verbs on the same path (e.g. GET
@@ -29,6 +32,7 @@ const publicApiRoutes = [
 ];
 
 const isPublicPath = (pathname: string) =>
+  pathname === logoutPath ||
   publicRoutes.some((route) => pathname.startsWith(route)) ||
   publicApiRoutes.some((route) => pathname === route || pathname.startsWith(route + '/'));
 

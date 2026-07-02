@@ -13,13 +13,10 @@ import {
   Phone,
   User,
   MapPin,
-  Banknote,
-  Building2,
   CheckCircle2,
   AlertCircle,
   Zap,
   Shield,
-  CreditCard,
   TrendingUp,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -32,10 +29,6 @@ const riderSignupSchema = z
     address: z.string().min(5, 'Address is required'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
     confirmPassword: z.string(),
-    bankName: z.string().min(1, 'Bank name is required'),
-    bankCode: z.string().min(3, 'Bank code is required'),
-    accountNumber: z.string().min(10, 'Account number must be 10 digits'),
-    accountName: z.string().min(2, 'Account name is required'),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match',
@@ -62,27 +55,6 @@ const BENEFITS = [
   },
 ];
 
-const NIGERIAN_BANKS = [
-  { name: 'Access Bank', code: '044' },
-  { name: 'Citibank Nigeria', code: '023' },
-  { name: 'Ecobank Nigeria', code: '050' },
-  { name: 'Fidelity Bank', code: '070' },
-  { name: 'First Bank of Nigeria', code: '011' },
-  { name: 'First City Monument Bank', code: '214' },
-  { name: 'Guaranty Trust Bank', code: '058' },
-  { name: 'Heritage Bank', code: '030' },
-  { name: 'Keystone Bank', code: '082' },
-  { name: 'Polaris Bank', code: '076' },
-  { name: 'Stanbic IBTC Bank', code: '221' },
-  { name: 'Standard Chartered Bank', code: '068' },
-  { name: 'Sterling Bank', code: '232' },
-  { name: 'Union Bank of Nigeria', code: '032' },
-  { name: 'United Bank for Africa', code: '033' },
-  { name: 'Unity Bank', code: '215' },
-  { name: 'Wema Bank', code: '035' },
-  { name: 'Zenith Bank', code: '057' },
-];
-
 export default function RiderSignupPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -91,7 +63,6 @@ export default function RiderSignupPage() {
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm<RiderSignupFormData>({
     resolver: zodResolver(riderSignupSchema),
@@ -314,117 +285,6 @@ export default function RiderSignupPage() {
                       <AlertCircle size={14} /> {errors.address.message}
                     </p>
                   )}
-                </div>
-              </div>
-
-              {/* Bank Information Section */}
-              <div>
-                <h3 className="text-sm font-bold text-[#1A0A5E] mb-3 uppercase tracking-wide">
-                  Bank Information
-                </h3>
-
-                {/* Bank Selection */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                  <div>
-                    <label htmlFor="bankName" className="block text-sm font-semibold text-gray-700 mb-1">
-                      Bank Name
-                    </label>
-                    <div className="relative">
-                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                      <select
-                        {...register('bankName')}
-                        id="bankName"
-                        onChange={(e) => {
-                          const selectedBank = NIGERIAN_BANKS.find(b => b.name === e.target.value);
-                          if (selectedBank) {
-                            setValue('bankCode', selectedBank.code);
-                          }
-                        }}
-                        className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                          errors.bankName ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                      >
-                        <option value="">Select Bank</option>
-                        {NIGERIAN_BANKS.map((bank) => (
-                          <option key={bank.code} value={bank.name}>
-                            {bank.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    {errors.bankName && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                        <AlertCircle size={14} /> {errors.bankName.message}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label htmlFor="bankCode" className="block text-sm font-semibold text-gray-700 mb-1">
-                      Bank Code
-                    </label>
-                    <div className="relative">
-                      <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                      <input
-                        {...register('bankCode')}
-                        type="text"
-                        id="bankCode"
-                        placeholder="Auto-filled"
-                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50"
-                        readOnly
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Account Number & Name */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label htmlFor="accountNumber" className="block text-sm font-semibold text-gray-700 mb-1">
-                      Account Number
-                    </label>
-                    <div className="relative">
-                      <Banknote className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                      <input
-                        {...register('accountNumber')}
-                        type="text"
-                        id="accountNumber"
-                        placeholder="0123456789"
-                        maxLength={10}
-                        className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                          errors.accountNumber ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                      />
-                    </div>
-                    {errors.accountNumber && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                        <AlertCircle size={14} /> {errors.accountNumber.message}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label htmlFor="accountName" className="block text-sm font-semibold text-gray-700 mb-1">
-                      Account Name
-                    </label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                      <input
-                        {...register('accountName')}
-                        type="text"
-                        id="accountName"
-                        placeholder="John Doe"
-                        className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                          errors.accountName ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                      />
-                    </div>
-                    {errors.accountName && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                        <AlertCircle size={14} /> {errors.accountName.message}
-                      </p>
-                    )}
-                  </div>
                 </div>
               </div>
 

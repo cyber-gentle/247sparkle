@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { MapPin, Phone, Clock, ArrowRight, Loader, AlertCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { MapPin, Phone, Clock, ArrowRight, Loader, AlertCircle, User, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
+import AppLogo from '@/components/ui/AppLogo';
 
 interface Job {
   id: string;
@@ -24,6 +26,7 @@ interface Job {
 }
 
 export default function RiderDashboardPage() {
+  const router = useRouter();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [acceptingJobId, setAcceptingJobId] = useState<string | null>(null);
@@ -73,8 +76,20 @@ export default function RiderDashboardPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-6xl mx-auto">
+    <main className="min-h-screen bg-gray-50">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center gap-4">
+          <AppLogo size={32} src="/images/logo.jpeg" />
+          <h1 className="text-xl font-bold text-[#1A0A5E] flex-1">Available Jobs</h1>
+          <Link href="/rider/earnings" className="text-sm font-semibold text-[#1A0A5E] hover:underline flex items-center gap-1">
+            <DollarSign size={16} /> Earnings
+          </Link>
+          <Link href="/rider/profile" className="text-sm font-semibold text-[#1A0A5E] hover:underline flex items-center gap-1">
+            <User size={16} /> Profile
+          </Link>
+        </div>
+      </header>
+      <div className="max-w-6xl mx-auto py-8 px-4">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Available Jobs</h1>

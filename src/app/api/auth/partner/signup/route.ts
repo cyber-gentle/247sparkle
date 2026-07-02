@@ -11,13 +11,9 @@ const partnerSignupSchema = z.object({
   address: z.string().min(5, 'Address is required'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string(),
-  openingTime: z.string().optional(), // HH:MM
-  closingTime: z.string().optional(), // HH:MM
-  daysOfOpening: z.array(z.string()).optional(), // ["Mon", "Tue", ...]
-  bankName: z.string().optional(),
-  bankCode: z.string().optional(),
-  accountNumber: z.string().optional(),
-  accountName: z.string().optional(),
+  openingTime: z.string().optional(),
+  closingTime: z.string().optional(),
+  daysOfOpening: z.array(z.string()).optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'Passwords do not match',
   path: ['confirmPassword'],
@@ -59,11 +55,7 @@ export async function POST(request: NextRequest) {
             openingTime: validatedData.openingTime,
             closingTime: validatedData.closingTime,
             daysOfOpening: validatedData.daysOfOpening ? JSON.stringify(validatedData.daysOfOpening) : null,
-            bankName: validatedData.bankName,
-            bankCode: validatedData.bankCode,
-            accountNumber: validatedData.accountNumber,
-            accountName: validatedData.accountName,
-            approvalStatus: 'PENDING', // Require admin approval
+            approvalStatus: 'PENDING',
           },
         },
       },

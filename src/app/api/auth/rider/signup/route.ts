@@ -10,10 +10,6 @@ const riderSignupSchema = z.object({
   address: z.string().optional(),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string(),
-  bankName: z.string().optional(),
-  bankCode: z.string().optional(),
-  accountNumber: z.string().optional(),
-  accountName: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'Passwords do not match',
   path: ['confirmPassword'],
@@ -50,11 +46,7 @@ export async function POST(request: NextRequest) {
         rider: {
           create: {
             address: validatedData.address,
-            bankName: validatedData.bankName,
-            bankCode: validatedData.bankCode,
-            accountNumber: validatedData.accountNumber,
-            accountName: validatedData.accountName,
-            approvalStatus: 'PENDING', // Require admin approval
+            approvalStatus: 'PENDING',
           },
         },
       },

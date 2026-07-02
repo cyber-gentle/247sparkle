@@ -8,7 +8,7 @@ const approvalSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const userRole = request.headers.get('x-user-role');
@@ -20,6 +20,7 @@ export async function PUT(
       );
     }
 
+    const { id } = await params;
     const body = await request.json();
     const { action } = approvalSchema.parse(body);
 
@@ -34,7 +35,7 @@ export async function PUT(
     }
 
     const partner = await prisma.partner.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         approvalStatus: approvalStatus as any,
       },
