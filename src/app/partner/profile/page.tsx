@@ -22,22 +22,7 @@ import {
 import { toast } from 'sonner';
 import AppLogo from '@/components/ui/AppLogo';
 
-const NIGERIAN_BANKS = [
-  { name: 'Access Bank', code: '044' },
-  { name: 'Ecobank Nigeria', code: '050' },
-  { name: 'Fidelity Bank', code: '070' },
-  { name: 'First Bank of Nigeria', code: '011' },
-  { name: 'First City Monument Bank', code: '214' },
-  { name: 'Guaranty Trust Bank', code: '058' },
-  { name: 'Keystone Bank', code: '082' },
-  { name: 'Polaris Bank', code: '076' },
-  { name: 'Stanbic IBTC Bank', code: '221' },
-  { name: 'Sterling Bank', code: '232' },
-  { name: 'Union Bank of Nigeria', code: '032' },
-  { name: 'United Bank for Africa', code: '033' },
-  { name: 'Wema Bank', code: '035' },
-  { name: 'Zenith Bank', code: '057' },
-];
+import { NIGERIAN_BANKS } from '@/lib/banks';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -75,6 +60,7 @@ export default function PartnerProfilePage() {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [approvalStatus, setApprovalStatus] = useState('PENDING');
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
+  const [useCustomBank, setUseCustomBank] = useState(false);
 
   const isApproved = approvalStatus === 'APPROVED';
 
@@ -118,6 +104,9 @@ export default function PartnerProfilePage() {
         setValue('accountName', p.accountName || '');
         setApprovalStatus(p.approvalStatus);
         setSelectedDays(Array.isArray(p.daysOfOpening) ? p.daysOfOpening : []);
+        if (p.bankName && !NIGERIAN_BANKS.find((b) => b.name === p.bankName)) {
+          setUseCustomBank(true);
+        }
       }
     } catch {
       toast.error('Failed to load profile');
@@ -332,26 +321,58 @@ export default function PartnerProfilePage() {
                 <label className="block text-sm font-semibold text-gray-700 mb-1 flex items-center gap-1">
                   <Building2 size={14} /> Bank Name
                 </label>
-                <select
-                  {...register('bankName')}
-                  disabled={!isApproved}
-                  onChange={(e) => {
-                    const bank = NIGERIAN_BANKS.find((b) => b.name === e.target.value);
-                    if (bank) setValue('bankCode', bank.code);
-                  }}
-                  className={fieldClass(false, !isApproved)}
-                >
-                  <option value="">Select Bank</option>
-                  {NIGERIAN_BANKS.map((b) => (
-                    <option key={b.code} value={b.name}>{b.name}</option>
-                  ))}
-                </select>
+                {!useCustomBank ? (
+                  <select
+                    {...register('bankName')}
+                    disabled={!isApproved}
+                    onChange={(e) => {
+                      if (e.target.value === '__other__') {
+                        setUseCustomBank(true);
+                        setValue('bankName', '');
+                        setValue('bankCode', '');
+                      } else {
+                        const bank = NIGERIAN_BANKS.find((b) => b.name === e.target.value);
+                        setValue('bankCode', bank?.code ?? '');
+                      }
+                    }}
+                    className={fieldClass(false, !isApproved)}
+                  >
+                    <option value="">Select Bank</option>
+                    {NIGERIAN_BANKS.map((b) => (
+                      <option key={b.code} value={b.name}>{b.name}</option>
+                    ))}
+                    <option value="__other__">Other (type manually)</option>
+                  </select>
+                ) : (
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      {...register('bankName')}
+                      disabled={!isApproved}
+                      placeholder="Enter full bank name"
+                      className={fieldClass(false, !isApproved)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => { setUseCustomBank(false); setValue('bankName', ''); setValue('bankCode', ''); }}
+                      className="shrink-0 text-xs text-[#CC0000] hover:underline whitespace-nowrap"
+                    >
+                      Use list
+                    </button>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1 flex items-center gap-1">
                   <CreditCard size={14} /> Bank Code
                 </label>
-                <input type="text" {...register('bankCode')} readOnly className={fieldClass(false, true)} placeholder="Auto-filled" />
+                <input
+                  type="text"
+                  {...register('bankCode')}
+                  disabled={!isApproved || !useCustomBank}
+                  placeholder={useCustomBank ? 'Enter bank code (optional)' : 'Auto-filled'}
+                  className={fieldClass(false, !isApproved || !useCustomBank)}
+                />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
