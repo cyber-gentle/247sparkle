@@ -265,7 +265,7 @@ Cookie: auth_token=jwt_token_here
 ✅ Rider approval workflow
 ✅ Job acceptance and assignment
 ✅ Status progression tracking
-✅ Commission calculation (15% of order value)
+✅ Commission calculation (20% of order value)
 ✅ All form validations
 ✅ Authentication protection on routes
 

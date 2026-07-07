@@ -159,7 +159,7 @@ See `MVP_STATUS.md` for the full list. Key items:
 
 - No logout endpoint yet (`POST /api/auth/logout` missing) — ✅ Now added
 - Admin approval uses `PUT` (not `POST` as some older docs state)
-- Commission rate inconsistency (15% vs 20%) — needs confirmation
+- Commission rate confirmed at 20%
 - `/admin/finance` and `/admin/dashboard` KPIs use static/mock data (no stats API yet)
 
 ---

@@ -90,7 +90,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       data: {
         riderId: rider.id,
         orderId: orderId,
-        amount: order.totalAmount * 0.15,
+        amount: order.totalAmount * 0.2,
         status: 'PENDING',
       },
     });

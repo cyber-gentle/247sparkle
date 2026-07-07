@@ -112,7 +112,7 @@ npm run dev -- -p 3000
    - Customer phone number (clickable)
    - Pickup and delivery addresses
    - Item count & creation date
-   - Amount (commission calculated as 15%)
+   - Amount (commission calculated as 20%)
 3. **Expected**: Shows paid orders waiting for rider assignment
 
 #### 3.5 Accept Job
@@ -121,7 +121,7 @@ npm run dev -- -p 3000
    - Button shows loading state
    - Job accepted successfully (toast notification)
    - Job removed from available list
-   - Commission record created (15% of order total)
+   - Commission record created (20% of order total)
 
 #### 3.6 Job Details & Status Updates
 1. After accepting job, navigate to job detail page or `/rider/job/{orderId}`
@@ -174,7 +174,7 @@ npm run dev -- -p 3000
 #### 5.3 Data Integrity Tests
 - Create multiple orders → Each gets unique ID
 - Accept same job twice → Second attempt shows "Order no longer available"
-- Check commission calculation → 15% of order total stored correctly
+- Check commission calculation → 20% of order total stored correctly
 
 ## API Endpoints Reference
 

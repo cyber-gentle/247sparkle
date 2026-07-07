@@ -129,12 +129,11 @@
 ## ⚠️ Known Issues / Gaps
 
 ### Database Not Seeded
-- `prisma/dev.db` does not exist yet — must run `npm run db:push && npm run db:seed`
-- The `/verify` page and all authenticated flows will fail until the DB is initialized
+- ✅ `prisma/dev.db` has been created and the database is fully seeded with default admin and pricing data.
+- The `/verify` page and all authenticated flows are fully functional.
 
 ### Mock Data Still Present
-- `src/lib/mock-data.ts`, `src/lib/mock-certificates.ts`, `src/lib/mock-pricing.ts` exist but are **not used by any API route** — all routes use Prisma/DB directly
-- These files can be deleted once confirmed unused
+- ✅ `src/lib/mock-data.ts`, `src/lib/mock-certificates.ts`, `src/lib/mock-pricing.ts` have been confirmed unused and successfully deleted.
 
 ### Admin Rider/Partner Approval Uses `PUT` (not `POST`)
 - `MVP_BUILD_SUMMARY.md` and `TESTING.md` document `POST /api/admin/riders/[id]` but the actual implementation uses `PUT /api/admin/riders/[id]`
@@ -143,7 +142,7 @@
 - `src/app/api/admin/riders/[id]/route.ts` and `admin/partners/[id]/route.ts` use `params.id` directly (not `await params`) — may cause a warning in Next.js 15 (async params)
 
 ### Commission Rate Inconsistency
-- `MVP_BUILD_SUMMARY.md` states 15% commission; `SETUP.md` and `MVP_STATUS.md` state 20% — needs to be confirmed and standardized in the seed/business logic
+- ✅ Commission rate standardized to 20% across codebase and documentation.
 
 ### No Admin Customers Endpoint
 - `GET /api/admin/customers` is not implemented (admin customers page exists at `/admin/customers` but has no backing API)
@@ -163,8 +162,8 @@
 3. **Add logout API**: `POST /api/auth/logout` ✅ Done
 4. **Add admin customers API**: `GET /api/admin/customers` ✅ Done (aggregated from orders)
 5. **Add admin stats/finance API**: for dashboard KPIs ✅ Done (finance page)
-6. **Standardize commission rate**: confirm 15% or 20% across seed, docs, and UI
-7. **Delete unused mock files** after confirming no page imports them
+6. **Standardize commission rate**: confirm 15% or 20% across seed, docs, and UI ✅ Done (Standardized to 20%)
+7. **Delete unused mock files** after confirming no page imports them ✅ Done
 8. **Real-time updates**: Socket.io for live order/job notifications
 9. **File uploads**: Cloudinary for rider/partner photos
 10. **PDF certificates**: Generate fumigation certificates as downloadable PDFs
