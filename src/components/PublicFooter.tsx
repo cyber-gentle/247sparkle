@@ -29,7 +29,7 @@ export default function PublicFooter() {
           {/* Brand */}
           <div className="lg:col-span-1">
             <div className="flex items-center gap-2.5 mb-4">
-              <AppLogo size={44} src="/images/logo.jpeg" />
+              <AppLogo width={140} height={50} src="/images/logo.jpeg" className="rounded-xl" />
               <div className="flex flex-col leading-none">
                 <span className="font-extrabold text-xl">
                   <span className="text-[#F5C200]">247</span>

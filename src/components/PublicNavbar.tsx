@@ -36,7 +36,7 @@ export default function PublicNavbar() {
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2.5 group">
-              <AppLogo size={40} src="/images/logo.jpeg" />
+              <AppLogo width={140} height={50} src="/images/logo.jpeg" className={solidNavbar ? "mix-blend-multiply" : "rounded-lg"} />
               <div className="flex flex-col leading-none">
                 <span
                   className={`font-extrabold text-xl tracking-tight transition-colors ${solidNavbar ? 'text-[#1A0A5E]' : 'text-white'}`}

@@ -7,7 +7,7 @@ const TESTIMONIALS = [
     name: 'Chidinma Okonkwo',
     role: 'Marketing Manager, Victoria Island',
     rating: 5,
-    text: 'I&apos;ve been using 247 Sparkle for 6 months now and they never disappoint. My Agbada and lace outfits come back perfectly pressed. The real-time tracking is a game-changer — I know exactly when my rider is coming.',
+    text: "I've been using 247 Sparkle for 6 months now and they never disappoint. My Agbada and lace outfits come back perfectly pressed. The real-time tracking is a game-changer — I know exactly when my rider is coming.",
     avatar: 'CO',
     avatarBg: 'bg-[#F5C200]',
     avatarText: 'text-[#1A0A5E]',
