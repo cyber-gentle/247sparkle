@@ -31,10 +31,18 @@ const publicApiRoutes = [
   '/api/pricing', // public price list for the booking flow
 ];
 
-const isPublicPath = (pathname: string) =>
-  pathname === logoutPath ||
-  publicRoutes.some((route) => pathname.startsWith(route)) ||
-  publicApiRoutes.some((route) => pathname === route || pathname.startsWith(route + '/'));
+const isPublicPath = (pathname: string) => {
+  if (pathname === logoutPath) return true;
+
+  const checkRoute = (route: string) => {
+    if (route === '/') {
+      return pathname === '/';
+    }
+    return pathname === route || pathname.startsWith(route + '/');
+  };
+
+  return publicRoutes.some(checkRoute) || publicApiRoutes.some(checkRoute);
+};
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -71,8 +79,13 @@ export async function middleware(request: NextRequest) {
     return unauthorized();
   }
 
-  // Attach identity headers for route handlers (null-safe when anonymous).
+  // Attach identity headers for route handlers.
+  // We explicitly delete client-provided headers to prevent header injection.
   const requestHeaders = new Headers(request.headers);
+  requestHeaders.delete('x-user-id');
+  requestHeaders.delete('x-user-email');
+  requestHeaders.delete('x-user-role');
+
   if (payload) {
     requestHeaders.set('x-user-id', payload.userId);
     requestHeaders.set('x-user-email', payload.email);
