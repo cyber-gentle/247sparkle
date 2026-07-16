@@ -28,6 +28,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (user.role !== 'CUSTOMER') {
+      return NextResponse.json(
+        { error: 'Invalid email or password' },
+        { status: 401 }
+      );
+    }
+
     // Verify password
     const isValidPassword = await compare(validatedData.password, user.passwordHash);
 

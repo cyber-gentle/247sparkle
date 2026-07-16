@@ -73,7 +73,7 @@
 - `POST /api/quotations` — public quotation request
 - `GET /api/quotations` — admin list quotations
 - `PUT /api/quotations/[id]` — admin update quotation status
-- `GET /api/payment/verify/[reference]` — Paystack payment verification
+- `POST /api/payment/verify/[reference]` — Authenticated Paystack payment verification
 
 ### Frontend Pages (40+ pages)
 

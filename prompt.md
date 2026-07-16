@@ -1,5 +1,5 @@
 # 247 Sparkle — Full-Stack Web Platform
-## Complete Developer Brief & Prompt
+## Complete Developer Brief
 
 ---
 

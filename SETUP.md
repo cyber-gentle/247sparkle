@@ -127,7 +127,7 @@ npm run serve
 
 ### Payments
 
-- `GET /api/payment/verify/:reference` - Verify Paystack payment
+- `POST /api/payment/verify/:reference` - Verify Paystack payment for the signed-in customer/admin
 
 ### Pricing
 

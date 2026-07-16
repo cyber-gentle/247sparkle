@@ -417,7 +417,7 @@ The project is now ready for frontend form development and can be deployed once 
 
 ---
 
-**Developer**: GitHub Copilot  
+**Maintainer**: Project Team  
 **Last Updated**: May 31, 2026  
 **Status**: ✅ MVP Backend Complete - Ready for Frontend Development
 

@@ -9,7 +9,7 @@ export async function GET(
     const userId = request.headers.get('x-user-id');
     const userRole = request.headers.get('x-user-role');
 
-    if (!userId) {
+    if (!userId || !userRole) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -63,9 +63,13 @@ export async function GET(
       );
     }
 
-    // Check authorization - customer can only see their own orders
-    // Admin, rider, and partner can see orders they're assigned to
-    if (userRole === 'CUSTOMER' && order.customer.userId !== userId) {
+    const isAuthorized =
+      userRole === 'ADMIN' ||
+      (userRole === 'CUSTOMER' && order.customer.userId === userId) ||
+      (userRole === 'RIDER' && order.rider?.userId === userId) ||
+      (userRole === 'PARTNER' && order.partner?.userId === userId);
+
+    if (!isAuthorized) {
       return NextResponse.json(
         { error: 'Forbidden' },
         { status: 403 }
