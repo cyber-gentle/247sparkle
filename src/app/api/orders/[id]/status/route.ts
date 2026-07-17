@@ -9,8 +9,9 @@ const updateStatusSchema = z.object({
 /**
  * POST /api/orders/[id]/status - Update order status
  */
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const userId = request.headers.get('x-user-id');
     const userRole = request.headers.get('x-user-role');
 
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     // Get the order
     const order = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { rider: true },
     });
 
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     // Update order status
     const updatedOrder = await prisma.order.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         status,
         updatedAt: new Date(),

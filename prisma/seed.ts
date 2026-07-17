@@ -1,18 +1,25 @@
 import { PrismaClient } from '@prisma/client';
 import { hash } from 'bcryptjs';
+import { randomBytes } from 'crypto';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('Starting database seed...');
 
-  // Create default admin
-  const adminPassword = await hash('admin123', 10);
-  
+  // Create default admin.
+  // Password comes from SEED_ADMIN_PASSWORD; if unset, a random one is
+  // generated and printed ONCE. Never hardcode credentials here — they end up
+  // in git and in every deployed database.
+  const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@247sparkle.com';
+  const generatedPassword = randomBytes(12).toString('base64url');
+  const adminPasswordPlain = process.env.SEED_ADMIN_PASSWORD || generatedPassword;
+  const adminPassword = await hash(adminPasswordPlain, 12);
+
   const admin = await prisma.user.create({
     data: {
       fullName: 'Admin User',
-      email: 'admin@247sparkle.com',
+      email: adminEmail,
       phone: '09039661885',
       passwordHash: adminPassword,
       role: 'ADMIN',
@@ -20,6 +27,11 @@ async function main() {
   });
 
   console.log('✓ Admin user created:', admin.email);
+  if (!process.env.SEED_ADMIN_PASSWORD) {
+    console.log(
+      `✓ Generated admin password (store it now, it will not be shown again): ${adminPasswordPlain}`
+    );
+  }
 
   // Create default pricing for laundry items
   const laundryItems = [
@@ -74,6 +86,13 @@ async function main() {
   // Demo customer + completed fumigation order + certificate.
   // Provides an end-to-end demonstrable record for the public certificate
   // verification page (/verify) and the customer certificates page.
+  // NEVER seeded in production — these accounts have a well-known password.
+  if (process.env.NODE_ENV === 'production' && process.env.SEED_DEMO_DATA !== 'true') {
+    console.log('✓ Skipping demo accounts (production seed)');
+    console.log('\n✨ Database seeded successfully!');
+    return;
+  }
+
   const demoPassword = await hash('password123', 10);
   const demoUser = await prisma.user.create({
     data: {
@@ -172,9 +191,6 @@ async function main() {
   console.log('✓ Demo rider created (rider@test.com / password123)');
 
   console.log('\n✨ Database seeded successfully!');
-  console.log('\nDefault admin credentials:');
-  console.log('Email: admin@247sparkle.com');
-  console.log('Password: admin123');
 }
 
 main()

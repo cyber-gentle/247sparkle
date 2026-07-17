@@ -28,6 +28,7 @@ export interface VerifyPaymentResponse {
     id: number;
     reference: string;
     amount: number;
+    currency?: string;
     paid_at: string;
     status: 'success' | 'failed' | 'abandoned';
     customer: {
@@ -67,14 +68,11 @@ export async function initializePayment(
   const amountInKobo = amountInNaira * 100;
 
   try {
-    const response = await paystackAPI.post<InitializePaymentResponse>(
-      '/transaction/initialize',
-      {
-        email,
-        amount: amountInKobo,
-        metadata: metadata || {},
-      }
-    );
+    const response = await paystackAPI.post<InitializePaymentResponse>('/transaction/initialize', {
+      email,
+      amount: amountInKobo,
+      metadata: metadata || {},
+    });
     return response.data;
   } catch (error: any) {
     throw new Error(
@@ -86,18 +84,14 @@ export async function initializePayment(
 /**
  * Verify a payment with Paystack
  */
-export async function verifyPayment(
-  reference: string
-): Promise<VerifyPaymentResponse> {
+export async function verifyPayment(reference: string): Promise<VerifyPaymentResponse> {
   try {
     const response = await paystackAPI.get<VerifyPaymentResponse>(
       `/transaction/verify/${reference}`
     );
     return response.data;
   } catch (error: any) {
-    throw new Error(
-      `Failed to verify payment: ${error.response?.data?.message || error.message}`
-    );
+    throw new Error(`Failed to verify payment: ${error.response?.data?.message || error.message}`);
   }
 }
 
@@ -113,9 +107,7 @@ export async function getNigerianBanks(): Promise<BankInfo[]> {
     }>('/bank?country=NG');
     return response.data.data;
   } catch (error: any) {
-    throw new Error(
-      `Failed to fetch banks: ${error.response?.data?.message || error.message}`
-    );
+    throw new Error(`Failed to fetch banks: ${error.response?.data?.message || error.message}`);
   }
 }
 
@@ -139,9 +131,7 @@ export async function resolveAccountName(
     });
     return response.data.data;
   } catch (error: any) {
-    throw new Error(
-      `Failed to resolve account: ${error.response?.data?.message || error.message}`
-    );
+    throw new Error(`Failed to resolve account: ${error.response?.data?.message || error.message}`);
   }
 }
 

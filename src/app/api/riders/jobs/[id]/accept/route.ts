@@ -9,8 +9,9 @@ const acceptJobSchema = z.object({
 /**
  * POST /api/riders/jobs/[id]/accept - Accept a job
  */
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const userId = request.headers.get('x-user-id');
     const userRole = request.headers.get('x-user-role');
 
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const { orderId } = acceptJobSchema.parse(body);
 
     // Verify the job ID matches the URL parameter
-    if (params.id !== orderId) {
+    if (id !== orderId) {
       return NextResponse.json({ error: 'Invalid job ID' }, { status: 400 });
     }
 

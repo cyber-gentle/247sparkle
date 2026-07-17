@@ -6,8 +6,16 @@ import { cookies } from 'next/headers';
 // reliance on Node's crypto module caused verifyToken() to fail inside the
 // middleware, breaking every protected route even with a valid token.
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRY = '7d';
+
+if (!JWT_SECRET) {
+  // Fail hard: a missing secret must never silently fall back to a known value,
+  // or anyone could forge tokens (including admin ones).
+  throw new Error(
+    'JWT_SECRET environment variable is not set. Generate one with `openssl rand -base64 48` and add it to .env.'
+  );
+}
 
 export type JWTPayload = {
   userId: string;

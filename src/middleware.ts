@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth';
+import { rateLimit } from '@/lib/rate-limit';
 
 // Routes a user may visit WITHOUT being authenticated (no auth_token cookie).
 const publicRoutes = [
@@ -26,9 +27,11 @@ const logoutPath = '/api/auth/logout';
 // the x-user-* headers — so admin-gated verbs on the same path (e.g. GET
 // /api/quotations) can enforce role checks inside the route handler.
 const publicApiRoutes = [
+  '/api/auth', // login/signup flows must be reachable without a session (rate-limited above)
   '/api/quotations', // POST (contact form) is public; GET is admin-gated in the handler
   '/api/certificates/verify', // public certificate lookup (no login required)
   '/api/pricing', // public price list for the booking flow
+  '/api/payment/webhook', // Paystack server-to-server; authenticated via HMAC signature in the handler
 ];
 
 const isPublicPath = (pathname: string) => {
@@ -49,6 +52,24 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get('auth_token')?.value;
   const isApiRoute = pathname.startsWith('/api/');
 
+  // Throttle credential endpoints (login/signup) per IP to blunt brute-force
+  // and enumeration attacks. Logout is exempt — it's harmless and clearing a
+  // session should never be blocked.
+  if (request.method === 'POST' && pathname.startsWith('/api/auth/') && pathname !== logoutPath) {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const { allowed, retryAfterSeconds } = rateLimit(
+      `auth:${ip}`,
+      10, // 10 attempts
+      60_000 // per minute
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many attempts. Please try again shortly.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+      );
+    }
+  }
+
   // API routes expect a JSON 401 (not an HTML redirect) so fetch callers can
   // react to it — e.g. by routing to the portal login page.
   const unauthorized = () =>
@@ -68,10 +89,11 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // A present-but-invalid token means the session is stale. For API routes and
-  // protected pages that's an auth failure; for public pages we ignore it so a
-  // visitor with an expired cookie can still browse the marketing site.
-  if (token && !payload && (isApiRoute || !isPublicPath(pathname))) {
+  // A present-but-invalid token means the session is stale. For protected
+  // routes that's an auth failure; for public paths (including /api/auth login
+  // endpoints) we treat the caller as anonymous — otherwise an expired cookie
+  // would lock users out of logging back in.
+  if (token && !payload && !isPublicPath(pathname)) {
     return unauthorized();
   }
 
@@ -100,7 +122,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|public).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|public).*)'],
 };
