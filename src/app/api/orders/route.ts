@@ -10,23 +10,24 @@ const createOrderSchema = z.object({
   deliveryAddress: z.string().optional(),
   scheduledDate: z.string().optional(), // YYYY-MM-DD
   scheduledTime: z.string().optional(), // HH:MM
-  items: z.array(z.object({
-    itemName: z.string(),
-    quantity: z.number().min(1),
-    isWhiteGroup: z.boolean().default(false),
-  })).optional(),
+  items: z
+    .array(
+      z.object({
+        itemName: z.string(),
+        quantity: z.number().min(1),
+        isWhiteGroup: z.boolean().default(false),
+      })
+    )
+    .optional(),
   propertyType: z.string().optional(), // For fumigation
 });
 
 export async function POST(request: NextRequest) {
   try {
     const userId = request.headers.get('x-user-id');
-    
+
     if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -38,10 +39,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!customer) {
-      return NextResponse.json(
-        { error: 'Customer not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
     }
 
     // Get user email for payment
@@ -50,17 +48,29 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Calculate total amount
+    // Calculate total amount server-side from the Pricing table. Any item the
+    // pricing table doesn't know is a hard error — silently skipping it would
+    // create underpriced (or zero-priced) orders.
     let totalAmount = 0;
-    
-    if (validatedData.serviceType === 'LAUNDRY' && validatedData.items) {
-      // Get pricing for each item
+    let pricedItems: {
+      itemName: string;
+      quantity: number;
+      isWhiteGroup: boolean;
+      unitPrice: number;
+      subtotal: number;
+    }[] = [];
+
+    if (validatedData.serviceType === 'LAUNDRY') {
+      if (!validatedData.items || validatedData.items.length === 0) {
+        return NextResponse.json(
+          { error: 'A laundry order must contain at least one item' },
+          { status: 400 }
+        );
+      }
+
       for (const item of validatedData.items) {
         const pricing = await prisma.pricing.findFirst({
           where: {
@@ -69,12 +79,21 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        if (pricing) {
-          totalAmount += pricing.unitPrice * item.quantity;
+        if (!pricing) {
+          return NextResponse.json({ error: `Unknown item: ${item.itemName}` }, { status: 400 });
         }
+
+        const subtotal = pricing.unitPrice * item.quantity;
+        totalAmount += subtotal;
+        pricedItems.push({
+          itemName: item.itemName,
+          quantity: item.quantity,
+          isWhiteGroup: item.isWhiteGroup,
+          unitPrice: pricing.unitPrice,
+          subtotal,
+        });
       }
     } else if (validatedData.serviceType === 'FUMIGATION') {
-      // Get fumigation pricing
       const pricing = await prisma.pricing.findFirst({
         where: {
           serviceType: 'FUMIGATION',
@@ -82,9 +101,28 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      if (pricing) {
-        totalAmount = pricing.unitPrice;
+      if (!pricing) {
+        return NextResponse.json(
+          { error: 'Unknown property type for fumigation' },
+          { status: 400 }
+        );
       }
+
+      totalAmount = pricing.unitPrice;
+    } else {
+      // HOME_CLEANING / OFFICE_CLEANING have no pricing rows — they're
+      // quotation-based. Refuse instead of creating an unpayable ₦0 order.
+      return NextResponse.json(
+        {
+          error:
+            'Cleaning services are priced per request. Please use the contact page to request a quotation.',
+        },
+        { status: 400 }
+      );
+    }
+
+    if (totalAmount <= 0) {
+      return NextResponse.json({ error: 'Order total could not be determined' }, { status: 400 });
     }
 
     // Create order
@@ -97,18 +135,12 @@ export async function POST(request: NextRequest) {
         pickupOption: validatedData.pickupOption,
         pickupAddress: validatedData.pickupAddress,
         deliveryAddress: validatedData.deliveryAddress,
-        scheduledDate: validatedData.scheduledDate ? new Date(validatedData.scheduledDate) : undefined,
+        scheduledDate: validatedData.scheduledDate
+          ? new Date(validatedData.scheduledDate)
+          : undefined,
         scheduledTime: validatedData.scheduledTime,
         totalAmount,
-        items: validatedData.items ? {
-          create: validatedData.items.map(item => ({
-            itemName: item.itemName,
-            quantity: item.quantity,
-            isWhiteGroup: item.isWhiteGroup,
-            unitPrice: 0, // Will be fetched from pricing
-            subtotal: 0,
-          })),
-        } : undefined,
+        items: pricedItems.length > 0 ? { create: pricedItems } : undefined,
       },
       include: {
         items: true,
@@ -144,7 +176,7 @@ export async function POST(request: NextRequest) {
       );
     } catch (paymentError: any) {
       console.error('Payment initialization error:', paymentError);
-      
+
       // Return order created but with payment error
       return NextResponse.json(
         {
@@ -153,7 +185,7 @@ export async function POST(request: NextRequest) {
             id: order.id,
             totalAmount: order.totalAmount,
           },
-          error: paymentError.message,
+          error: 'Payment initialization failed. You can retry payment from the order page.',
         },
         { status: 202 }
       );
@@ -168,10 +200,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(
-      { error: 'Failed to create order' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to create order' }, { status: 500 });
   }
 }
 
@@ -181,12 +210,9 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const userId = request.headers.get('x-user-id');
-    
+
     if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const customer = await prisma.customer.findUnique({
@@ -194,10 +220,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!customer) {
-      return NextResponse.json(
-        { error: 'Customer not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
     }
 
     const orders = await prisma.order.findMany({
@@ -220,15 +243,9 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json(
-      { orders },
-      { status: 200 }
-    );
+    return NextResponse.json({ orders }, { status: 200 });
   } catch (error: any) {
     console.error('Get orders error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch orders' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
   }
 }

@@ -25,34 +25,41 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Rider not found' }, { status: 404 });
     }
 
-    if (validatedData.amount > rider.walletBalance) {
+    // Deduct atomically with a guarded decrement: the WHERE clause re-checks
+    // the balance inside the transaction, so two concurrent requests can't
+    // both pass a stale balance check and overdraw the wallet.
+    const withdrawal = await prisma.$transaction(async (tx) => {
+      const deducted = await tx.rider.updateMany({
+        where: {
+          id: rider.id,
+          walletBalance: { gte: validatedData.amount },
+        },
+        data: {
+          walletBalance: { decrement: validatedData.amount },
+        },
+      });
+
+      if (deducted.count === 0) {
+        return null; // insufficient balance
+      }
+
+      return tx.withdrawalRequest.create({
+        data: {
+          riderId: rider.id,
+          amount: validatedData.amount,
+          status: 'PENDING',
+        },
+      });
+    });
+
+    if (!withdrawal) {
       return NextResponse.json({ error: 'Insufficient balance' }, { status: 400 });
     }
 
-    // Create withdrawal request
-    const withdrawal = await prisma.withdrawalRequest.create({
-      data: {
-        riderId: rider.id,
-        amount: validatedData.amount,
-        status: 'PENDING',
-      },
-    });
-
-    // Deduct from wallet
-    await prisma.rider.update({
-      where: { id: rider.id },
-      data: {
-        walletBalance: rider.walletBalance - validatedData.amount,
-      },
-    });
-
     return NextResponse.json({ withdrawal }, { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Withdrawal request error:', error);
-    return NextResponse.json(
-      { error: error.message || 'Failed to create withdrawal request' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to create withdrawal request' }, { status: 500 });
   }
 }
 

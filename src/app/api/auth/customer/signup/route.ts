@@ -4,16 +4,18 @@ import { z } from 'zod';
 import prisma from '@/lib/db';
 import { signToken, setAuthCookie } from '@/lib/auth';
 
-const signupSchema = z.object({
-  fullName: z.string().min(2, 'Full name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  phone: z.string().min(10, 'Phone number must be at least 10 characters'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-});
+const signupSchema = z
+  .object({
+    fullName: z.string().min(2, 'Full name must be at least 2 characters'),
+    email: z.string().email('Invalid email address'),
+    phone: z.string().min(10, 'Phone number must be at least 10 characters'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,10 +30,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingUser) {
-      return NextResponse.json(
-        { error: 'Email already registered' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Email already registered' }, { status: 400 });
     }
 
     // Hash password
@@ -71,7 +70,6 @@ export async function POST(request: NextRequest) {
           email: user.email,
           phone: user.phone,
         },
-        token,
       },
       { status: 201 }
     );
@@ -94,9 +92,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(
-      { error: 'Signup failed' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Signup failed' }, { status: 500 });
   }
 }

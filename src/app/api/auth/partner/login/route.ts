@@ -21,27 +21,25 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user || user.role !== 'PARTNER') {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+    }
+
+    // Verify password FIRST — revealing approval status before proving
+    // knowledge of the password would let anyone enumerate partner accounts.
+    const isValidPassword = await compare(validatedData.password, user.passwordHash);
+
+    if (!isValidPassword) {
+      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
     // Check partner approval status
     if (user.partner?.approvalStatus !== 'APPROVED') {
       return NextResponse.json(
-        { error: 'Your partner account is pending approval or has been suspended. Please contact support.' },
+        {
+          error:
+            'Your partner account is pending approval or has been suspended. Please contact support.',
+        },
         { status: 403 }
-      );
-    }
-
-    // Verify password
-    const isValidPassword = await compare(validatedData.password, user.passwordHash);
-
-    if (!isValidPassword) {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
       );
     }
 
@@ -61,7 +59,6 @@ export async function POST(request: NextRequest) {
           email: user.email,
           role: user.role,
         },
-        token,
       },
       { status: 200 }
     );
@@ -84,9 +81,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(
-      { error: 'Login failed' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Login failed' }, { status: 500 });
   }
 }
