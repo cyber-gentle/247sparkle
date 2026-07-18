@@ -1,13 +1,14 @@
-// This is your Prisma schema file (SQLite-compatible for local development)
+// Prisma schema — PostgreSQL (Neon in production; use a Neon dev branch or
+// local Postgres for development).
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider      = "prisma-client-js"
-  binaryTargets = ["native", "debian-openssl-3.0.x", "windows"]
+  binaryTargets = ["native", "rhel-openssl-3.0.x", "windows"]
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

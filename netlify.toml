@@ -1,0 +1,15 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Required environment variables (set in Netlify UI → Site settings → Environment):
+#   DATABASE_URL         — Neon pooled connection string (…-pooler.…neon.tech, sslmode=require)
+#   JWT_SECRET           — openssl rand -base64 48
+#   PAYSTACK_SECRET_KEY  — live secret key
+#   PAYSTACK_PUBLIC_KEY  — live public key
+#   NEXT_PUBLIC_SITE_URL — https://<your-domain>
+#   NEXT_PUBLIC_API_URL  — https://<your-domain>/api
+#   SEED_ADMIN_PASSWORD  — strong admin password (used once, by the seed)
