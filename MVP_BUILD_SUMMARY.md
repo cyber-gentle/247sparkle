@@ -273,15 +273,15 @@ Cookie: auth_token=jwt_token_here
 
 ### Admin User (from seed)
 - Email: admin@247sparkle.com
-- Password: admin123
+- Password: <set via SEED_ADMIN_PASSWORD (or printed once by the seed)>
 
 ### Test Customer (for manual testing)
 - Email: customer@test.com
-- Password: password123
+- Password: <dev-seed demo password — dev/demo databases only, never seeded in production>
 
 ### Test Rider (for manual testing)
 - Email: rider@test.com
-- Password: password123
+- Password: <dev-seed demo password — dev/demo databases only, never seeded in production>
 
 ## Performance Metrics
 

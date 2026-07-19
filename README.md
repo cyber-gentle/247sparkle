@@ -103,6 +103,6 @@ After running the app, open `http://localhost:4028/verify` and test with:
 
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | admin@247sparkle.com | admin123 |
-| Customer | customer@test.com | password123 |
-| Rider (approved) | rider@test.com | password123 |
+| Admin | admin@247sparkle.com | <set via SEED_ADMIN_PASSWORD (or printed once by the seed)> |
+| Customer | customer@test.com | <dev-seed demo password — dev/demo databases only, never seeded in production> |
+| Rider (approved) | rider@test.com | <dev-seed demo password — dev/demo databases only, never seeded in production> |

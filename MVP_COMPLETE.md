@@ -399,7 +399,7 @@ ef7710e - Previous work
 
 ## ✉️ Important Notes
 
-1. **Default Admin**: admin@247sparkle.com / admin123
+1. **Default Admin**: admin@247sparkle.com / <set via SEED_ADMIN_PASSWORD (or printed once by the seed)>
 2. **Paystack Test Mode**: Use test keys from dashboard
 3. **Database**: Must be PostgreSQL (not SQLite)
 4. **Node Version**: Requires Node 18+

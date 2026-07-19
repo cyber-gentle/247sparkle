@@ -87,6 +87,13 @@ export default function CustomerNewOrderPage() {
   });
 
   const onStep1Submit = (data: Step1Data) => {
+    // Home cleaning is quotation-based (no fixed pricing), so it goes through
+    // the contact form instead of checkout — the orders API rejects it too.
+    if (data.serviceType === 'HOME_CLEANING') {
+      toast.info('Home cleaning is priced per request — please request a quotation.');
+      router.push('/contact');
+      return;
+    }
     setOrderSummary((prev) => ({
       ...prev,
       serviceType: data.serviceType,

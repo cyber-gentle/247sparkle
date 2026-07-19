@@ -28,7 +28,7 @@ Visit: **http://localhost:4028**
 
 | Role | Email | Password | Login URL |
 |------|-------|----------|-----------|
-| Admin | admin@247sparkle.com | admin123 | `/admin/login` |
+| Admin | admin@247sparkle.com | <set via SEED_ADMIN_PASSWORD (or printed once by the seed)> | `/admin/login` |
 
 ---
 

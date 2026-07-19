@@ -41,8 +41,8 @@ npm run dev -- -p 3000
    - Full Name: "Test Customer"
    - Email: "customer@test.com"
    - Phone: "09012345678"
-   - Password: "password123"
-   - Confirm: "password123"
+   - Password: "<dev-seed demo password — dev/demo databases only, never seeded in production>"
+   - Confirm: "<dev-seed demo password — dev/demo databases only, never seeded in production>"
 3. Click "Create Customer Account"
 4. **Expected**: Redirects to `/customer/login` with success toast
 
@@ -50,7 +50,7 @@ npm run dev -- -p 3000
 1. Navigate to `http://localhost:3000/customer/login`
 2. Enter credentials:
    - Email: "customer@test.com"
-   - Password: "password123"
+   - Password: "<dev-seed demo password — dev/demo databases only, never seeded in production>"
 3. Click "Login"
 4. **Expected**: 
    - Sets `auth_token` cookie
@@ -86,13 +86,13 @@ npm run dev -- -p 3000
    - Full Name: "Test Rider"
    - Email: "rider@test.com"
    - Phone: "09087654321"
-   - Password: "password123"
+   - Password: "<dev-seed demo password — dev/demo databases only, never seeded in production>"
    - Bank Details (dummy values acceptable)
 3. Click "Sign Up as Rider"
 4. **Expected**: Redirects to rider login (approval pending)
 
 #### 3.2 Admin Approval of Rider
-1. Using admin credentials (from seed: admin@247sparkle.com/admin123):
+1. Using admin credentials (from seed: admin@247sparkle.com/<set via SEED_ADMIN_PASSWORD (or printed once by the seed)>):
    - POST to `/api/admin/riders/{riderId}`
    - Body: `{ "action": "APPROVE" }`
 2. **Expected**: Rider now has `approvalStatus='APPROVED'`
@@ -101,7 +101,7 @@ npm run dev -- -p 3000
 1. Navigate to `http://localhost:3000/rider/login`
 2. Enter rider credentials:
    - Email: "rider@test.com"
-   - Password: "password123"
+   - Password: "<dev-seed demo password — dev/demo databases only, never seeded in production>"
 3. Click "Login"
 4. **Expected**: Redirects to `/rider/dashboard`
 

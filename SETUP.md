@@ -91,7 +91,7 @@ npm run db:seed
 
 **Default Admin Credentials:**
 - Email: `admin@247sparkle.com`
-- Password: `admin123`
+- Password: `<set via SEED_ADMIN_PASSWORD (or printed once by the seed)>`
 
 ## Running the Application
 

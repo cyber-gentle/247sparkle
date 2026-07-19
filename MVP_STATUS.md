@@ -182,7 +182,7 @@
 ### Default Credentials (after seed)
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | admin@247sparkle.com | admin123 |
+| Admin | admin@247sparkle.com | <set via SEED_ADMIN_PASSWORD (or printed once by the seed)> |
 
 ---
 
