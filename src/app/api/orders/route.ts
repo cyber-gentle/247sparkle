@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/db';
+import { koboToNaira, nairaToKobo } from '@/lib/money';
 import { initializePayment } from '@/lib/paystack';
 
 const createOrderSchema = z.object({
@@ -54,13 +55,15 @@ export async function POST(request: NextRequest) {
     // Calculate total amount server-side from the Pricing table. Any item the
     // pricing table doesn't know is a hard error — silently skipping it would
     // create underpriced (or zero-priced) orders.
-    let totalAmount = 0;
+    let totalKobo = 0;
     const pricedItems: {
       itemName: string;
       quantity: number;
       isWhiteGroup: boolean;
       unitPrice: number;
+      unitPriceKobo: number;
       subtotal: number;
+      subtotalKobo: number;
     }[] = [];
 
     if (validatedData.serviceType === 'LAUNDRY') {
@@ -83,14 +86,17 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: `Unknown item: ${item.itemName}` }, { status: 400 });
         }
 
-        const subtotal = pricing.unitPrice * item.quantity;
-        totalAmount += subtotal;
+        const unitPriceKobo = pricing.unitPriceKobo || nairaToKobo(pricing.unitPrice);
+        const subtotalKobo = unitPriceKobo * item.quantity;
+        totalKobo += subtotalKobo;
         pricedItems.push({
           itemName: item.itemName,
           quantity: item.quantity,
           isWhiteGroup: item.isWhiteGroup,
-          unitPrice: pricing.unitPrice,
-          subtotal,
+          unitPrice: koboToNaira(unitPriceKobo),
+          unitPriceKobo,
+          subtotal: koboToNaira(subtotalKobo),
+          subtotalKobo,
         });
       }
     } else if (validatedData.serviceType === 'FUMIGATION') {
@@ -108,7 +114,7 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      totalAmount = pricing.unitPrice;
+      totalKobo = pricing.unitPriceKobo || nairaToKobo(pricing.unitPrice);
     } else {
       // HOME_CLEANING / OFFICE_CLEANING have no pricing rows — they're
       // quotation-based. Refuse instead of creating an unpayable ₦0 order.
@@ -121,7 +127,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (totalAmount <= 0) {
+    if (totalKobo <= 0) {
       return NextResponse.json({ error: 'Order total could not be determined' }, { status: 400 });
     }
 
@@ -139,7 +145,8 @@ export async function POST(request: NextRequest) {
           ? new Date(validatedData.scheduledDate)
           : undefined,
         scheduledTime: validatedData.scheduledTime,
-        totalAmount,
+        totalAmount: koboToNaira(totalKobo),
+        totalKobo,
         items: pricedItems.length > 0 ? { create: pricedItems } : undefined,
       },
       include: {
@@ -149,7 +156,7 @@ export async function POST(request: NextRequest) {
 
     // Initialize Paystack payment
     try {
-      const paystackResponse = await initializePayment(user.email, totalAmount, {
+      const paystackResponse = await initializePayment(user.email, totalKobo, {
         orderId: order.id,
         customerId: customer.id,
       });

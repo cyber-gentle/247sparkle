@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     // Fetch available orders (not yet assigned to a rider, payment completed)
     const availableJobs = await prisma.order.findMany({
       where: {
-        status: { in: ['PENDING', 'RIDER_ASSIGNED'] },
+        status: 'PAID_UNASSIGNED',
         paymentStatus: 'PAID',
         riderId: null, // No rider assigned yet
       },

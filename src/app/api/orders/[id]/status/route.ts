@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/db';
+import { transitionPaidOrder } from '@/lib/order-integrity';
+import { canTransitionOrder, type OrderStatus } from '@/lib/order-state';
 
 const updateStatusSchema = z.object({
-  status: z.enum(['RIDER_ASSIGNED', 'PICKED_UP', 'IN_CLEANING', 'OUT_FOR_DELIVERY', 'COMPLETED']),
+  status: z.enum(['PICKED_UP', 'IN_CLEANING', 'OUT_FOR_DELIVERY', 'COMPLETED']),
 });
 
 /**
@@ -41,30 +43,26 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Update order status
-    const updatedOrder = await prisma.order.update({
-      where: { id },
-      data: {
-        status,
-        updatedAt: new Date(),
-      },
-      include: {
-        customer: {
-          include: {
-            user: {
-              select: { fullName: true, email: true, phone: true },
-            },
-          },
-        },
-        rider: {
-          include: {
-            user: {
-              select: { fullName: true, email: true, phone: true },
-            },
-          },
-        },
-      },
+    if (!canTransitionOrder(order.status, status)) {
+      return NextResponse.json(
+        { error: `Invalid status transition from ${order.status} to ${status}` },
+        { status: 409 }
+      );
+    }
+
+    const updatedOrder = await transitionPaidOrder({
+      orderId: id,
+      currentStatus: order.status,
+      nextStatus: status as OrderStatus,
+      actorUserId: userId,
     });
+
+    if (!updatedOrder) {
+      return NextResponse.json(
+        { error: 'Order changed before status could be updated' },
+        { status: 409 }
+      );
+    }
 
     return NextResponse.json(
       {

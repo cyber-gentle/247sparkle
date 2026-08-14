@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/db';
+import { assignRiderToPaidOrder } from '@/lib/order-integrity';
 
 const acceptJobSchema = z.object({
   orderId: z.string(),
@@ -46,55 +47,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: 'Rider is not available' }, { status: 400 });
     }
 
-    // Get the order
-    const order = await prisma.order.findUnique({
-      where: { id: orderId },
-      include: { customer: true },
+    const updatedOrder = await assignRiderToPaidOrder({
+      orderId,
+      riderId: rider.id,
+      actorUserId: userId,
     });
 
-    if (!order) {
-      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    if (!updatedOrder) {
+      return NextResponse.json({ error: 'Order is no longer available' }, { status: 409 });
     }
-
-    // Check if order is still available
-    if (order.riderId !== null || order.status === 'COMPLETED' || order.paymentStatus !== 'PAID') {
-      return NextResponse.json({ error: 'Order is no longer available' }, { status: 400 });
-    }
-
-    // Assign rider to order and update status
-    const updatedOrder = await prisma.order.update({
-      where: { id: orderId },
-      data: {
-        riderId: rider.id,
-        status: 'RIDER_ASSIGNED',
-      },
-      include: {
-        customer: {
-          include: {
-            user: {
-              select: { fullName: true, phone: true, email: true },
-            },
-          },
-        },
-        rider: {
-          include: {
-            user: {
-              select: { fullName: true, phone: true, email: true },
-            },
-          },
-        },
-      },
-    });
-
-    // Create commission record for the rider
-    await prisma.commission.create({
-      data: {
-        riderId: rider.id,
-        orderId: orderId,
-        amount: order.totalAmount * 0.2,
-        status: 'PENDING',
-      },
-    });
 
     return NextResponse.json(
       {

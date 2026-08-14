@@ -1,5 +1,18 @@
 import { NextResponse, NextRequest } from 'next/server';
+import { z } from 'zod';
 import prisma from '@/lib/db';
+import { nairaToKobo } from '@/lib/money';
+
+const pricingUpdatesSchema = z.object({
+  updates: z
+    .array(
+      z.object({
+        id: z.string().min(1),
+        unitPrice: z.number().finite().positive(),
+      })
+    )
+    .min(1),
+});
 
 /**
  * GET /api/pricing - Get all pricing
@@ -25,22 +38,17 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized - Admin only' }, { status: 403 });
     }
 
-    const body = await request.json();
-    const { updates } = body;
-
-    if (!Array.isArray(updates) || updates.length === 0) {
-      return NextResponse.json(
-        { error: 'Body must include updates array with id, unitPrice' },
-        { status: 400 }
-      );
-    }
+    const { updates } = pricingUpdatesSchema.parse(await request.json());
 
     // Update each pricing
     const updatedPricing = await Promise.all(
-      updates.map(async (update: any) => {
+      updates.map(async (update) => {
         return await prisma.pricing.update({
           where: { id: update.id },
-          data: { unitPrice: update.unitPrice },
+          data: {
+            unitPrice: update.unitPrice,
+            unitPriceKobo: nairaToKobo(update.unitPrice),
+          },
         });
       })
     );
@@ -49,8 +57,14 @@ export async function PUT(request: NextRequest) {
       { message: 'Pricing updated successfully', pricing: updatedPricing },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error('Update pricing error:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid pricing update', details: error.issues },
+        { status: 400 }
+      );
+    }
     return NextResponse.json({ error: 'Failed to update pricing' }, { status: 500 });
   }
 }

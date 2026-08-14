@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const order = await prisma.order.findFirst({
+    const order = await prisma.order.findUnique({
       where: { paystackReference: event.data.reference },
     });
 
@@ -62,12 +62,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ received: true }, { status: 200 });
     }
 
-    const result = await confirmOrderPayment(order, {
-      reference: event.data.reference,
-      amount: event.data.amount ?? -1,
-      currency: event.data.currency,
-      status: event.data.status ?? 'success',
-    });
+    const result = await confirmOrderPayment(
+      order,
+      {
+        reference: event.data.reference,
+        amount: event.data.amount ?? -1,
+        currency: event.data.currency,
+        status: event.data.status ?? 'success',
+        payloadHash: crypto.createHash('sha256').update(rawBody).digest('hex'),
+      },
+      'charge.success'
+    );
 
     if (!result.ok) {
       // Mismatch is logged inside confirmOrderPayment. Acknowledge so Paystack

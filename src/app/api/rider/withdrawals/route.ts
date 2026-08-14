@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/db';
+import { nairaToKobo } from '@/lib/money';
 
 const withdrawalSchema = z.object({
   amount: z.number().positive(),
@@ -16,6 +17,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const validatedData = withdrawalSchema.parse(body);
+    const amountKobo = nairaToKobo(validatedData.amount);
 
     const rider = await prisma.rider.findUnique({
       where: { userId },
@@ -32,9 +34,10 @@ export async function POST(request: NextRequest) {
       const deducted = await tx.rider.updateMany({
         where: {
           id: rider.id,
-          walletBalance: { gte: validatedData.amount },
+          walletBalanceKobo: { gte: amountKobo },
         },
         data: {
+          walletBalanceKobo: { decrement: amountKobo },
           walletBalance: { decrement: validatedData.amount },
         },
       });
@@ -43,13 +46,26 @@ export async function POST(request: NextRequest) {
         return null; // insufficient balance
       }
 
-      return tx.withdrawalRequest.create({
+      const withdrawalRequest = await tx.withdrawalRequest.create({
         data: {
           riderId: rider.id,
           amount: validatedData.amount,
+          amountKobo,
           status: 'PENDING',
         },
       });
+
+      await tx.auditLog.create({
+        data: {
+          action: 'WITHDRAWAL_REQUESTED',
+          entityType: 'WITHDRAWAL_REQUEST',
+          entityId: withdrawalRequest.id,
+          userId,
+          changes: JSON.stringify({ amountKobo }),
+        },
+      });
+
+      return withdrawalRequest;
     });
 
     if (!withdrawal) {

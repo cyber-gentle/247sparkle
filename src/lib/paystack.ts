@@ -62,15 +62,17 @@ export interface ResolvedAccount {
  */
 export async function initializePayment(
   email: string,
-  amountInNaira: number,
+  amountKobo: number,
   metadata?: Record<string, any>
 ): Promise<InitializePaymentResponse> {
-  const amountInKobo = amountInNaira * 100;
+  if (!Number.isSafeInteger(amountKobo) || amountKobo <= 0) {
+    throw new Error('Payment amount must be a positive integer kobo value');
+  }
 
   try {
     const response = await paystackAPI.post<InitializePaymentResponse>('/transaction/initialize', {
       email,
-      amount: amountInKobo,
+      amount: amountKobo,
       metadata: metadata || {},
     });
     return response.data;

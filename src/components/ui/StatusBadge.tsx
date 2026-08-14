@@ -2,6 +2,7 @@ import React from 'react';
 
 export type OrderStatus =
   | 'pending'
+  | 'paid_unassigned'
   | 'rider_assigned'
   | 'picked_up'
   | 'in_cleaning'
@@ -18,6 +19,12 @@ export type OrderStatus =
 const STATUS_CONFIG: Record<OrderStatus, { label: string; bg: string; text: string; dot: string }> =
   {
     pending: { label: 'Pending', bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-400' },
+    paid_unassigned: {
+      label: 'Awaiting Rider Assignment',
+      bg: 'bg-sky-50',
+      text: 'text-sky-700',
+      dot: 'bg-sky-400',
+    },
     rider_assigned: {
       label: 'Rider Assigned',
       bg: 'bg-blue-50',

@@ -86,6 +86,7 @@ model Rider {
 
   // Wallet
   walletBalance    Float        @default(0)
+  walletBalanceKobo Int         @default(0)
 
   // Relations
   assignedOrders   Order[]
@@ -157,7 +158,9 @@ model Order {
 
   // Pricing
   totalAmount       Float
-  paystackReference String?
+  totalKobo         Int         @default(0)
+  paystackReference String?     @unique
+  paymentConfirmedAt DateTime?
 
   // Rider & Partner assignment
   riderId           String?
@@ -173,6 +176,7 @@ model Order {
 
   // Commissions
   commissions       Commission[]
+  paymentEvents     PaymentEvent[]
 
   // Quotations
   quotation         Quotation?
@@ -180,6 +184,7 @@ model Order {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([paymentStatus, riderId, status])
   @@map("orders")
 }
 
@@ -193,7 +198,9 @@ model OrderItem {
   isWhiteGroup Boolean @default(false)
   quantity    Int
   unitPrice   Float
+  unitPriceKobo Int   @default(0)
   subtotal    Float   // quantity * unitPrice
+  subtotalKobo Int    @default(0)
 
   createdAt DateTime @default(now())
 
@@ -206,6 +213,7 @@ model Pricing {
   serviceType   String  // LAUNDRY | HOME_CLEANING | OFFICE_CLEANING | FUMIGATION
   itemName      String  // For laundry items or fumigation property types
   unitPrice     Float
+  unitPriceKobo Int     @default(0)
   description   String?
 
   updatedAt DateTime @updatedAt
@@ -227,11 +235,13 @@ model Commission {
   partner   Partner?    @relation(fields: [partnerId], references: [id], onDelete: SetNull)
 
   amount    Float
+  amountKobo Int    @default(0)
   status    String  @default("PENDING") // PENDING | PAID | REJECTED
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([orderId, riderId])
   @@map("commissions")
 }
 
@@ -242,6 +252,7 @@ model WithdrawalRequest {
   rider     Rider   @relation(fields: [riderId], references: [id], onDelete: Cascade)
 
   amount    Float
+  amountKobo Int    @default(0)
   status    String  @default("PENDING") // PENDING | APPROVED | PAID | REJECTED
 
   requestedAt DateTime @default(now())
@@ -285,6 +296,7 @@ model Quotation {
   message     String?
 
   quotedPrice Float?
+  quotedPriceKobo Int?
   status      String    @default("NEW") // NEW | RESPONDED | CONVERTED | EXPIRED
 
   createdAt DateTime @default(now())
@@ -304,5 +316,23 @@ model AuditLog {
 
   createdAt DateTime @default(now())
 
+  @@index([entityType, entityId, createdAt])
   @@map("audit_logs")
+}
+
+// ============= PAYMENT EVENT LEDGER =============
+model PaymentEvent {
+  id          String   @id @default(cuid())
+  provider    String   @default("PAYSTACK")
+  reference   String
+  eventType   String
+  payloadHash String
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status      String   @default("PROCESSED")
+  processedAt DateTime @default(now())
+
+  @@unique([provider, reference])
+  @@index([orderId, processedAt])
+  @@map("payment_events")
 }

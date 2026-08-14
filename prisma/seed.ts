@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { hash } from 'bcryptjs';
 import { randomBytes } from 'crypto';
+import { nairaToKobo } from '../src/lib/money';
 
 const prisma = new PrismaClient();
 
@@ -53,6 +54,7 @@ async function main() {
         serviceType: 'LAUNDRY',
         itemName: item.itemName,
         unitPrice: item.unitPrice,
+        unitPriceKobo: nairaToKobo(item.unitPrice),
         description: `Laundry service for ${item.itemName}`,
       },
     });
@@ -76,6 +78,7 @@ async function main() {
         serviceType: 'FUMIGATION',
         itemName: item.itemName,
         unitPrice: item.unitPrice,
+        unitPriceKobo: nairaToKobo(item.unitPrice),
         description: `Fumigation service for ${item.itemName}`,
       },
     });
@@ -117,6 +120,8 @@ async function main() {
       pickupOption: 'ON_SITE',
       deliveryAddress: '12 Ochacho Avenue, Otukpo, Benue State',
       totalAmount: 35000,
+      totalKobo: nairaToKobo(35000),
+      paymentConfirmedAt: new Date('2026-04-24'),
       scheduledDate: new Date('2026-04-24'),
     },
   });
@@ -153,6 +158,8 @@ async function main() {
       pickupOption: 'ON_SITE',
       deliveryAddress: '45 Upu Road, Otukpo, Benue State',
       totalAmount: 20000,
+      totalKobo: nairaToKobo(20000),
+      paymentConfirmedAt: new Date('2026-05-02'),
       scheduledDate: new Date('2026-05-02'),
     },
   });
