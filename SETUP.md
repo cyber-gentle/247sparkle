@@ -1,8 +1,8 @@
-# 247 Sparkle MVP - Setup Guide
+# 247Sparkle MVP - Setup Guide
 
 ## Project Overview
 
-This is the MVP (Minimum Viable Product) for 247 Sparkle, an on-demand laundry and cleaning services platform. The platform includes:
+This is the MVP (Minimum Viable Product) for 247Sparkle, an on-demand laundry and cleaning services platform. The platform includes:
 
 - **Customer Portal**: Place orders, track deliveries, download fumigation certificates
 - **Rider Portal**: Accept delivery jobs, earn commissions

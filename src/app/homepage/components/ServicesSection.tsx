@@ -79,7 +79,8 @@ export default function ServicesSection() {
             One App, All Your Cleaning Needs
           </h2>
           <p className="text-gray-500 max-w-2xl mx-auto text-base leading-relaxed">
-            Whether it&apos;s laundry, your home, your office, or pest control — we handle everything with the same professional care and attention to detail.
+            Whether it&apos;s laundry, your home, your office, or pest control — we handle
+            everything with the same professional care and attention to detail.
           </p>
         </div>
 

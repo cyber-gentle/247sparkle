@@ -91,9 +91,7 @@ export default function RiderJobPage({ params: paramPromise }: RiderJobPageProps
         return;
       }
 
-      setOrder((prev) =>
-        prev ? { ...prev, status: newStatus } : null
-      );
+      setOrder((prev) => (prev ? { ...prev, status: newStatus } : null));
       toast.success(`Order marked as ${newStatus}`);
     } catch (error: any) {
       toast.error('Error updating order status');
@@ -170,7 +168,9 @@ export default function RiderJobPage({ params: paramPromise }: RiderJobPageProps
                 <h1 className="text-2xl font-bold">ORD-{order.id.slice(0, 6).toUpperCase()}</h1>
                 <p className="text-blue-100 mt-1">{order.serviceType.replace(/_/g, ' ')}</p>
               </div>
-              <span className={`px-3 py-1 rounded-full font-semibold text-sm ${getStatusBadgeColor(order.status)}`}>
+              <span
+                className={`px-3 py-1 rounded-full font-semibold text-sm ${getStatusBadgeColor(order.status)}`}
+              >
                 {order.status.replace(/_/g, ' ')}
               </span>
             </div>
@@ -195,9 +195,7 @@ export default function RiderJobPage({ params: paramPromise }: RiderJobPageProps
                       <div className="w-2 h-2 rounded-full bg-current" />
                     )}
                   </div>
-                  <p className="text-xs text-gray-600 text-center">
-                    {status.replace(/_/g, ' ')}
-                  </p>
+                  <p className="text-xs text-gray-600 text-center">{status.replace(/_/g, ' ')}</p>
                 </div>
               ))}
             </div>
@@ -213,10 +211,7 @@ export default function RiderJobPage({ params: paramPromise }: RiderJobPageProps
               </div>
               <div className="flex items-center gap-2">
                 <Phone size={16} className="text-gray-400" />
-                <a
-                  href={`tel:${order.customer.phone}`}
-                  className="text-blue-600 hover:underline"
-                >
+                <a href={`tel:${order.customer.phone}`} className="text-blue-600 hover:underline">
                   {order.customer.phone}
                 </a>
               </div>
@@ -272,7 +267,9 @@ export default function RiderJobPage({ params: paramPromise }: RiderJobPageProps
           <div className="px-6 py-6 space-y-4">
             <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
               <span className="text-gray-700 font-semibold">Total Amount</span>
-              <span className="text-2xl font-bold text-blue-600">₦{order.totalAmount.toLocaleString()}</span>
+              <span className="text-2xl font-bold text-blue-600">
+                ₦{order.totalAmount.toLocaleString()}
+              </span>
             </div>
 
             {/* Status Update Buttons */}
@@ -282,7 +279,9 @@ export default function RiderJobPage({ params: paramPromise }: RiderJobPageProps
                 <button
                   onClick={() =>
                     handleStatusUpdate(
-                      statusProgression[Math.min(currentStatusIndex + 1, statusProgression.length - 1)]
+                      statusProgression[
+                        Math.min(currentStatusIndex + 1, statusProgression.length - 1)
+                      ]
                     )
                   }
                   disabled={updatingStatus !== null}
@@ -296,7 +295,10 @@ export default function RiderJobPage({ params: paramPromise }: RiderJobPageProps
                   ) : (
                     <>
                       <CheckCircle size={18} />
-                      Mark as {statusProgression[Math.min(currentStatusIndex + 1, statusProgression.length - 1)].replace(/_/g, ' ')}
+                      Mark as{' '}
+                      {statusProgression[
+                        Math.min(currentStatusIndex + 1, statusProgression.length - 1)
+                      ].replace(/_/g, ' ')}
                     </>
                   )}
                 </button>
@@ -315,4 +317,3 @@ export default function RiderJobPage({ params: paramPromise }: RiderJobPageProps
     </main>
   );
 }
-

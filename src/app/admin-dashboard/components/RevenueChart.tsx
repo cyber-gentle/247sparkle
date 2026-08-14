@@ -47,7 +47,9 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
         </div>
         <div className="flex items-center justify-between gap-4">
           <span className="text-xs text-gray-500">Orders</span>
-          <span className="text-sm font-bold text-[#F5C200] font-mono-nums">{payload[1]?.value}</span>
+          <span className="text-sm font-bold text-[#F5C200] font-mono-nums">
+            {payload[1]?.value}
+          </span>
         </div>
       </div>
     </div>

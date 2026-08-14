@@ -3,7 +3,17 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { MapPin, Phone, Clock, ArrowRight, Loader, AlertCircle, User, DollarSign, LogOut } from 'lucide-react';
+import {
+  MapPin,
+  Phone,
+  Clock,
+  ArrowRight,
+  Loader,
+  AlertCircle,
+  User,
+  DollarSign,
+  LogOut,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import AppLogo from '@/components/ui/AppLogo';
 
@@ -71,7 +81,7 @@ export default function RiderDashboardPage() {
       }
 
       toast.success('Job accepted! Navigate to it for details.');
-      setJobs(jobs.filter(j => j.id !== jobId));
+      setJobs(jobs.filter((j) => j.id !== jobId));
     } catch (error: any) {
       toast.error('Error accepting job');
       console.error(error);
@@ -86,13 +96,22 @@ export default function RiderDashboardPage() {
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center gap-4">
           <AppLogo size={32} src="/images/logo.jpeg" />
           <h1 className="text-xl font-bold text-[#1A0A5E] flex-1">Available Jobs</h1>
-          <Link href="/rider/earnings" className="text-sm font-semibold text-[#1A0A5E] hover:underline flex items-center gap-1">
+          <Link
+            href="/rider/earnings"
+            className="text-sm font-semibold text-[#1A0A5E] hover:underline flex items-center gap-1"
+          >
             <DollarSign size={16} /> Earnings
           </Link>
-          <Link href="/rider/profile" className="text-sm font-semibold text-[#1A0A5E] hover:underline flex items-center gap-1">
+          <Link
+            href="/rider/profile"
+            className="text-sm font-semibold text-[#1A0A5E] hover:underline flex items-center gap-1"
+          >
             <User size={16} /> Profile
           </Link>
-          <button onClick={handleLogout} className="text-sm font-semibold text-red-600 hover:underline flex items-center gap-1">
+          <button
+            onClick={handleLogout}
+            className="text-sm font-semibold text-red-600 hover:underline flex items-center gap-1"
+          >
             <LogOut size={16} /> Sign Out
           </button>
         </div>
@@ -102,7 +121,9 @@ export default function RiderDashboardPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Available Jobs</h1>
           <p className="text-gray-600">
-            {isLoading ? 'Loading jobs...' : `${jobs.length} job${jobs.length !== 1 ? 's' : ''} available`}
+            {isLoading
+              ? 'Loading jobs...'
+              : `${jobs.length} job${jobs.length !== 1 ? 's' : ''} available`}
           </p>
         </div>
 
@@ -166,9 +187,7 @@ export default function RiderDashboardPage() {
                     <Clock size={12} className="inline mr-1" />
                     {job.itemCount} item{job.itemCount !== 1 ? 's' : ''}
                   </div>
-                  <div>
-                    Posted {new Date(job.createdAt).toLocaleDateString()}
-                  </div>
+                  <div>Posted {new Date(job.createdAt).toLocaleDateString()}</div>
                 </div>
 
                 {/* Action */}
@@ -197,4 +216,3 @@ export default function RiderDashboardPage() {
     </main>
   );
 }
-

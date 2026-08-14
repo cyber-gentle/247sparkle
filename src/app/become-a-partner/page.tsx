@@ -15,7 +15,7 @@ export default function BecomeAPartnerPage() {
               Partner Program
             </p>
             <h1 className="text-3xl font-extrabold md:text-4xl">
-              Join the 247 Sparkle Service Network
+              Join the 247Sparkle Service Network
             </h1>
             <p className="mt-3 max-w-3xl text-sm text-white/80">
               Whether you run a laundry business or want to earn as a delivery rider, we have a

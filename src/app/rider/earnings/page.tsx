@@ -3,7 +3,17 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, DollarSign, TrendingUp, Calendar, Download, Wallet, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import {
+  ArrowLeft,
+  DollarSign,
+  TrendingUp,
+  Calendar,
+  Download,
+  Wallet,
+  CheckCircle2,
+  Clock,
+  XCircle,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import AppLogo from '@/components/ui/AppLogo';
 
@@ -100,11 +110,11 @@ export default function RiderEarningsPage() {
   };
 
   const totalEarnings = commissions
-    .filter(c => c.status === 'PAID')
+    .filter((c) => c.status === 'PAID')
     .reduce((sum, c) => sum + c.amount, 0);
 
   const pendingEarnings = commissions
-    .filter(c => c.status === 'PENDING')
+    .filter((c) => c.status === 'PENDING')
     .reduce((sum, c) => sum + c.amount, 0);
 
   const formatDate = (dateString: string) => {
@@ -117,10 +127,14 @@ export default function RiderEarningsPage() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'PAID': return <CheckCircle2 size={16} className="text-green-600" />;
-      case 'PENDING': return <Clock size={16} className="text-yellow-600" />;
-      case 'REJECTED': return <XCircle size={16} className="text-red-600" />;
-      default: return null;
+      case 'PAID':
+        return <CheckCircle2 size={16} className="text-green-600" />;
+      case 'PENDING':
+        return <Clock size={16} className="text-yellow-600" />;
+      case 'REJECTED':
+        return <XCircle size={16} className="text-red-600" />;
+      default:
+        return null;
     }
   };
 
@@ -229,7 +243,10 @@ export default function RiderEarningsPage() {
           ) : (
             <div className="space-y-2">
               {commissions.map((commission) => (
-                <div key={commission.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                <div
+                  key={commission.id}
+                  className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
+                >
                   <div className="flex items-center gap-3">
                     {getStatusIcon(commission.status)}
                     <div>
@@ -242,7 +259,9 @@ export default function RiderEarningsPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-[#1A0A5E]">₦{commission.amount.toLocaleString()}</p>
+                    <p className="font-bold text-[#1A0A5E]">
+                      ₦{commission.amount.toLocaleString()}
+                    </p>
                     <p className="text-xs text-gray-500">{commission.status}</p>
                   </div>
                 </div>
@@ -259,14 +278,20 @@ export default function RiderEarningsPage() {
           ) : (
             <div className="space-y-2">
               {withdrawals.map((withdrawal) => (
-                <div key={withdrawal.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                <div
+                  key={withdrawal.id}
+                  className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
+                >
                   <div className="flex items-center gap-3">
                     {getStatusIcon(withdrawal.status)}
                     <div>
-                      <p className="font-semibold text-[#1A0A5E]">₦{withdrawal.amount.toLocaleString()}</p>
+                      <p className="font-semibold text-[#1A0A5E]">
+                        ₦{withdrawal.amount.toLocaleString()}
+                      </p>
                       <p className="text-sm text-gray-500">
                         Requested: {formatDate(withdrawal.requestedAt)}
-                        {withdrawal.processedAt && ` • Processed: ${formatDate(withdrawal.processedAt)}`}
+                        {withdrawal.processedAt &&
+                          ` • Processed: ${formatDate(withdrawal.processedAt)}`}
                       </p>
                     </div>
                   </div>

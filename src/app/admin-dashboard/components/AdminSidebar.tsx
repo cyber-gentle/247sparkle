@@ -3,35 +3,97 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
-import { LayoutDashboard, ShoppingBag, Bike, Store, Users, DollarSign, FileText, MessageSquare, Tag, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  LayoutDashboard,
+  ShoppingBag,
+  Bike,
+  Store,
+  Users,
+  DollarSign,
+  FileText,
+  MessageSquare,
+  Tag,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import { toast } from 'sonner';
-
 
 const NAV_GROUPS = [
   {
     id: 'group-overview',
     label: 'Overview',
     items: [
-      { id: 'admin-nav-dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard', badge: null },
+      {
+        id: 'admin-nav-dashboard',
+        label: 'Dashboard',
+        icon: LayoutDashboard,
+        href: '/admin/dashboard',
+        badge: null,
+      },
     ],
   },
   {
     id: 'group-operations',
     label: 'Operations',
     items: [
-      { id: 'admin-nav-orders', label: 'Orders', icon: ShoppingBag, href: '/admin/orders', badge: '12' },
-      { id: 'admin-nav-riders', label: 'Riders', icon: Bike, href: '/admin/riders', badge: '3', badgeAlert: true },
-      { id: 'admin-nav-partners', label: 'Partners', icon: Store, href: '/admin/partners', badge: '2', badgeAlert: true },
-      { id: 'admin-nav-customers', label: 'Customers', icon: Users, href: '/admin/customers', badge: null },
+      {
+        id: 'admin-nav-orders',
+        label: 'Orders',
+        icon: ShoppingBag,
+        href: '/admin/orders',
+        badge: '12',
+      },
+      {
+        id: 'admin-nav-riders',
+        label: 'Riders',
+        icon: Bike,
+        href: '/admin/riders',
+        badge: '3',
+        badgeAlert: true,
+      },
+      {
+        id: 'admin-nav-partners',
+        label: 'Partners',
+        icon: Store,
+        href: '/admin/partners',
+        badge: '2',
+        badgeAlert: true,
+      },
+      {
+        id: 'admin-nav-customers',
+        label: 'Customers',
+        icon: Users,
+        href: '/admin/customers',
+        badge: null,
+      },
     ],
   },
   {
     id: 'group-finance',
     label: 'Finance & Content',
     items: [
-      { id: 'admin-nav-finance', label: 'Finance', icon: DollarSign, href: '/admin/finance', badge: null },
-      { id: 'admin-nav-certs', label: 'Certificates', icon: FileText, href: '/admin/certificates', badge: null },
-      { id: 'admin-nav-quotations', label: 'Quotations', icon: MessageSquare, href: '/admin/quotations', badge: '5' },
+      {
+        id: 'admin-nav-finance',
+        label: 'Finance',
+        icon: DollarSign,
+        href: '/admin/finance',
+        badge: null,
+      },
+      {
+        id: 'admin-nav-certs',
+        label: 'Certificates',
+        icon: FileText,
+        href: '/admin/certificates',
+        badge: null,
+      },
+      {
+        id: 'admin-nav-quotations',
+        label: 'Quotations',
+        icon: MessageSquare,
+        href: '/admin/quotations',
+        badge: '5',
+      },
       { id: 'admin-nav-pricing', label: 'Pricing', icon: Tag, href: '/admin/pricing', badge: null },
     ],
   },
@@ -59,7 +121,9 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
       }`}
     >
       {/* Logo */}
-      <div className={`flex items-center h-16 border-b border-white/10 px-4 ${collapsed ? 'justify-center' : 'gap-2.5'}`}>
+      <div
+        className={`flex items-center h-16 border-b border-white/10 px-4 ${collapsed ? 'justify-center' : 'gap-2.5'}`}
+      >
         <AppLogo size={32} />
         {!collapsed && (
           <div className="flex flex-col leading-none overflow-hidden">
@@ -67,7 +131,9 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
               <span className="text-[#F5C200]">247</span>
               <span className="text-[#CC0000]"> Sparkle</span>
             </span>
-            <span className="text-[9px] font-medium tracking-widest uppercase text-white/30">Admin Console</span>
+            <span className="text-[9px] font-medium tracking-widest uppercase text-white/30">
+              Admin Console
+            </span>
           </div>
         )}
       </div>
@@ -115,7 +181,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
                       )}
                       {collapsed && item.badge && item.badgeAlert && (
                         <span className="absolute top-1 right-1 w-2 h-2 bg-[#CC0000] rounded-full" />
-                )}
+                      )}
                     </Link>
                   </li>
                 );

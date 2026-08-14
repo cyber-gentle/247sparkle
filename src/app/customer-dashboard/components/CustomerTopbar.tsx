@@ -9,12 +9,31 @@ interface CustomerTopbarProps {
 }
 
 const NOTIFICATIONS = [
-  { id: 'notif-001', text: 'Your laundry order #ORD-2025-0047 is out for delivery', time: '12 mins ago', read: false },
-  { id: 'notif-002', text: 'Fumigation certificate ready for download', time: '2 hrs ago', read: false },
-  { id: 'notif-003', text: 'Order #ORD-2025-0044 delivered successfully', time: 'Yesterday', read: true },
+  {
+    id: 'notif-001',
+    text: 'Your laundry order #ORD-2025-0047 is out for delivery',
+    time: '12 mins ago',
+    read: false,
+  },
+  {
+    id: 'notif-002',
+    text: 'Fumigation certificate ready for download',
+    time: '2 hrs ago',
+    read: false,
+  },
+  {
+    id: 'notif-003',
+    text: 'Order #ORD-2025-0044 delivered successfully',
+    time: 'Yesterday',
+    read: true,
+  },
 ];
 
-export default function CustomerTopbar({ sidebarCollapsed, onMobileMenuToggle, mobileMenuOpen }: CustomerTopbarProps) {
+export default function CustomerTopbar({
+  sidebarCollapsed,
+  onMobileMenuToggle,
+  mobileMenuOpen,
+}: CustomerTopbarProps) {
   const [notifOpen, setNotifOpen] = useState(false);
   const unreadCount = NOTIFICATIONS.filter((n) => !n.read).length;
 
@@ -70,7 +89,9 @@ export default function CustomerTopbar({ sidebarCollapsed, onMobileMenuToggle, m
             <div className="absolute right-0 top-12 w-80 bg-white rounded-2xl border border-gray-100 shadow-lg z-50 animate-fade-in">
               <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                 <span className="text-sm font-bold text-[#1A0A5E]">Notifications</span>
-                <span className="text-xs text-[#CC0000] font-semibold cursor-pointer hover:underline">Mark all read</span>
+                <span className="text-xs text-[#CC0000] font-semibold cursor-pointer hover:underline">
+                  Mark all read
+                </span>
               </div>
               <div className="max-h-72 overflow-y-auto">
                 {NOTIFICATIONS.map((n) => (

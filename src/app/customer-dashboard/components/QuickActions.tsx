@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { PlusCircle, MapPin, FileText, Phone, MessageCircle } from 'lucide-react';
 import Icon from '@/components/ui/AppIcon';
 
-
 const ACTIONS = [
   {
     id: 'action-new-order',
@@ -63,7 +62,9 @@ export default function QuickActions() {
       </div>
       {/* Support */}
       <div className="mt-4 pt-4 border-t border-gray-100">
-        <p className="text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wide">Need Help?</p>
+        <p className="text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wide">
+          Need Help?
+        </p>
         <div className="flex gap-2">
           <a
             href="tel:09039661885"

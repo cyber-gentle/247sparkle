@@ -1,5 +1,12 @@
 import React from 'react';
-import { PackageSearch, CalendarCheck, Truck, Sparkles, CreditCard, CheckCircle } from 'lucide-react';
+import {
+  PackageSearch,
+  CalendarCheck,
+  Truck,
+  Sparkles,
+  CreditCard,
+  CheckCircle,
+} from 'lucide-react';
 
 const STEPS = [
   {
@@ -74,7 +81,7 @@ export default function HowItWorksSection() {
             Simple Process
           </span>
           <h2 className="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-[#1A0A5E] mb-4">
-            How 247 Sparkle Works
+            How 247Sparkle Works
           </h2>
           <p className="text-gray-500 max-w-xl mx-auto text-base leading-relaxed">
             Getting your laundry done has never been easier. Three steps, zero stress, complete

@@ -43,7 +43,9 @@ export default function CertificatesWidget() {
                 <FileText size={14} className="text-green-600" />
               </div>
               <div>
-                <div className="text-xs font-bold text-[#1A0A5E] font-mono-nums">{cert?.certNumber}</div>
+                <div className="text-xs font-bold text-[#1A0A5E] font-mono-nums">
+                  {cert?.certNumber}
+                </div>
                 <div className="text-[11px] text-gray-500 mt-0.5">{cert?.property}</div>
                 <div className="text-[11px] text-gray-400">{cert?.date}</div>
               </div>

@@ -56,13 +56,16 @@ export default function CustomerDashboardPage() {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <Sparkles size={18} className="text-[#F5C200]" />
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Customer Portal</span>
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                  Customer Portal
+                </span>
               </div>
               <h1 className="text-2xl lg:text-3xl font-extrabold text-[#1A0A5E]">
                 Welcome back, <span className="text-[#CC0000]">Adaeze</span> 👋
               </h1>
               <p className="text-sm text-gray-500 mt-1">
-                You have <strong className="text-[#CC0000]">3 active orders</strong> — 1 out for delivery right now.
+                You have <strong className="text-[#CC0000]">3 active orders</strong> — 1 out for
+                delivery right now.
               </p>
             </div>
             <div className="flex items-center gap-2 text-xs text-gray-400 bg-white border border-gray-200 rounded-xl px-3 py-2">

@@ -8,7 +8,6 @@ import HowItWorksSection from './components/HowItWorksSection';
 import ServicesSection from './components/ServicesSection';
 import TrustSection from './components/TrustSection';
 import AboutSection from './components/AboutSection';
-import TestimonialsSection from './components/TestimonialsSection';
 import PartnerBanner from './components/PartnerBanner';
 import ContactSection from './components/ContactSection';
 
@@ -24,7 +23,6 @@ export default function HomepagePage() {
         <ServicesSection />
         <TrustSection />
         <AboutSection />
-        <TestimonialsSection />
         <PartnerBanner />
         <ContactSection />
       </main>

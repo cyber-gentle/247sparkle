@@ -93,7 +93,7 @@ export default function VerifyCertificatePage() {
                     Verify Fumigation Certificate
                   </h1>
                   <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-                    Enter a certificate number to validate its authenticity in the 247 Sparkle
+                    Enter a certificate number to validate its authenticity in the 247Sparkle
                     records.
                   </p>
                 </div>

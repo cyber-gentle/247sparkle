@@ -8,8 +8,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: '247 Sparkle — Otukpo Laundry & Cleaning Delivered',
-  description: '247 Sparkle delivers reliable on-demand laundry, home cleaning, and fumigation services across Otukpo — with pickup, real-time tracking, and doorstep delivery.',
+  title: '247Sparkle — Otukpo Laundry & Cleaning Delivered',
+  description:
+    '247Sparkle delivers reliable on-demand laundry, home cleaning, and fumigation services across Otukpo — with pickup, real-time tracking, and doorstep delivery.',
   icons: {
     icon: [{ url: '/favicon.ico', type: 'image/x-icon' }],
   },

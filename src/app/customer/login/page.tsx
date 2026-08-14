@@ -48,7 +48,7 @@ export default function CustomerLoginPage() {
       }
 
       toast.success('Login successful! Redirecting...');
-      
+
       // Cookie is already set by the API, just redirect
       setTimeout(() => {
         router.push('/customer/dashboard');
@@ -77,7 +77,7 @@ export default function CustomerLoginPage() {
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-400 text-blue-900 mx-auto mb-4">
             <Sparkles size={24} />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">247 Sparkle</h1>
+          <h1 className="text-3xl font-bold text-gray-900">247Sparkle</h1>
           <p className="text-gray-600 mt-2">Customer Portal Login</p>
         </div>
 
@@ -148,8 +148,11 @@ export default function CustomerLoginPage() {
         {/* Links */}
         <div className="mt-6 space-y-3 text-center text-sm">
           <p className="text-gray-600">
-            Don't have an account?{' '}
-            <Link href="/customer/signup" className="text-blue-600 hover:text-blue-700 font-semibold">
+            Don&apos;t have an account?{' '}
+            <Link
+              href="/customer/signup"
+              className="text-blue-600 hover:text-blue-700 font-semibold"
+            >
               Sign Up
             </Link>
           </p>

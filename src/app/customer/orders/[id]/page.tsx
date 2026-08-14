@@ -3,7 +3,21 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Package, Calendar, MapPin, Phone, Mail, CheckCircle2, Clock, Truck, Sparkles, Home, Building2, Shield } from 'lucide-react';
+import {
+  ArrowLeft,
+  Package,
+  Calendar,
+  MapPin,
+  Phone,
+  Mail,
+  CheckCircle2,
+  Clock,
+  Truck,
+  Sparkles,
+  Home,
+  Building2,
+  Shield,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import AppLogo from '@/components/ui/AppLogo';
 
@@ -43,7 +57,7 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
   const [orderId, setOrderId] = useState<string>('');
 
   useEffect(() => {
-    params.then(p => {
+    params.then((p) => {
       setOrderId(p.id);
       fetchOrderDetails(p.id);
     });
@@ -119,7 +133,7 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
   };
 
   const getCurrentStepIndex = (status: string, steps: any[]) => {
-    const index = steps.findIndex(step => step.key === status);
+    const index = steps.findIndex((step) => step.key === status);
     return index === -1 ? 0 : index;
   };
 
@@ -176,12 +190,16 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
                 <ServiceIcon size={32} className="text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-[#1A0A5E]">{getServiceLabel(order.serviceType)}</h2>
+                <h2 className="text-2xl font-bold text-[#1A0A5E]">
+                  {getServiceLabel(order.serviceType)}
+                </h2>
                 <p className="text-sm text-gray-500">Order #{order.id.slice(-8)}</p>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-3xl font-bold text-[#1A0A5E]">₦{order.totalAmount.toLocaleString()}</div>
+              <div className="text-3xl font-bold text-[#1A0A5E]">
+                ₦{order.totalAmount.toLocaleString()}
+              </div>
               <div className="text-sm text-gray-500 mt-1">
                 {order.paymentStatus === 'PAID' ? (
                   <span className="text-green-600 font-semibold">✓ Paid</span>
@@ -250,15 +268,22 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
             <h3 className="text-lg font-bold text-[#1A0A5E] mb-4">Order Items</h3>
             <div className="space-y-3">
               {order.items.map((item, index) => (
-                <div key={index} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+                <div
+                  key={index}
+                  className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0"
+                >
                   <div className="flex-1">
                     <p className="font-semibold text-[#1A0A5E]">
                       {item.itemName}
                       {item.isWhiteGroup && (
-                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">White</span>
+                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
+                          White
+                        </span>
                       )}
                     </p>
-                    <p className="text-sm text-gray-500">Quantity: {item.quantity} × ₦{item.unitPrice.toLocaleString()}</p>
+                    <p className="text-sm text-gray-500">
+                      Quantity: {item.quantity} × ₦{item.unitPrice.toLocaleString()}
+                    </p>
                   </div>
                   <div className="text-right">
                     <p className="font-bold text-[#1A0A5E]">₦{item.subtotal.toLocaleString()}</p>
@@ -267,7 +292,9 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
               ))}
               <div className="flex items-center justify-between pt-3 border-t-2 border-gray-200">
                 <p className="text-lg font-bold text-[#1A0A5E]">Total</p>
-                <p className="text-2xl font-bold text-[#1A0A5E]">₦{order.totalAmount.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-[#1A0A5E]">
+                  ₦{order.totalAmount.toLocaleString()}
+                </p>
               </div>
             </div>
           </div>
@@ -320,7 +347,8 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
               <h3 className="text-lg font-bold text-green-900">Fumigation Certificate Issued</h3>
             </div>
             <p className="text-sm text-gray-700 mb-2">
-              Certificate Number: <span className="font-bold">{order.certificate.certificateNumber}</span>
+              Certificate Number:{' '}
+              <span className="font-bold">{order.certificate.certificateNumber}</span>
             </p>
             <p className="text-sm text-gray-700 mb-4">
               Issued on: {formatDate(order.certificate.issuedAt)}
@@ -343,7 +371,9 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
                 {order.rider.fullName?.[0] || 'R'}
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-[#1A0A5E]">{order.rider.fullName || 'Assigned Rider'}</p>
+                <p className="font-semibold text-[#1A0A5E]">
+                  {order.rider.fullName || 'Assigned Rider'}
+                </p>
                 {order.rider.phone && (
                   <p className="text-sm text-gray-600">
                     <Phone size={12} className="inline mr-1" />

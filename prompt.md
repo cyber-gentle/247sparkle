@@ -1,22 +1,22 @@
-# 247 Sparkle — Full-Stack Web Platform
+# 247Sparkle — Full-Stack Web Platform
 ## Complete Developer Brief
 
 ---
 
 ## PROJECT OVERVIEW
 
-**Business Name:** 247 Sparkle Laundry & Cleaning Services
+**Business Name:** 247Sparkle Laundry & Cleaning Services
 **Website:** www.247sparkle.com
 **Email:** info.247sparkle@gmail.com / 247biz@gmail.com
 **Phone:** 09039661885 / 07052258764 (WhatsApp)
 **Location:** Otukpo, Benue State
 
 **Brand Description (use verbatim on the website):**
-> 247 Sparkle is a proudly indigenous brand committed to delivering reliable, high-quality laundry and apartment cleaning solutions tailored to your everyday needs. We understand the demands of busy schedules, which is why we provide seamless washing, professional cleaning, and convenient pick-up and delivery services designed to save you time and effort.
+> 247Sparkle is a proudly indigenous brand committed to delivering reliable, high-quality laundry and apartment cleaning solutions tailored to your everyday needs. We understand the demands of busy schedules, which is why we provide seamless washing, professional cleaning, and convenient pick-up and delivery services designed to save you time and effort.
 >
 > Our approach is simple: consistent quality, attention to detail, and customer satisfaction at every touchpoint. Whether it's your daily wear, office outfits, or special fabrics, we handle every item with care, using effective cleaning methods that keep your clothes fresh, spotless, and long-lasting.
 >
-> With 247 Sparkle, you don't just get a service — you get peace of mind, knowing your laundry is in trusted hands, delivered back to you clean, crisp, and right on time.
+> With 247Sparkle, you don't just get a service — you get peace of mind, knowing your laundry is in trusted hands, delivered back to you clean, crisp, and right on time.
 
 ---
 
@@ -255,7 +255,7 @@ Step 4 — Payment (residential fixed price) OR quotation submission
 ### Fumigation Certificates (`/customer/certificates`)
 - List of all certificates issued to this customer
 - Download PDF button per certificate
-- Certificate includes: Certificate Number, 247 Sparkle branding, Customer Name, Property Address, Date of Service, Service Type, Authorisation signature line, Verification URL
+- Certificate includes: Certificate Number, 247Sparkle branding, Customer Name, Property Address, Date of Service, Service Type, Authorisation signature line, Verification URL
 
 ### Profile (`/customer/profile`)
 - Edit: Full Name, Email, Phone
@@ -347,7 +347,7 @@ Step 4 — Payment (residential fixed price) OR quotation submission
 - Business name and approval status
 - **Workload Toggle:** "Shop Available" ↔ "Shop Full / Busy"
   - This status is visible to admin for routing decisions
-  - If 247 Sparkle hub is overloaded, admin routes orders to partners showing "Available"
+  - If 247Sparkle hub is overloaded, admin routes orders to partners showing "Available"
 - Incoming Orders table: orders dropped off or assigned to this partner
   - Columns: Order ID | Service Type | Customer | Status | Action
   - Action button: "Mark Ready for Pickup" when order is done
@@ -429,8 +429,8 @@ Separate secure login. Admin accounts are seeded manually in the database.
 
 ### Partner Commission Model
 - Each registered partner has their service prices stored in the system
-- 247 Sparkle adds its own commission percentage and operational cost on top
-- Customer-facing price = Partner price + 247 Sparkle margin
+- 247Sparkle adds its own commission percentage and operational cost on top
+- Customer-facing price = Partner price + 247Sparkle margin
 - Partner sees their net earnings; admin sees full revenue breakdown
 
 ### Smart Pricing Engine (`pricing-engine.js`)
@@ -523,14 +523,14 @@ GET https://api.paystack.co/bank/resolve?account_number=XXXX&bank_code=XXX
 - **Format:** PDF, downloadable
 - **Certificate Number Format:** `SPKFUM-YYYY-XXXXX` (e.g., `SPKFUM-2025-00001`)
 - **Certificate PDF Contents:**
-  - 247 Sparkle logo (top center)
+  - 247Sparkle logo (top center)
   - Title: "CERTIFICATE OF FUMIGATION"
   - Issued to: [Customer Full Name]
   - Property Address: [Full Address]
   - Property Type: [e.g., 2 Rooms Apartment]
   - Date of Service: [DD/MM/YYYY]
   - Certificate Number: [SPKFUM-YYYY-XXXXX]
-  - Statement: "This property has been professionally fumigated by 247 Sparkle Laundry & Cleaning Services and meets the required health and safety standards."
+  - Statement: "This property has been professionally fumigated by 247Sparkle Laundry & Cleaning Services and meets the required health and safety standards."
   - Authorised by: [signature line]
   - Verification note: "Verify this certificate at www.247sparkle.com/verify"
   - Footer: Company contact details
@@ -802,8 +802,8 @@ PUT    /api/quotations/:id           (admin responds)
 1. **Fumigation = on-site only.** No rider assigned. No pickup/delivery step. No delivery charge.
 2. **Home/Office cleaning = on-site only.** Cleaner travels to customer. No laundry rider involved.
 3. **Rider dispatch applies to laundry orders only.** Assign by nearest available rider (Haversine distance formula).
-4. **Partner workload is visible to admin.** Used to route overflow from 247 Sparkle hub to Available partner shops.
-5. **Partner pricing is stored per vendor.** Customer price = Partner price + 247 Sparkle commission + operational cost.
+4. **Partner workload is visible to admin.** Used to route overflow from 247Sparkle hub to Available partner shops.
+5. **Partner pricing is stored per vendor.** Customer price = Partner price + 247Sparkle commission + operational cost.
 6. **Riders cannot log in until admin approves their signup.**
 7. **Partners cannot log in until admin approves their signup.**
 8. **White clothes are a separate laundry category** — listed under "Colour Group: White" to prevent mixing.
@@ -829,6 +829,6 @@ PUT    /api/quotations/:id           (admin responds)
 
 ---
 
-*Developer Brief prepared for: 247 Sparkle Laundry & Cleaning Services*
+*Developer Brief prepared for: 247Sparkle Laundry & Cleaning Services*
 *Version: 1.0 — Full Platform Build*
 *Prepared: April 2026*

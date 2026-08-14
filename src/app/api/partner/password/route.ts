@@ -20,7 +20,8 @@ export async function PUT(request: NextRequest) {
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
     const isValid = await compare(currentPassword, user.passwordHash);
-    if (!isValid) return NextResponse.json({ error: 'Current password is incorrect' }, { status: 400 });
+    if (!isValid)
+      return NextResponse.json({ error: 'Current password is incorrect' }, { status: 400 });
 
     await prisma.user.update({
       where: { id: userId },

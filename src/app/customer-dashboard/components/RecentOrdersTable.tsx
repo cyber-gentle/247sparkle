@@ -28,10 +28,10 @@ export default function RecentOrdersTable() {
         const response = await fetch('/api/orders');
         if (!response.ok) throw new Error('Failed to fetch orders');
         const result = await response.json();
-        
+
         // Extract orders array from response
         const ordersArray = result.orders || [];
-        
+
         const formattedOrders = ordersArray.slice(0, 5).map((order: any) => ({
           id: order.id,
           orderNumber: `ORD-${order.id.slice(0, 6).toUpperCase()}`,
@@ -46,7 +46,7 @@ export default function RecentOrdersTable() {
           status: (order.status?.toLowerCase() || 'pending') as OrderStatus,
           paymentStatus: (order.paymentStatus?.toLowerCase() || 'unpaid') as OrderStatus,
         }));
-        
+
         setOrders(formattedOrders);
       } catch (error: any) {
         console.error('Error fetching orders:', error);
@@ -86,7 +86,10 @@ export default function RecentOrdersTable() {
       ) : orders.length === 0 ? (
         <div className="px-5 py-12 text-center">
           <p className="text-gray-500">No orders yet. Create your first order!</p>
-          <Link href="/customer/new-order" className="text-[#CC0000] font-semibold mt-2 inline-block">
+          <Link
+            href="/customer/new-order"
+            className="text-[#CC0000] font-semibold mt-2 inline-block"
+          >
             Place Order
           </Link>
         </div>
@@ -95,13 +98,27 @@ export default function RecentOrdersTable() {
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="text-left px-5 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Order</th>
-                <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Service</th>
-                <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide hidden md:table-cell">Items</th>
-                <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Amount</th>
-                <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide hidden sm:table-cell">Date</th>
-                <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Status</th>
-                <th className="text-right px-5 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Actions</th>
+                <th className="text-left px-5 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
+                  Order
+                </th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
+                  Service
+                </th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide hidden md:table-cell">
+                  Items
+                </th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
+                  Amount
+                </th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide hidden sm:table-cell">
+                  Date
+                </th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
+                  Status
+                </th>
+                <th className="text-right px-5 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -115,16 +132,22 @@ export default function RecentOrdersTable() {
                   }`}
                 >
                   <td className="px-5 py-3.5">
-                    <span className="text-xs font-bold text-[#1A0A5E] font-mono-nums">{order.orderNumber}</span>
+                    <span className="text-xs font-bold text-[#1A0A5E] font-mono-nums">
+                      {order.orderNumber}
+                    </span>
                   </td>
                   <td className="px-4 py-3.5">
                     <ServiceBadge service={order.service} />
                   </td>
                   <td className="px-4 py-3.5 hidden md:table-cell">
-                    <span className="text-xs text-gray-500 line-clamp-1 max-w-[200px]">{order.items}</span>
+                    <span className="text-xs text-gray-500 line-clamp-1 max-w-[200px]">
+                      {order.items}
+                    </span>
                   </td>
                   <td className="px-4 py-3.5">
-                    <span className="text-sm font-bold text-[#1A0A5E] font-mono-nums">{order.amount}</span>
+                    <span className="text-sm font-bold text-[#1A0A5E] font-mono-nums">
+                      {order.amount}
+                    </span>
                   </td>
                   <td className="px-4 py-3.5 hidden sm:table-cell">
                     <span className="text-xs text-gray-500">{order.date}</span>

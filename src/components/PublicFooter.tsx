@@ -5,18 +5,36 @@ import { Phone, Mail, MapPin, MessageCircle } from 'lucide-react';
 
 function InstagramIcon({ size = 18 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
     </svg>
   );
 }
 
 function FacebookIcon({ size = 18 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
     </svg>
   );
 }
@@ -41,7 +59,8 @@ export default function PublicFooter() {
               </div>
             </div>
             <p className="text-sm text-white/65 leading-relaxed mb-5">
-              Otukpo&apos;s most reliable on-demand laundry, home cleaning and fumigation service. Delivered to you clean, crisp, and right on time.
+              Otukpo&apos;s most reliable on-demand laundry, home cleaning and fumigation service.
+              Delivered to you clean, crisp, and right on time.
             </p>
             <div className="flex items-center gap-3">
               <a
@@ -72,11 +91,22 @@ export default function PublicFooter() {
 
           {/* Services */}
           <div>
-            <h4 className="font-bold text-sm tracking-widest uppercase text-[#F5C200] mb-4">Services</h4>
+            <h4 className="font-bold text-sm tracking-widest uppercase text-[#F5C200] mb-4">
+              Services
+            </h4>
             <ul className="space-y-2.5">
-              {['Laundry', 'Home Cleaning', 'Office Cleaning', 'Fumigation', 'Pickup & Delivery']?.map((s) => (
+              {[
+                'Laundry',
+                'Home Cleaning',
+                'Office Cleaning',
+                'Fumigation',
+                'Pickup & Delivery',
+              ]?.map((s) => (
                 <li key={`footer-service-${s?.toLowerCase()?.replace(/\s+/g, '-')}`}>
-                  <Link href="/services" className="text-sm text-white/65 hover:text-white transition-colors">
+                  <Link
+                    href="/services"
+                    className="text-sm text-white/65 hover:text-white transition-colors"
+                  >
                     {s}
                   </Link>
                 </li>
@@ -86,7 +116,9 @@ export default function PublicFooter() {
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-bold text-sm tracking-widest uppercase text-[#F5C200] mb-4">Quick Links</h4>
+            <h4 className="font-bold text-sm tracking-widest uppercase text-[#F5C200] mb-4">
+              Quick Links
+            </h4>
             <ul className="space-y-2.5">
               {[
                 { label: 'Book a Service', href: '/customer/signup' },
@@ -96,7 +128,10 @@ export default function PublicFooter() {
                 { label: 'Admin Login', href: '/admin/login' },
               ]?.map((link) => (
                 <li key={`footer-link-${link?.label?.toLowerCase()?.replace(/\s+/g, '-')}`}>
-                  <Link href={link?.href} className="text-sm text-white/65 hover:text-white transition-colors">
+                  <Link
+                    href={link?.href}
+                    className="text-sm text-white/65 hover:text-white transition-colors"
+                  >
                     {link?.label}
                   </Link>
                 </li>
@@ -106,26 +141,37 @@ export default function PublicFooter() {
 
           {/* Contact */}
           <div>
-            <h4 className="font-bold text-sm tracking-widest uppercase text-[#F5C200] mb-4">Contact Us</h4>
+            <h4 className="font-bold text-sm tracking-widest uppercase text-[#F5C200] mb-4">
+              Contact Us
+            </h4>
             <ul className="space-y-3">
               <li className="flex items-start gap-2.5 text-sm text-white/65">
                 <MapPin size={16} className="mt-0.5 shrink-0 text-[#F5C200]" />
                 Otukpo, Benue State
               </li>
               <li>
-                <a href="tel:09039661885" className="flex items-center gap-2.5 text-sm text-white/65 hover:text-white transition-colors">
+                <a
+                  href="tel:09039661885"
+                  className="flex items-center gap-2.5 text-sm text-white/65 hover:text-white transition-colors"
+                >
                   <Phone size={16} className="shrink-0 text-[#F5C200]" />
                   09039661885
                 </a>
               </li>
               <li>
-                <a href="tel:07052258764" className="flex items-center gap-2.5 text-sm text-white/65 hover:text-white transition-colors">
+                <a
+                  href="tel:07052258764"
+                  className="flex items-center gap-2.5 text-sm text-white/65 hover:text-white transition-colors"
+                >
                   <Phone size={16} className="shrink-0 text-[#F5C200]" />
                   07052258764 (WhatsApp)
                 </a>
               </li>
               <li>
-                <a href="mailto:info.247sparkle@gmail.com" className="flex items-center gap-2.5 text-sm text-white/65 hover:text-white transition-colors">
+                <a
+                  href="mailto:info.247sparkle@gmail.com"
+                  className="flex items-center gap-2.5 text-sm text-white/65 hover:text-white transition-colors"
+                >
                   <Mail size={16} className="shrink-0 text-[#F5C200]" />
                   info.247sparkle@gmail.com
                 </a>
@@ -147,12 +193,18 @@ export default function PublicFooter() {
 
         <div className="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-white/40">
-            © 2026 247 Sparkle Laundry & Cleaning Services. All rights reserved.
+            © 2026 247Sparkle Laundry & Cleaning Services. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
-            <Link href="/" className="text-xs text-white/40 hover:text-white/70 transition-colors">Privacy Policy</Link>
-            <Link href="/" className="text-xs text-white/40 hover:text-white/70 transition-colors">Terms of Service</Link>
-            <Link href="/" className="text-xs text-white/40 hover:text-white/70 transition-colors">Refund Policy</Link>
+            <Link href="/" className="text-xs text-white/40 hover:text-white/70 transition-colors">
+              Privacy Policy
+            </Link>
+            <Link href="/" className="text-xs text-white/40 hover:text-white/70 transition-colors">
+              Terms of Service
+            </Link>
+            <Link href="/" className="text-xs text-white/40 hover:text-white/70 transition-colors">
+              Refund Policy
+            </Link>
           </div>
         </div>
       </div>

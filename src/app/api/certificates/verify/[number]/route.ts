@@ -10,7 +10,9 @@ export async function GET(
   { params }: { params: Promise<{ number: string }> }
 ) {
   const { number } = await params;
-  const certificateNumber = decodeURIComponent(number ?? '').trim().toUpperCase();
+  const certificateNumber = decodeURIComponent(number ?? '')
+    .trim()
+    .toUpperCase();
 
   if (!certificateNumber) {
     return NextResponse.json(

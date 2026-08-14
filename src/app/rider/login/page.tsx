@@ -6,7 +6,17 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Lock, Mail, AlertCircle, Zap, CheckCircle2, TrendingUp, Shield, Clock } from 'lucide-react';
+import {
+  ArrowLeft,
+  Lock,
+  Mail,
+  AlertCircle,
+  Zap,
+  CheckCircle2,
+  TrendingUp,
+  Shield,
+  Clock,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 const loginSchema = z.object({
@@ -70,12 +80,18 @@ export default function RiderLoginPage() {
     <main className="min-h-screen bg-gradient-to-br from-green-50 via-white to-teal-50">
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-[#1A0A5E]">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-[#1A0A5E]"
+          >
             <ArrowLeft size={16} />
             Back to Home
           </Link>
-          <Link href="/rider/signup" className="text-sm font-semibold text-[#1A0A5E] hover:text-[#120843]">
-            Don't have an account? Sign up →
+          <Link
+            href="/rider/signup"
+            className="text-sm font-semibold text-[#1A0A5E] hover:text-[#120843]"
+          >
+            Don&apos;t have an account? Sign up →
           </Link>
         </div>
       </div>
@@ -116,7 +132,8 @@ export default function RiderLoginPage() {
                 <div>
                   <h3 className="font-bold text-amber-900 mb-1">Pending Approval?</h3>
                   <p className="text-sm text-amber-800">
-                    If you just signed up, please wait for admin approval before logging in. You'll receive an email once approved.
+                    If you just signed up, please wait for admin approval before logging in.
+                    You&apos;ll receive an email once approved.
                   </p>
                 </div>
               </div>
@@ -138,7 +155,10 @@ export default function RiderLoginPage() {
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  <Mail
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    size={18}
+                  />
                   <input
                     {...register('email')}
                     type="email"
@@ -157,11 +177,17 @@ export default function RiderLoginPage() {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-semibold text-gray-700 mb-1"
+                >
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  <Lock
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    size={18}
+                  />
                   <input
                     {...register('password')}
                     type="password"
@@ -210,7 +236,7 @@ export default function RiderLoginPage() {
                 <div className="w-full border-t border-gray-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-gray-500">New to 247 Sparkle?</span>
+                <span className="px-4 bg-white text-gray-500">New to 247Sparkle?</span>
               </div>
             </div>
 

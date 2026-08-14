@@ -8,7 +8,7 @@ export const UserRole = {
   ADMIN: 'ADMIN',
 } as const;
 
-export type UserRoleType = typeof UserRole[keyof typeof UserRole];
+export type UserRoleType = (typeof UserRole)[keyof typeof UserRole];
 
 export const ApprovalStatus = {
   PENDING: 'PENDING',
@@ -17,21 +17,21 @@ export const ApprovalStatus = {
   REJECTED: 'REJECTED',
 } as const;
 
-export type ApprovalStatusType = typeof ApprovalStatus[keyof typeof ApprovalStatus];
+export type ApprovalStatusType = (typeof ApprovalStatus)[keyof typeof ApprovalStatus];
 
 export const AvailabilityStatus = {
   WORKING: 'WORKING',
   OFF_DUTY: 'OFF_DUTY',
 } as const;
 
-export type AvailabilityStatusType = typeof AvailabilityStatus[keyof typeof AvailabilityStatus];
+export type AvailabilityStatusType = (typeof AvailabilityStatus)[keyof typeof AvailabilityStatus];
 
 export const WorkloadStatus = {
   AVAILABLE: 'AVAILABLE',
   BUSY: 'BUSY',
 } as const;
 
-export type WorkloadStatusType = typeof WorkloadStatus[keyof typeof WorkloadStatus];
+export type WorkloadStatusType = (typeof WorkloadStatus)[keyof typeof WorkloadStatus];
 
 export const ServiceType = {
   LAUNDRY: 'LAUNDRY',
@@ -40,7 +40,7 @@ export const ServiceType = {
   FUMIGATION: 'FUMIGATION',
 } as const;
 
-export type ServiceTypeType = typeof ServiceType[keyof typeof ServiceType];
+export type ServiceTypeType = (typeof ServiceType)[keyof typeof ServiceType];
 
 export const OrderStatus = {
   PENDING: 'PENDING',
@@ -52,7 +52,7 @@ export const OrderStatus = {
   CANCELLED: 'CANCELLED',
 } as const;
 
-export type OrderStatusType = typeof OrderStatus[keyof typeof OrderStatus];
+export type OrderStatusType = (typeof OrderStatus)[keyof typeof OrderStatus];
 
 export const PaymentStatus = {
   UNPAID: 'UNPAID',
@@ -60,7 +60,7 @@ export const PaymentStatus = {
   FAILED: 'FAILED',
 } as const;
 
-export type PaymentStatusType = typeof PaymentStatus[keyof typeof PaymentStatus];
+export type PaymentStatusType = (typeof PaymentStatus)[keyof typeof PaymentStatus];
 
 export const PickupOption = {
   HOME_PICKUP: 'HOME_PICKUP',
@@ -68,7 +68,7 @@ export const PickupOption = {
   ON_SITE: 'ON_SITE',
 } as const;
 
-export type PickupOptionType = typeof PickupOption[keyof typeof PickupOption];
+export type PickupOptionType = (typeof PickupOption)[keyof typeof PickupOption];
 
 export const CommissionStatus = {
   PENDING: 'PENDING',
@@ -76,7 +76,7 @@ export const CommissionStatus = {
   REJECTED: 'REJECTED',
 } as const;
 
-export type CommissionStatusType = typeof CommissionStatus[keyof typeof CommissionStatus];
+export type CommissionStatusType = (typeof CommissionStatus)[keyof typeof CommissionStatus];
 
 export const WithdrawalStatus = {
   PENDING: 'PENDING',
@@ -85,7 +85,7 @@ export const WithdrawalStatus = {
   REJECTED: 'REJECTED',
 } as const;
 
-export type WithdrawalStatusType = typeof WithdrawalStatus[keyof typeof WithdrawalStatus];
+export type WithdrawalStatusType = (typeof WithdrawalStatus)[keyof typeof WithdrawalStatus];
 
 export const QuotationServiceType = {
   OFFICE_CLEANING: 'OFFICE_CLEANING',
@@ -93,7 +93,8 @@ export const QuotationServiceType = {
   COMMERCIAL_FUMIGATION: 'COMMERCIAL_FUMIGATION',
 } as const;
 
-export type QuotationServiceTypeType = typeof QuotationServiceType[keyof typeof QuotationServiceType];
+export type QuotationServiceTypeType =
+  (typeof QuotationServiceType)[keyof typeof QuotationServiceType];
 
 export const QuotationStatus = {
   NEW: 'NEW',
@@ -102,4 +103,4 @@ export const QuotationStatus = {
   EXPIRED: 'EXPIRED',
 } as const;
 
-export type QuotationStatusType = typeof QuotationStatus[keyof typeof QuotationStatus];
+export type QuotationStatusType = (typeof QuotationStatus)[keyof typeof QuotationStatus];

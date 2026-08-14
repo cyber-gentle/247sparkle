@@ -6,18 +6,12 @@ const approvalSchema = z.object({
   action: z.enum(['APPROVE', 'REJECT', 'SUSPEND']),
 });
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const userRole = request.headers.get('x-user-role');
-    
+
     if (userRole !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Unauthorized - Admin only' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Unauthorized - Admin only' }, { status: 403 });
     }
 
     const { id } = await params;
@@ -25,7 +19,7 @@ export async function PUT(
     const { action } = approvalSchema.parse(body);
 
     let approvalStatus = 'PENDING';
-    
+
     if (action === 'APPROVE') {
       approvalStatus = 'APPROVED';
     } else if (action === 'REJECT') {
@@ -63,9 +57,6 @@ export async function PUT(
       );
     }
 
-    return NextResponse.json(
-      { error: 'Failed to update partner' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to update partner' }, { status: 500 });
   }
 }

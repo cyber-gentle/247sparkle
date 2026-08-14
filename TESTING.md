@@ -1,4 +1,4 @@
-# MVP Testing Guide - 247 Sparkle
+# MVP Testing Guide - 247Sparkle
 
 ## Overview
 This guide walks through testing the complete MVP flow from customer signup through rider job acceptance.

@@ -3,16 +3,49 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
-import { LayoutDashboard, PlusCircle, Package, FileText, User, LogOut, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
+import {
+  LayoutDashboard,
+  PlusCircle,
+  Package,
+  FileText,
+  User,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  MapPin,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
-
 const NAV_ITEMS = [
-  { id: 'nav-dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/customer/dashboard', badge: null },
-  { id: 'nav-new-order', label: 'New Order', icon: PlusCircle, href: '/customer/new-order', badge: null },
+  {
+    id: 'nav-dashboard',
+    label: 'Dashboard',
+    icon: LayoutDashboard,
+    href: '/customer/dashboard',
+    badge: null,
+  },
+  {
+    id: 'nav-new-order',
+    label: 'New Order',
+    icon: PlusCircle,
+    href: '/customer/new-order',
+    badge: null,
+  },
   { id: 'nav-orders', label: 'My Orders', icon: Package, href: '/customer/orders', badge: '3' },
-  { id: 'nav-track', label: 'Track Order', icon: MapPin, href: '/customer/orders/sample-order-001', badge: null },
-  { id: 'nav-certificates', label: 'Certificates', icon: FileText, href: '/customer/certificates', badge: '1' },
+  {
+    id: 'nav-track',
+    label: 'Track Order',
+    icon: MapPin,
+    href: '/customer/orders/sample-order-001',
+    badge: null,
+  },
+  {
+    id: 'nav-certificates',
+    label: 'Certificates',
+    icon: FileText,
+    href: '/customer/certificates',
+    badge: '1',
+  },
   { id: 'nav-profile', label: 'My Profile', icon: User, href: '/customer/profile', badge: null },
 ];
 
@@ -38,7 +71,9 @@ export default function CustomerSidebar({ collapsed, onToggle }: CustomerSidebar
       }`}
     >
       {/* Logo */}
-      <div className={`flex items-center h-16 border-b border-white/10 px-4 ${collapsed ? 'justify-center' : 'gap-2.5'}`}>
+      <div
+        className={`flex items-center h-16 border-b border-white/10 px-4 ${collapsed ? 'justify-center' : 'gap-2.5'}`}
+      >
         <AppLogo size={32} />
         {!collapsed && (
           <div className="flex flex-col leading-none overflow-hidden">
@@ -46,7 +81,9 @@ export default function CustomerSidebar({ collapsed, onToggle }: CustomerSidebar
               <span className="text-[#F5C200]">247</span>
               <span className="text-[#CC0000]"> Sparkle</span>
             </span>
-            <span className="text-[9px] font-medium tracking-widest uppercase text-white/40">Customer Portal</span>
+            <span className="text-[9px] font-medium tracking-widest uppercase text-white/40">
+              Customer Portal
+            </span>
           </div>
         )}
       </div>
@@ -54,7 +91,9 @@ export default function CustomerSidebar({ collapsed, onToggle }: CustomerSidebar
       {/* Nav Items */}
       <nav className="flex-1 py-4 overflow-y-auto overflow-x-hidden">
         {!collapsed && (
-          <p className="px-4 mb-2 text-[10px] font-bold tracking-widest uppercase text-white/30">Menu</p>
+          <p className="px-4 mb-2 text-[10px] font-bold tracking-widest uppercase text-white/30">
+            Menu
+          </p>
         )}
         <ul className="space-y-1 px-2">
           {NAV_ITEMS.map((item) => {

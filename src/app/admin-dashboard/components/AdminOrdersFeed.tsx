@@ -35,7 +35,9 @@ export default function AdminOrdersFeed() {
     }
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-card overflow-hidden">
@@ -49,10 +51,17 @@ export default function AdminOrdersFeed() {
             <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
             Live
           </div>
-          <button onClick={load} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors" title="Refresh">
+          <button
+            onClick={load}
+            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
+            title="Refresh"
+          >
             <RefreshCw size={14} />
           </button>
-          <Link href="/admin/orders" className="text-xs font-bold text-[#CC0000] hover:text-[#AA0000] flex items-center gap-1 transition-colors">
+          <Link
+            href="/admin/orders"
+            className="text-xs font-bold text-[#CC0000] hover:text-[#AA0000] flex items-center gap-1 transition-colors"
+          >
             View All <ChevronRight size={13} />
           </Link>
         </div>
@@ -69,13 +78,27 @@ export default function AdminOrdersFeed() {
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="text-left px-5 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Order</th>
-                <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Customer</th>
-                <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Service</th>
-                <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Amount</th>
-                <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Status</th>
-                <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide hidden lg:table-cell">Rider</th>
-                <th className="text-right px-5 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Actions</th>
+                <th className="text-left px-5 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
+                  Order
+                </th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
+                  Customer
+                </th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
+                  Service
+                </th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
+                  Amount
+                </th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
+                  Status
+                </th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide hidden lg:table-cell">
+                  Rider
+                </th>
+                <th className="text-right px-5 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -85,7 +108,11 @@ export default function AdminOrdersFeed() {
                   onMouseEnter={() => setHoveredRow(order.id)}
                   onMouseLeave={() => setHoveredRow(null)}
                   className={`border-b border-gray-50 transition-colors ${
-                    order.paymentStatus === 'FAILED' ? 'bg-red-50/30' : hoveredRow === order.id ? 'bg-gray-50/80' : 'bg-white'
+                    order.paymentStatus === 'FAILED'
+                      ? 'bg-red-50/30'
+                      : hoveredRow === order.id
+                        ? 'bg-gray-50/80'
+                        : 'bg-white'
                   }`}
                 >
                   <td className="px-5 py-3">
@@ -93,7 +120,9 @@ export default function AdminOrdersFeed() {
                       ORD-{order.id.slice(0, 6).toUpperCase()}
                     </span>
                     {order.paymentStatus === 'FAILED' && (
-                      <span className="ml-1.5 text-[9px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">PAY FAILED</span>
+                      <span className="ml-1.5 text-[9px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">
+                        PAY FAILED
+                      </span>
                     )}
                   </td>
                   <td className="px-4 py-3">
@@ -114,19 +143,29 @@ export default function AdminOrdersFeed() {
                   </td>
                   <td className="px-4 py-3 hidden lg:table-cell">
                     {order.rider ? (
-                      <span className="text-xs text-gray-600 font-medium">{order.rider.user.fullName}</span>
+                      <span className="text-xs text-gray-600 font-medium">
+                        {order.rider.user.fullName}
+                      </span>
                     ) : (
                       <span className="text-xs text-gray-300 italic">Unassigned</span>
                     )}
                   </td>
                   <td className="px-5 py-3">
-                    <div className={`flex items-center justify-end gap-1 transition-opacity ${hoveredRow === order.id ? 'opacity-100' : 'opacity-0'}`}>
-                      <Link href={`/admin/orders`} className="p-1.5 rounded-lg hover:bg-[#1A0A5E]/10 text-[#1A0A5E] transition-colors" title="View order">
+                    <div
+                      className={`flex items-center justify-end gap-1 transition-opacity ${hoveredRow === order.id ? 'opacity-100' : 'opacity-0'}`}
+                    >
+                      <Link
+                        href={`/admin/orders`}
+                        className="p-1.5 rounded-lg hover:bg-[#1A0A5E]/10 text-[#1A0A5E] transition-colors"
+                        title="View order"
+                      >
                         <Eye size={13} />
                       </Link>
                       {!order.rider && order.serviceType === 'LAUNDRY' && (
                         <button
-                          onClick={() => toast.info(`Assign rider to ORD-${order.id.slice(0, 6).toUpperCase()}`)}
+                          onClick={() =>
+                            toast.info(`Assign rider to ORD-${order.id.slice(0, 6).toUpperCase()}`)
+                          }
                           className="p-1.5 rounded-lg hover:bg-[#F5C200]/20 text-[#D4A800] transition-colors"
                           title="Assign rider"
                         >

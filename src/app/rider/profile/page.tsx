@@ -43,8 +43,8 @@ function PendingBanner() {
       <div>
         <p className="font-bold text-amber-900">Account Pending Approval</p>
         <p className="text-sm text-amber-800 mt-1">
-          Your rider account is under review. Once an admin approves your account, you'll be able
-          to update your bank details and start accepting jobs.
+          Your rider account is under review. Once an admin approves your account, you&apos;ll be
+          able to update your bank details and start accepting jobs.
         </p>
       </div>
     </div>
@@ -104,7 +104,10 @@ export default function RiderProfilePage() {
     try {
       const response = await fetch('/api/rider/profile', { credentials: 'include' });
       if (!response.ok) {
-        if (response.status === 401) { router.push('/rider/login'); return; }
+        if (response.status === 401) {
+          router.push('/rider/login');
+          return;
+        }
         throw new Error('Failed to fetch profile');
       }
       const data = await response.json();
@@ -152,7 +155,10 @@ export default function RiderProfilePage() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ currentPassword: data.currentPassword, newPassword: data.newPassword }),
+        body: JSON.stringify({
+          currentPassword: data.currentPassword,
+          newPassword: data.newPassword,
+        }),
       });
       if (!response.ok) {
         const err = await response.json();
@@ -218,8 +224,8 @@ export default function RiderProfilePage() {
               approvalStatus === 'APPROVED'
                 ? 'bg-green-100 text-green-700'
                 : approvalStatus === 'SUSPENDED'
-                ? 'bg-red-100 text-red-700'
-                : 'bg-amber-100 text-amber-700'
+                  ? 'bg-red-100 text-red-700'
+                  : 'bg-amber-100 text-amber-700'
             }`}
           >
             {approvalStatus}
@@ -232,7 +238,9 @@ export default function RiderProfilePage() {
         {approvalStatus === 'SUSPENDED' && <SuspendedBanner />}
 
         {/* Availability Toggle */}
-        <div className={`bg-white rounded-2xl border p-6 shadow-sm ${!isApproved ? 'opacity-60' : 'border-gray-200'}`}>
+        <div
+          className={`bg-white rounded-2xl border p-6 shadow-sm ${!isApproved ? 'opacity-60' : 'border-gray-200'}`}
+        >
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold text-[#1A0A5E] flex items-center gap-2">
@@ -243,8 +251,8 @@ export default function RiderProfilePage() {
                 {!isApproved
                   ? 'Available after account approval'
                   : availabilityStatus === 'WORKING'
-                  ? 'You are currently accepting jobs'
-                  : 'You are not accepting jobs'}
+                    ? 'You are currently accepting jobs'
+                    : 'You are not accepting jobs'}
               </p>
             </div>
             <button
@@ -272,18 +280,37 @@ export default function RiderProfilePage() {
           <form onSubmit={handleSubmit(onSubmitProfile)} className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Full Name</label>
-              <input type="text" {...register('fullName')} disabled={!isApproved} className={fieldClass(!!errors.fullName, !isApproved)} />
-              {errors.fullName && <p className="text-red-500 text-sm mt-1">{errors.fullName.message}</p>}
+              <input
+                type="text"
+                {...register('fullName')}
+                disabled={!isApproved}
+                className={fieldClass(!!errors.fullName, !isApproved)}
+              />
+              {errors.fullName && (
+                <p className="text-red-500 text-sm mt-1">{errors.fullName.message}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Phone</label>
-              <input type="tel" {...register('phone')} disabled={!isApproved} className={fieldClass(!!errors.phone, !isApproved)} />
+              <input
+                type="tel"
+                {...register('phone')}
+                disabled={!isApproved}
+                className={fieldClass(!!errors.phone, !isApproved)}
+              />
               {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>}
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Address</label>
-              <textarea {...register('address')} rows={2} disabled={!isApproved} className={fieldClass(!!errors.address, !isApproved)} />
-              {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address.message}</p>}
+              <textarea
+                {...register('address')}
+                rows={2}
+                disabled={!isApproved}
+                className={fieldClass(!!errors.address, !isApproved)}
+              />
+              {errors.address && (
+                <p className="text-red-500 text-sm mt-1">{errors.address.message}</p>
+              )}
             </div>
             <button
               type="submit"
@@ -297,8 +324,12 @@ export default function RiderProfilePage() {
         </div>
 
         {/* Bank Information */}
-        <div className={`bg-white rounded-2xl border p-8 shadow-sm ${!isApproved ? 'border-gray-100' : 'border-gray-200'}`}>
-          <h2 className={`text-lg font-bold mb-2 flex items-center gap-2 ${isApproved ? 'text-[#1A0A5E]' : 'text-gray-400'}`}>
+        <div
+          className={`bg-white rounded-2xl border p-8 shadow-sm ${!isApproved ? 'border-gray-100' : 'border-gray-200'}`}
+        >
+          <h2
+            className={`text-lg font-bold mb-2 flex items-center gap-2 ${isApproved ? 'text-[#1A0A5E]' : 'text-gray-400'}`}
+          >
             <Banknote size={20} />
             Bank Information
           </h2>
@@ -311,20 +342,45 @@ export default function RiderProfilePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Bank Name</label>
-                <input type="text" {...register('bankName')} disabled={!isApproved} placeholder="e.g., GTBank" className={fieldClass(false, !isApproved)} />
+                <input
+                  type="text"
+                  {...register('bankName')}
+                  disabled={!isApproved}
+                  placeholder="e.g., GTBank"
+                  className={fieldClass(false, !isApproved)}
+                />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Bank Code</label>
-                <input type="text" {...register('bankCode')} disabled={!isApproved} placeholder="e.g., 058" className={fieldClass(false, !isApproved)} />
+                <input
+                  type="text"
+                  {...register('bankCode')}
+                  disabled={!isApproved}
+                  placeholder="e.g., 058"
+                  className={fieldClass(false, !isApproved)}
+                />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Account Number</label>
-              <input type="text" {...register('accountNumber')} disabled={!isApproved} placeholder="10 digits" className={fieldClass(false, !isApproved)} />
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                Account Number
+              </label>
+              <input
+                type="text"
+                {...register('accountNumber')}
+                disabled={!isApproved}
+                placeholder="10 digits"
+                className={fieldClass(false, !isApproved)}
+              />
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Account Name</label>
-              <input type="text" {...register('accountName')} disabled={!isApproved} className={fieldClass(false, !isApproved)} />
+              <input
+                type="text"
+                {...register('accountName')}
+                disabled={!isApproved}
+                className={fieldClass(false, !isApproved)}
+              />
             </div>
             <button
               type="submit"
@@ -344,19 +400,45 @@ export default function RiderProfilePage() {
           </h2>
           <form onSubmit={handleSubmitPassword(onSubmitPassword)} className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Current Password</label>
-              <input type="password" {...registerPassword('currentPassword')} className={fieldClass(!!passwordErrors.currentPassword)} />
-              {passwordErrors.currentPassword && <p className="text-red-500 text-sm mt-1">{passwordErrors.currentPassword.message}</p>}
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                Current Password
+              </label>
+              <input
+                type="password"
+                {...registerPassword('currentPassword')}
+                className={fieldClass(!!passwordErrors.currentPassword)}
+              />
+              {passwordErrors.currentPassword && (
+                <p className="text-red-500 text-sm mt-1">
+                  {passwordErrors.currentPassword.message}
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">New Password</label>
-              <input type="password" {...registerPassword('newPassword')} className={fieldClass(!!passwordErrors.newPassword)} />
-              {passwordErrors.newPassword && <p className="text-red-500 text-sm mt-1">{passwordErrors.newPassword.message}</p>}
+              <input
+                type="password"
+                {...registerPassword('newPassword')}
+                className={fieldClass(!!passwordErrors.newPassword)}
+              />
+              {passwordErrors.newPassword && (
+                <p className="text-red-500 text-sm mt-1">{passwordErrors.newPassword.message}</p>
+              )}
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Confirm New Password</label>
-              <input type="password" {...registerPassword('confirmPassword')} className={fieldClass(!!passwordErrors.confirmPassword)} />
-              {passwordErrors.confirmPassword && <p className="text-red-500 text-sm mt-1">{passwordErrors.confirmPassword.message}</p>}
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                Confirm New Password
+              </label>
+              <input
+                type="password"
+                {...registerPassword('confirmPassword')}
+                className={fieldClass(!!passwordErrors.confirmPassword)}
+              />
+              {passwordErrors.confirmPassword && (
+                <p className="text-red-500 text-sm mt-1">
+                  {passwordErrors.confirmPassword.message}
+                </p>
+              )}
             </div>
             <button
               type="submit"

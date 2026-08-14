@@ -4,9 +4,25 @@ import Link from 'next/link';
 import { AlertTriangle, Store, MessageSquare, ChevronRight, Clock, Loader } from 'lucide-react';
 import { toast } from 'sonner';
 
-type PendingRider = { id: string; user: { fullName: string; phone: string | null }; createdAt: string };
-type PendingPartner = { id: string; businessName: string; ownerName: string; user: { fullName: string }; createdAt: string };
-type Quotation = { id: string; serviceType: string; businessName: string | null; contactName: string | null; createdAt: string };
+type PendingRider = {
+  id: string;
+  user: { fullName: string; phone: string | null };
+  createdAt: string;
+};
+type PendingPartner = {
+  id: string;
+  businessName: string;
+  ownerName: string;
+  user: { fullName: string };
+  createdAt: string;
+};
+type Quotation = {
+  id: string;
+  serviceType: string;
+  businessName: string | null;
+  contactName: string | null;
+  createdAt: string;
+};
 
 export default function AlertsPanel() {
   const [pendingRiders, setPendingRiders] = useState<PendingRider[]>([]);
@@ -76,7 +92,10 @@ export default function AlertsPanel() {
               {pendingRiders.length}
             </span>
           </div>
-          <Link href="/admin/riders" className="text-xs font-bold text-amber-700 hover:underline flex items-center gap-1">
+          <Link
+            href="/admin/riders"
+            className="text-xs font-bold text-amber-700 hover:underline flex items-center gap-1"
+          >
             Manage All <ChevronRight size={12} />
           </Link>
         </div>
@@ -85,10 +104,17 @@ export default function AlertsPanel() {
         ) : (
           <div className="divide-y divide-gray-50">
             {pendingRiders.map((rider) => (
-              <div key={rider.id} className="px-5 py-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors">
+              <div
+                key={rider.id}
+                className="px-5 py-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-[#1A0A5E]/10 text-[#1A0A5E] text-xs font-bold flex items-center justify-center shrink-0">
-                    {rider.user.fullName.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+                    {rider.user.fullName
+                      .split(' ')
+                      .map((n) => n[0])
+                      .join('')
+                      .slice(0, 2)}
                   </div>
                   <div>
                     <div className="text-sm font-semibold text-gray-700">{rider.user.fullName}</div>
@@ -125,7 +151,10 @@ export default function AlertsPanel() {
               {pendingPartners.length}
             </span>
           </div>
-          <Link href="/admin/partners" className="text-xs font-bold text-amber-700 hover:underline flex items-center gap-1">
+          <Link
+            href="/admin/partners"
+            className="text-xs font-bold text-amber-700 hover:underline flex items-center gap-1"
+          >
             Manage All <ChevronRight size={12} />
           </Link>
         </div>
@@ -134,13 +163,18 @@ export default function AlertsPanel() {
         ) : (
           <div className="divide-y divide-gray-50">
             {pendingPartners.map((partner) => (
-              <div key={partner.id} className="px-5 py-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors">
+              <div
+                key={partner.id}
+                className="px-5 py-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-[#CC0000]/10 text-[#CC0000] text-xs font-bold flex items-center justify-center shrink-0">
                     <Store size={14} />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold text-gray-700">{partner.businessName}</div>
+                    <div className="text-sm font-semibold text-gray-700">
+                      {partner.businessName}
+                    </div>
                     <div className="text-[11px] text-gray-400">{partner.ownerName}</div>
                   </div>
                 </div>
@@ -174,7 +208,10 @@ export default function AlertsPanel() {
               {quotations.length}
             </span>
           </div>
-          <Link href="/admin/quotations" className="text-xs font-bold text-[#CC0000] hover:underline flex items-center gap-1">
+          <Link
+            href="/admin/quotations"
+            className="text-xs font-bold text-[#CC0000] hover:underline flex items-center gap-1"
+          >
             View All <ChevronRight size={12} />
           </Link>
         </div>
@@ -183,10 +220,15 @@ export default function AlertsPanel() {
         ) : (
           <div className="divide-y divide-gray-50 max-h-56 overflow-y-auto">
             {quotations.map((q) => (
-              <div key={q.id} className="px-5 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors group">
+              <div
+                key={q.id}
+                className="px-5 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors group"
+              >
                 <div>
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-xs font-bold text-[#1A0A5E]">{q.businessName ?? q.contactName ?? '—'}</span>
+                    <span className="text-xs font-bold text-[#1A0A5E]">
+                      {q.businessName ?? q.contactName ?? '—'}
+                    </span>
                     <span className="text-[10px] bg-[#1A0A5E]/8 text-[#1A0A5E] px-1.5 py-0.5 rounded-full font-semibold">
                       {q.serviceType.replace(/_/g, ' ')}
                     </span>

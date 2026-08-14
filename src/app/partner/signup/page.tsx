@@ -30,7 +30,7 @@ const BENEFITS = [
   {
     icon: TrendingUp,
     title: 'Grow Your Revenue',
-    description: 'Receive overflow orders from 247 Sparkle and expand your customer base',
+    description: 'Receive overflow orders from 247Sparkle and expand your customer base',
   },
   {
     icon: Store,
@@ -148,7 +148,7 @@ export default function PartnerSignupPage() {
                 Partner Programme
               </div>
               <h1 className="text-4xl lg:text-5xl font-extrabold text-[#1A0A5E] mb-4">
-                Grow Your Laundry Business with 247 Sparkle
+                Grow Your Laundry Business with 247Sparkle
               </h1>
               <p className="text-lg text-gray-600">
                 Join our network of trusted laundry partners in Otukpo. Receive overflow orders,
@@ -182,8 +182,8 @@ export default function PartnerSignupPage() {
                 <div>
                   <h3 className="font-bold text-amber-900 mb-1">Admin Approval Required</h3>
                   <p className="text-sm text-amber-800">
-                    Your application will be reviewed by our team. You'll be notified once approved
-                    and can start receiving orders immediately.
+                    Your application will be reviewed by our team. You&apos;ll be notified once
+                    approved and can start receiving orders immediately.
                   </p>
                 </div>
               </div>
@@ -212,7 +212,10 @@ export default function PartnerSignupPage() {
                       Business Name
                     </label>
                     <div className="relative">
-                      <Store className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                      <Store
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        size={18}
+                      />
                       <input
                         {...register('businessName')}
                         type="text"
@@ -232,7 +235,10 @@ export default function PartnerSignupPage() {
                       Shop Owner Full Name
                     </label>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                      <User
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        size={18}
+                      />
                       <input
                         {...register('ownerName')}
                         type="text"
@@ -249,9 +255,14 @@ export default function PartnerSignupPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">
+                        Email
+                      </label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <Mail
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                          size={18}
+                        />
                         <input
                           {...register('email')}
                           type="email"
@@ -266,9 +277,14 @@ export default function PartnerSignupPage() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">Phone</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">
+                        Phone
+                      </label>
                       <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <Phone
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                          size={18}
+                        />
                         <input
                           {...register('phone')}
                           type="tel"
@@ -319,7 +335,10 @@ export default function PartnerSignupPage() {
                       Opening Time
                     </label>
                     <div className="relative">
-                      <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                      <Clock
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        size={18}
+                      />
                       <input
                         {...register('openingTime')}
                         type="time"
@@ -337,7 +356,10 @@ export default function PartnerSignupPage() {
                       Closing Time
                     </label>
                     <div className="relative">
-                      <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                      <Clock
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        size={18}
+                      />
                       <input
                         {...register('closingTime')}
                         type="time"
@@ -382,9 +404,14 @@ export default function PartnerSignupPage() {
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Password</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                      Password
+                    </label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                      <Lock
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        size={18}
+                      />
                       <input
                         {...register('password')}
                         type="password"
@@ -403,7 +430,10 @@ export default function PartnerSignupPage() {
                       Confirm Password
                     </label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                      <Lock
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        size={18}
+                      />
                       <input
                         {...register('confirmPassword')}
                         type="password"

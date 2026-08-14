@@ -3,11 +3,41 @@ import React, { useState } from 'react';
 import { Bell, Search, AlertTriangle } from 'lucide-react';
 
 const ADMIN_ALERTS = [
-  { id: 'alert-001', text: '3 new rider applications awaiting approval', time: '5 mins ago', type: 'warning', read: false },
-  { id: 'alert-002', text: '2 new partner applications pending review', time: '18 mins ago', type: 'warning', read: false },
-  { id: 'alert-003', text: 'Order #ORD-2025-0051 payment failed — manual review needed', time: '42 mins ago', type: 'error', read: false },
-  { id: 'alert-004', text: '5 new quotation requests received today', time: '1 hr ago', type: 'info', read: true },
-  { id: 'alert-005', text: 'Rider Tunde Kazeem requested ₦12,500 withdrawal', time: '2 hrs ago', type: 'info', read: true },
+  {
+    id: 'alert-001',
+    text: '3 new rider applications awaiting approval',
+    time: '5 mins ago',
+    type: 'warning',
+    read: false,
+  },
+  {
+    id: 'alert-002',
+    text: '2 new partner applications pending review',
+    time: '18 mins ago',
+    type: 'warning',
+    read: false,
+  },
+  {
+    id: 'alert-003',
+    text: 'Order #ORD-2025-0051 payment failed — manual review needed',
+    time: '42 mins ago',
+    type: 'error',
+    read: false,
+  },
+  {
+    id: 'alert-004',
+    text: '5 new quotation requests received today',
+    time: '1 hr ago',
+    type: 'info',
+    read: true,
+  },
+  {
+    id: 'alert-005',
+    text: 'Rider Tunde Kazeem requested ₦12,500 withdrawal',
+    time: '2 hrs ago',
+    type: 'info',
+    read: true,
+  },
 ];
 
 interface AdminTopbarProps {
@@ -59,10 +89,15 @@ export default function AdminTopbar({ sidebarCollapsed }: AdminTopbarProps) {
           </button>
 
           {notifOpen && (
-            <div className="absolute right-0 top-12 w-88 bg-white rounded-2xl border border-gray-100 shadow-lg z-50 animate-fade-in" style={{ width: '22rem' }}>
+            <div
+              className="absolute right-0 top-12 w-88 bg-white rounded-2xl border border-gray-100 shadow-lg z-50 animate-fade-in"
+              style={{ width: '22rem' }}
+            >
               <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                 <span className="text-sm font-bold text-[#1A0A5E]">Admin Alerts</span>
-                <span className="text-xs text-[#CC0000] font-semibold cursor-pointer hover:underline">Clear all</span>
+                <span className="text-xs text-[#CC0000] font-semibold cursor-pointer hover:underline">
+                  Clear all
+                </span>
               </div>
               <div className="max-h-80 overflow-y-auto">
                 {ADMIN_ALERTS.map((alert) => (
@@ -70,15 +105,22 @@ export default function AdminTopbar({ sidebarCollapsed }: AdminTopbarProps) {
                     key={alert.id}
                     className={`px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer ${
                       !alert.read
-                        ? alert.type === 'error' ?'bg-red-50/40'
-                          : alert.type === 'warning' ?'bg-amber-50/40' :'bg-blue-50/20' :''
+                        ? alert.type === 'error'
+                          ? 'bg-red-50/40'
+                          : alert.type === 'warning'
+                            ? 'bg-amber-50/40'
+                            : 'bg-blue-50/20'
+                        : ''
                     }`}
                   >
                     <div className="flex items-start gap-2">
                       <div
                         className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${
-                          alert.type === 'error' ?'bg-red-500'
-                            : alert.type === 'warning' ?'bg-amber-500' :'bg-blue-400'
+                          alert.type === 'error'
+                            ? 'bg-red-500'
+                            : alert.type === 'warning'
+                              ? 'bg-amber-500'
+                              : 'bg-blue-400'
                         }`}
                       />
                       <div>

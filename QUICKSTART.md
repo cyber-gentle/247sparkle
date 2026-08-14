@@ -1,4 +1,4 @@
-# 247 Sparkle — Quick Start Guide
+# 247Sparkle — Quick Start Guide
 
 **Last Updated**: June 2026
 

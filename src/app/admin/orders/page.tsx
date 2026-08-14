@@ -40,7 +40,9 @@ export default function AdminOrdersPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   async function load() {
     try {
@@ -54,10 +56,11 @@ export default function AdminOrdersPage() {
     }
   }
 
-  const filtered = orders.filter(o => {
+  const filtered = orders.filter((o) => {
     const matchesStatus = statusFilter === 'ALL' || o.status === statusFilter;
     const q = search.toLowerCase();
-    const matchesSearch = !q ||
+    const matchesSearch =
+      !q ||
       o.customer.user.fullName.toLowerCase().includes(q) ||
       o.customer.user.email.toLowerCase().includes(q) ||
       o.id.toLowerCase().includes(q) ||
@@ -65,19 +68,47 @@ export default function AdminOrdersPage() {
     return matchesStatus && matchesSearch;
   });
 
-  const statuses = ['ALL', 'PENDING', 'RIDER_ASSIGNED', 'PICKED_UP', 'IN_CLEANING', 'OUT_FOR_DELIVERY', 'COMPLETED', 'CANCELLED'];
+  const statuses = [
+    'ALL',
+    'PENDING',
+    'RIDER_ASSIGNED',
+    'PICKED_UP',
+    'IN_CLEANING',
+    'OUT_FOR_DELIVERY',
+    'COMPLETED',
+    'CANCELLED',
+  ];
 
   return (
     <main className="min-h-screen bg-slate-50 px-6 py-10">
       <section className="mx-auto w-full max-w-7xl space-y-6">
         <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#CC0000]">Admin Portal</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#CC0000]">
+            Admin Portal
+          </p>
           <h1 className="mt-2 text-3xl font-extrabold text-[#1A0A5E]">Orders Management</h1>
-          <p className="mt-1 text-sm text-slate-600">Monitor all platform orders across every service type and status.</p>
+          <p className="mt-1 text-sm text-slate-600">
+            Monitor all platform orders across every service type and status.
+          </p>
           <div className="mt-4 flex gap-3">
-            <Link href="/admin/dashboard" className="rounded-xl bg-[#1A0A5E] px-4 py-2 text-sm font-semibold text-white">Dashboard</Link>
-            <Link href="/admin/riders" className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">Riders</Link>
-            <Link href="/admin/pricing" className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">Pricing</Link>
+            <Link
+              href="/admin/dashboard"
+              className="rounded-xl bg-[#1A0A5E] px-4 py-2 text-sm font-semibold text-white"
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/admin/riders"
+              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+            >
+              Riders
+            </Link>
+            <Link
+              href="/admin/pricing"
+              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+            >
+              Pricing
+            </Link>
           </div>
         </header>
 
@@ -89,16 +120,20 @@ export default function AdminOrdersPage() {
               type="text"
               placeholder="Search by customer, email, order ID, or service…"
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               className="w-full rounded-xl border border-slate-200 bg-white pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A0A5E]"
             />
           </div>
           <select
             value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
+            onChange={(e) => setStatusFilter(e.target.value)}
             className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1A0A5E]"
           >
-            {statuses.map(s => <option key={s} value={s}>{s === 'ALL' ? 'All Statuses' : s.replace(/_/g, ' ')}</option>)}
+            {statuses.map((s) => (
+              <option key={s} value={s}>
+                {s === 'ALL' ? 'All Statuses' : s.replace(/_/g, ' ')}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -125,29 +160,46 @@ export default function AdminOrdersPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map(order => (
-                    <tr key={order.id} className="border-b border-slate-100 hover:bg-slate-50 transition">
+                  {filtered.map((order) => (
+                    <tr
+                      key={order.id}
+                      className="border-b border-slate-100 hover:bg-slate-50 transition"
+                    >
                       <td className="px-5 py-4 font-mono text-xs text-slate-500">
                         ORD-{order.id.slice(0, 6).toUpperCase()}
                       </td>
                       <td className="px-5 py-4">
-                        <p className="font-semibold text-slate-800">{order.customer.user.fullName}</p>
+                        <p className="font-semibold text-slate-800">
+                          {order.customer.user.fullName}
+                        </p>
                         <p className="text-xs text-slate-500">{order.customer.user.phone}</p>
                       </td>
-                      <td className="px-5 py-4 text-slate-600">{order.serviceType.replace(/_/g, ' ')}</td>
+                      <td className="px-5 py-4 text-slate-600">
+                        {order.serviceType.replace(/_/g, ' ')}
+                      </td>
                       <td className="px-5 py-4">
-                        <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${STATUS_COLORS[order.status] ?? 'bg-slate-100 text-slate-600'}`}>
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-xs font-bold ${STATUS_COLORS[order.status] ?? 'bg-slate-100 text-slate-600'}`}
+                        >
                           {order.status.replace(/_/g, ' ')}
                         </span>
                       </td>
                       <td className="px-5 py-4">
-                        <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${PAYMENT_COLORS[order.paymentStatus] ?? 'bg-slate-100 text-slate-600'}`}>
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-xs font-bold ${PAYMENT_COLORS[order.paymentStatus] ?? 'bg-slate-100 text-slate-600'}`}
+                        >
                           {order.paymentStatus}
                         </span>
                       </td>
-                      <td className="px-5 py-4 font-semibold text-[#1A0A5E]">₦{order.totalAmount.toLocaleString()}</td>
-                      <td className="px-5 py-4 text-slate-600">{order.rider?.user.fullName ?? '—'}</td>
-                      <td className="px-5 py-4 text-slate-500">{new Date(order.createdAt).toLocaleDateString()}</td>
+                      <td className="px-5 py-4 font-semibold text-[#1A0A5E]">
+                        ₦{order.totalAmount.toLocaleString()}
+                      </td>
+                      <td className="px-5 py-4 text-slate-600">
+                        {order.rider?.user.fullName ?? '—'}
+                      </td>
+                      <td className="px-5 py-4 text-slate-500">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

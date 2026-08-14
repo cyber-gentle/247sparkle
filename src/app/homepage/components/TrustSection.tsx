@@ -52,10 +52,11 @@ export default function TrustSection() {
             Why Choose Us
           </span>
           <h2 className="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white mb-4">
-            The 247 Sparkle Difference
+            The 247Sparkle Difference
           </h2>
           <p className="text-white/70 max-w-2xl mx-auto text-base leading-relaxed">
-            We&apos;re not just a cleaning service—we&apos;re your trusted partner in maintaining a clean, healthy, and organized life. Here&apos;s what makes us different.
+            We&apos;re not just a cleaning service—we&apos;re your trusted partner in maintaining a
+            clean, healthy, and organized life. Here&apos;s what makes us different.
           </p>
         </div>
 

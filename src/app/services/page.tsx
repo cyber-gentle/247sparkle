@@ -89,7 +89,7 @@ export default function ServicesPage() {
               Professional Cleaning Solutions for Homes and Businesses
             </h1>
             <p className="mt-3 max-w-3xl text-sm text-white/80">
-              Explore all 247 Sparkle services and current base pricing from the admin pricing
+              Explore all 247Sparkle services and current base pricing from the admin pricing
               engine.
             </p>
           </div>

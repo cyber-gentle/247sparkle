@@ -4,11 +4,30 @@ import { CheckCircle2, Circle, MapPin, Phone, ChevronDown, ChevronUp } from 'luc
 
 const ORDER_STAGES = [
   { id: 'stage-placed', key: 'placed', label: 'Order Placed', time: '09:15 AM', done: true },
-  { id: 'stage-assigned', key: 'rider_assigned', label: 'Rider Assigned', time: '09:32 AM', done: true },
+  {
+    id: 'stage-assigned',
+    key: 'rider_assigned',
+    label: 'Rider Assigned',
+    time: '09:32 AM',
+    done: true,
+  },
   { id: 'stage-picked', key: 'picked_up', label: 'Picked Up', time: '10:08 AM', done: true },
   { id: 'stage-cleaning', key: 'in_cleaning', label: 'In Cleaning', time: '11:00 AM', done: true },
-  { id: 'stage-out', key: 'out_for_delivery', label: 'Out for Delivery', time: '2:45 PM', done: true, active: true },
-  { id: 'stage-delivered', key: 'delivered', label: 'Delivered', time: 'Est. 3:30 PM', done: false },
+  {
+    id: 'stage-out',
+    key: 'out_for_delivery',
+    label: 'Out for Delivery',
+    time: '2:45 PM',
+    done: true,
+    active: true,
+  },
+  {
+    id: 'stage-delivered',
+    key: 'delivered',
+    label: 'Delivered',
+    time: 'Est. 3:30 PM',
+    done: false,
+  },
 ];
 
 export default function ActiveOrderTracker() {
@@ -40,15 +59,21 @@ export default function ActiveOrderTracker() {
           {/* Order Details Row */}
           <div className="grid grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-xl">
             <div>
-              <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Service</div>
+              <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">
+                Service
+              </div>
               <div className="text-sm font-bold text-[#1A0A5E]">Laundry</div>
             </div>
             <div>
-              <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Items</div>
+              <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">
+                Items
+              </div>
               <div className="text-sm font-bold text-[#1A0A5E]">6 pieces</div>
             </div>
             <div>
-              <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Amount</div>
+              <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">
+                Amount
+              </div>
               <div className="text-sm font-bold text-[#1A0A5E] font-mono-nums">₦4,500</div>
             </div>
           </div>
@@ -64,7 +89,8 @@ export default function ActiveOrderTracker() {
                       stage?.done && stage?.active
                         ? 'bg-orange-100 ring-2 ring-orange-400 ring-offset-1'
                         : stage?.done
-                        ? 'bg-green-100' :'bg-gray-100'
+                          ? 'bg-green-100'
+                          : 'bg-gray-100'
                     }`}
                   >
                     {stage?.done ? (
@@ -87,7 +113,11 @@ export default function ActiveOrderTracker() {
                 <div className="flex items-start justify-between flex-1 pt-0.5">
                   <span
                     className={`text-sm font-semibold ${
-                      stage?.active ? 'text-orange-600' : stage?.done ? 'text-gray-700' : 'text-gray-300'
+                      stage?.active
+                        ? 'text-orange-600'
+                        : stage?.done
+                          ? 'text-gray-700'
+                          : 'text-gray-300'
                     }`}
                   >
                     {stage?.label}
@@ -97,7 +127,9 @@ export default function ActiveOrderTracker() {
                       </span>
                     )}
                   </span>
-                  <span className={`text-xs font-mono-nums ${stage?.done ? 'text-gray-500' : 'text-gray-300'}`}>
+                  <span
+                    className={`text-xs font-mono-nums ${stage?.done ? 'text-gray-500' : 'text-gray-300'}`}
+                  >
                     {stage?.time}
                   </span>
                 </div>

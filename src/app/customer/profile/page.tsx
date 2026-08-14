@@ -16,14 +16,16 @@ const profileSchema = z.object({
   phone: z.string().min(10, 'Phone number must be at least 10 characters'),
 });
 
-const passwordSchema = z.object({
-  currentPassword: z.string().min(1, 'Current password is required'),
-  newPassword: z.string().min(6, 'New password must be at least 6 characters'),
-  confirmPassword: z.string(),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-});
+const passwordSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'Current password is required'),
+    newPassword: z.string().min(6, 'New password must be at least 6 characters'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 type PasswordFormData = z.infer<typeof passwordSchema>;
@@ -242,7 +244,9 @@ export default function CustomerProfilePage() {
                 {...register('fullName')}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1A0A5E] focus:border-transparent"
               />
-              {errors.fullName && <p className="text-red-500 text-sm mt-1">{errors.fullName.message}</p>}
+              {errors.fullName && (
+                <p className="text-red-500 text-sm mt-1">{errors.fullName.message}</p>
+              )}
             </div>
 
             <div>
@@ -330,7 +334,10 @@ export default function CustomerProfilePage() {
           ) : (
             <div className="space-y-2">
               {addresses.map((addr) => (
-                <div key={addr.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                <div
+                  key={addr.id}
+                  className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
+                >
                   <div>
                     <p className="font-semibold text-[#1A0A5E]">{addr.label}</p>
                     <p className="text-sm text-gray-600">{addr.address}</p>
@@ -355,13 +362,19 @@ export default function CustomerProfilePage() {
           </h2>
           <form onSubmit={handleSubmitPassword(onSubmitPassword)} className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Current Password</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                Current Password
+              </label>
               <input
                 type="password"
                 {...registerPassword('currentPassword')}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1A0A5E] focus:border-transparent"
               />
-              {passwordErrors.currentPassword && <p className="text-red-500 text-sm mt-1">{passwordErrors.currentPassword.message}</p>}
+              {passwordErrors.currentPassword && (
+                <p className="text-red-500 text-sm mt-1">
+                  {passwordErrors.currentPassword.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -371,17 +384,25 @@ export default function CustomerProfilePage() {
                 {...registerPassword('newPassword')}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1A0A5E] focus:border-transparent"
               />
-              {passwordErrors.newPassword && <p className="text-red-500 text-sm mt-1">{passwordErrors.newPassword.message}</p>}
+              {passwordErrors.newPassword && (
+                <p className="text-red-500 text-sm mt-1">{passwordErrors.newPassword.message}</p>
+              )}
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Confirm New Password</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                Confirm New Password
+              </label>
               <input
                 type="password"
                 {...registerPassword('confirmPassword')}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1A0A5E] focus:border-transparent"
               />
-              {passwordErrors.confirmPassword && <p className="text-red-500 text-sm mt-1">{passwordErrors.confirmPassword.message}</p>}
+              {passwordErrors.confirmPassword && (
+                <p className="text-red-500 text-sm mt-1">
+                  {passwordErrors.confirmPassword.message}
+                </p>
+              )}
             </div>
 
             <button

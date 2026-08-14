@@ -10,10 +10,7 @@ export async function GET() {
     return NextResponse.json({ pricing }, { status: 200 });
   } catch (error: any) {
     console.error('Get pricing error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch pricing' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch pricing' }, { status: 500 });
   }
 }
 
@@ -23,12 +20,9 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   try {
     const userRole = request.headers.get('x-user-role');
-    
+
     if (userRole !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Unauthorized - Admin only' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Unauthorized - Admin only' }, { status: 403 });
     }
 
     const body = await request.json();
@@ -57,9 +51,6 @@ export async function PUT(request: NextRequest) {
     );
   } catch (error: any) {
     console.error('Update pricing error:', error);
-    return NextResponse.json(
-      { error: 'Failed to update pricing' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to update pricing' }, { status: 500 });
   }
 }

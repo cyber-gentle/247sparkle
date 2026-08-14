@@ -20,7 +20,7 @@ export default function PartnerBanner() {
               </span>
             </div>
             <h2 className="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white mb-4 max-w-3xl mx-auto leading-tight">
-              Grow Your Revenue with <span className="text-[#F5C200]">247 Sparkle</span>
+              Grow Your Revenue with <span className="text-[#F5C200]">247Sparkle</span>
             </h2>
             <p className="text-white/70 text-base lg:text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
               Are you a laundry business or looking to earn as a delivery rider in Otukpo? Join our
@@ -38,7 +38,7 @@ export default function PartnerBanner() {
                   Register as a Laundry Business
                 </h3>
                 <p className="text-white/60 text-sm mb-5 leading-relaxed">
-                  List your shop on the 247 Sparkle platform. We send you overflow orders and handle
+                  List your shop on the 247Sparkle platform. We send you overflow orders and handle
                   customer acquisition — you focus on cleaning.
                 </p>
                 <Link

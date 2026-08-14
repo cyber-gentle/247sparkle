@@ -55,7 +55,12 @@ export default function RiderStatusGrid() {
             const isWorking = rider.availabilityStatus === 'WORKING';
             const isOnJob = rider.assignedOrders.length > 0;
             const todayEarnings = rider.commissions.reduce((s, c) => s + c.amount, 0);
-            const initials = rider.user.fullName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
+            const initials = rider.user.fullName
+              .split(' ')
+              .map((n) => n[0])
+              .join('')
+              .slice(0, 2)
+              .toUpperCase();
 
             return (
               <div
@@ -64,8 +69,8 @@ export default function RiderStatusGrid() {
                   isOnJob
                     ? 'border-orange-200 bg-orange-50/30'
                     : isWorking
-                    ? 'border-green-200 bg-green-50/20'
-                    : 'border-gray-100 bg-gray-50/50 opacity-60'
+                      ? 'border-green-200 bg-green-50/20'
+                      : 'border-gray-100 bg-gray-50/50 opacity-60'
                 }`}
               >
                 <div
@@ -73,15 +78,17 @@ export default function RiderStatusGrid() {
                     !isWorking
                       ? 'bg-gray-200 text-gray-500'
                       : isOnJob
-                      ? 'bg-orange-100 text-orange-700'
-                      : 'bg-green-100 text-green-700'
+                        ? 'bg-orange-100 text-orange-700'
+                        : 'bg-green-100 text-green-700'
                   }`}
                 >
                   {initials}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="text-xs font-bold text-gray-700 truncate">{rider.user.fullName}</span>
+                    <span className="text-xs font-bold text-gray-700 truncate">
+                      {rider.user.fullName}
+                    </span>
                     <span
                       className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                         !isWorking ? 'bg-gray-300' : isOnJob ? 'bg-orange-400' : 'bg-green-400'
@@ -99,7 +106,9 @@ export default function RiderStatusGrid() {
                   <div className="text-xs font-bold text-[#1A0A5E] font-mono-nums">
                     ₦{todayEarnings.toLocaleString()}
                   </div>
-                  <div className="text-[10px] text-gray-400">{rider.assignedOrders.length} active</div>
+                  <div className="text-[10px] text-gray-400">
+                    {rider.assignedOrders.length} active
+                  </div>
                 </div>
               </div>
             );

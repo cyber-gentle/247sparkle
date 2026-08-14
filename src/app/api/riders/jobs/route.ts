@@ -10,10 +10,7 @@ export async function GET(request: NextRequest) {
     const userRole = request.headers.get('x-user-role');
 
     if (!userId || userRole !== 'RIDER') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Get rider
@@ -22,10 +19,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!rider) {
-      return NextResponse.json(
-        { error: 'Rider not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Rider not found' }, { status: 404 });
     }
 
     // Fetch available orders (not yet assigned to a rider, payment completed)
@@ -77,9 +71,6 @@ export async function GET(request: NextRequest) {
     );
   } catch (error: any) {
     console.error('Get available jobs error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch jobs' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch jobs' }, { status: 500 });
   }
 }

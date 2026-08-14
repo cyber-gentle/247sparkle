@@ -21,7 +21,11 @@ export default function AdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [submitError, setSubmitError] = useState('');
 
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
 
@@ -57,7 +61,10 @@ export default function AdminLoginPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-[#1A0A5E] to-slate-900 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-white/60 hover:text-white mb-8 transition">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-white/60 hover:text-white mb-8 transition"
+        >
           <ArrowLeft size={16} /> Back to Home
         </Link>
 
@@ -67,14 +74,19 @@ export default function AdminLoginPage() {
               <LayoutDashboard size={32} />
             </div>
             <h1 className="text-2xl font-extrabold text-[#1A0A5E]">Admin Console</h1>
-            <p className="text-sm text-gray-500 mt-1">247 Sparkle Platform Management</p>
+            <p className="text-sm text-gray-500 mt-1">247Sparkle Platform Management</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                Email Address
+              </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <Mail
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={18}
+                />
                 <input
                   {...register('email')}
                   type="email"
@@ -92,7 +104,10 @@ export default function AdminLoginPage() {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Password</label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <Lock
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={18}
+                />
                 <input
                   {...register('password')}
                   type="password"
@@ -119,7 +134,10 @@ export default function AdminLoginPage() {
               className="w-full bg-[#1A0A5E] hover:bg-[#120843] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2"
             >
               {isLoading ? (
-                <><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" /> Signing in...</>
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />{' '}
+                  Signing in...
+                </>
               ) : (
                 'Sign In to Admin Console'
               )}

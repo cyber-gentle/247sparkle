@@ -2,7 +2,6 @@ import React from 'react';
 import { Package, Clock, CheckCircle2, TrendingUp } from 'lucide-react';
 import Icon from '@/components/ui/AppIcon';
 
-
 const KPI_DATA = [
   {
     id: 'kpi-total',
@@ -59,17 +58,25 @@ export default function CustomerKPICards() {
             }`}
           >
             <div className="flex items-start justify-between mb-3">
-              <div className={`w-10 h-10 rounded-xl ${kpi?.iconBg} flex items-center justify-center`}>
+              <div
+                className={`w-10 h-10 rounded-xl ${kpi?.iconBg} flex items-center justify-center`}
+              >
                 <Icon size={18} className={kpi?.iconColor} />
               </div>
               {kpi?.trend === 'positive' && (
-                <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Good</span>
+                <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                  Good
+                </span>
               )}
               {kpi?.trend === 'alert' && (
-                <span className="text-[10px] font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full animate-pulse">Live</span>
+                <span className="text-[10px] font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full animate-pulse">
+                  Live
+                </span>
               )}
             </div>
-            <div className="text-2xl font-extrabold text-[#1A0A5E] font-mono-nums mb-1">{kpi?.value}</div>
+            <div className="text-2xl font-extrabold text-[#1A0A5E] font-mono-nums mb-1">
+              {kpi?.value}
+            </div>
             <div className="text-xs font-semibold text-gray-500 mb-0.5">{kpi?.label}</div>
             <div className="text-[11px] text-gray-400">{kpi?.sub}</div>
           </div>

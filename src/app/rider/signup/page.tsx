@@ -130,7 +130,7 @@ export default function RiderSignupPage() {
                 Join Our Rider Network
               </div>
               <h1 className="text-4xl lg:text-5xl font-extrabold text-[#1A0A5E] mb-4">
-                Start Earning with 247 Sparkle
+                Start Earning with 247Sparkle
               </h1>
               <p className="text-lg text-gray-600">
                 Join hundreds of riders delivering laundry and cleaning services across Otukpo.
@@ -166,7 +166,8 @@ export default function RiderSignupPage() {
                 <div>
                   <h3 className="font-bold text-amber-900 mb-1">Admin Approval Required</h3>
                   <p className="text-sm text-amber-800">
-                    Your account will be reviewed by our team. You'll receive an email once approved and can start accepting jobs immediately.
+                    Your account will be reviewed by our team. You&apos;ll receive an email once
+                    approved and can start accepting jobs immediately.
                   </p>
                 </div>
               </div>
@@ -192,11 +193,17 @@ export default function RiderSignupPage() {
 
                 {/* Full Name */}
                 <div className="mb-3">
-                  <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 mb-1">
+                  <label
+                    htmlFor="fullName"
+                    className="block text-sm font-semibold text-gray-700 mb-1"
+                  >
                     Full Name
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <User
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                      size={18}
+                    />
                     <input
                       {...register('fullName')}
                       type="text"
@@ -217,11 +224,17 @@ export default function RiderSignupPage() {
                 {/* Email & Phone */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                   <div>
-                    <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">
+                    <label
+                      htmlFor="email"
+                      className="block text-sm font-semibold text-gray-700 mb-1"
+                    >
                       Email
                     </label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                      <Mail
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        size={18}
+                      />
                       <input
                         {...register('email')}
                         type="email"
@@ -240,11 +253,17 @@ export default function RiderSignupPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-1">
+                    <label
+                      htmlFor="phone"
+                      className="block text-sm font-semibold text-gray-700 mb-1"
+                    >
                       Phone
                     </label>
                     <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                      <Phone
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        size={18}
+                      />
                       <input
                         {...register('phone')}
                         type="tel"
@@ -265,7 +284,10 @@ export default function RiderSignupPage() {
 
                 {/* Address */}
                 <div>
-                  <label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-1">
+                  <label
+                    htmlFor="address"
+                    className="block text-sm font-semibold text-gray-700 mb-1"
+                  >
                     Address
                   </label>
                   <div className="relative">
@@ -296,11 +318,17 @@ export default function RiderSignupPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1">
+                    <label
+                      htmlFor="password"
+                      className="block text-sm font-semibold text-gray-700 mb-1"
+                    >
                       Password
                     </label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                      <Lock
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        size={18}
+                      />
                       <input
                         {...register('password')}
                         type="password"
@@ -319,11 +347,17 @@ export default function RiderSignupPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-1">
+                    <label
+                      htmlFor="confirmPassword"
+                      className="block text-sm font-semibold text-gray-700 mb-1"
+                    >
                       Confirm Password
                     </label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                      <Lock
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        size={18}
+                      />
                       <input
                         {...register('confirmPassword')}
                         type="password"

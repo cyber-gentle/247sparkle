@@ -3,21 +3,23 @@ import { hash } from 'bcryptjs';
 import { z } from 'zod';
 import prisma from '@/lib/db';
 
-const partnerSignupSchema = z.object({
-  businessName: z.string().min(2, 'Business name must be at least 2 characters'),
-  ownerName: z.string().min(2, 'Owner name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  phone: z.string().min(10, 'Phone number must be at least 10 characters'),
-  address: z.string().min(5, 'Address is required'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string(),
-  openingTime: z.string().optional(),
-  closingTime: z.string().optional(),
-  daysOfOpening: z.array(z.string()).optional(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-});
+const partnerSignupSchema = z
+  .object({
+    businessName: z.string().min(2, 'Business name must be at least 2 characters'),
+    ownerName: z.string().min(2, 'Owner name must be at least 2 characters'),
+    email: z.string().email('Invalid email address'),
+    phone: z.string().min(10, 'Phone number must be at least 10 characters'),
+    address: z.string().min(5, 'Address is required'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z.string(),
+    openingTime: z.string().optional(),
+    closingTime: z.string().optional(),
+    daysOfOpening: z.array(z.string()).optional(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,10 +32,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingUser) {
-      return NextResponse.json(
-        { error: 'Email already registered' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Email already registered' }, { status: 400 });
     }
 
     // Hash password
@@ -54,7 +53,9 @@ export async function POST(request: NextRequest) {
             address: validatedData.address,
             openingTime: validatedData.openingTime,
             closingTime: validatedData.closingTime,
-            daysOfOpening: validatedData.daysOfOpening ? JSON.stringify(validatedData.daysOfOpening) : null,
+            daysOfOpening: validatedData.daysOfOpening
+              ? JSON.stringify(validatedData.daysOfOpening)
+              : null,
             approvalStatus: 'PENDING',
           },
         },
@@ -86,9 +87,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(
-      { error: 'Partner signup failed' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Partner signup failed' }, { status: 500 });
   }
 }

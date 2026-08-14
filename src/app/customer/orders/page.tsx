@@ -66,21 +66,22 @@ export default function CustomerOrdersPage() {
 
     // Search filter
     if (searchQuery) {
-      filtered = filtered.filter(order =>
-        order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.pickupAddress?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.deliveryAddress?.toLowerCase().includes(searchQuery.toLowerCase())
+      filtered = filtered.filter(
+        (order) =>
+          order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          order.pickupAddress?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          order.deliveryAddress?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
     // Status filter
     if (statusFilter !== 'ALL') {
-      filtered = filtered.filter(order => order.status === statusFilter);
+      filtered = filtered.filter((order) => order.status === statusFilter);
     }
 
     // Service filter
     if (serviceFilter !== 'ALL') {
-      filtered = filtered.filter(order => order.serviceType === serviceFilter);
+      filtered = filtered.filter((order) => order.serviceType === serviceFilter);
     }
 
     setFilteredOrders(filtered);
@@ -155,7 +156,10 @@ export default function CustomerOrdersPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Search */}
             <div className="relative">
-              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Search
+                size={18}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
               <input
                 type="text"
                 placeholder="Search orders..."
@@ -236,10 +240,14 @@ export default function CustomerOrdersPage() {
                       <h3 className="text-lg font-bold text-[#1A0A5E]">
                         {getServiceLabel(order.serviceType)}
                       </h3>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(order.status)}`}>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(order.status)}`}
+                      >
                         {order.status.replace(/_/g, ' ')}
                       </span>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getPaymentColor(order.paymentStatus)}`}>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${getPaymentColor(order.paymentStatus)}`}
+                      >
                         {order.paymentStatus}
                       </span>
                     </div>
@@ -260,7 +268,9 @@ export default function CustomerOrdersPage() {
                     {order.items && order.items.length > 0 && (
                       <div className="mt-3 text-sm text-gray-600">
                         <span className="font-semibold">Items: </span>
-                        {order.items.map((item: any) => `${item.quantity}x ${item.itemName}`).join(', ')}
+                        {order.items
+                          .map((item: any) => `${item.quantity}x ${item.itemName}`)
+                          .join(', ')}
                       </div>
                     )}
                   </div>

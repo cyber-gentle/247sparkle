@@ -1,6 +1,15 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { ShoppingBag, Bike, TrendingUp, AlertTriangle, CheckCircle2, Store, ArrowUp, Loader } from 'lucide-react';
+import {
+  ShoppingBag,
+  Bike,
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle2,
+  Store,
+  ArrowUp,
+  Loader,
+} from 'lucide-react';
 
 type KPIs = {
   ordersToday: number;
@@ -63,7 +72,9 @@ export default function AdminKPIBento() {
             <ShoppingBag size={18} className="text-[#1A0A5E]" />
           </div>
         </div>
-        <div className="text-2xl font-extrabold text-[#1A0A5E] font-mono-nums mb-1">{kpis.ordersToday}</div>
+        <div className="text-2xl font-extrabold text-[#1A0A5E] font-mono-nums mb-1">
+          {kpis.ordersToday}
+        </div>
         <div className="text-xs font-semibold text-gray-500 mb-0.5">Orders Today</div>
         <div className="text-[11px] text-gray-400">All service types</div>
       </div>
@@ -78,13 +89,17 @@ export default function AdminKPIBento() {
             {kpis.onJobRiders} on job
           </span>
         </div>
-        <div className="text-2xl font-extrabold text-[#1A0A5E] font-mono-nums mb-1">{kpis.activeRiders}</div>
+        <div className="text-2xl font-extrabold text-[#1A0A5E] font-mono-nums mb-1">
+          {kpis.activeRiders}
+        </div>
         <div className="text-xs font-semibold text-gray-500 mb-0.5">Active Riders</div>
         <div className="text-[11px] text-gray-400">Currently working</div>
       </div>
 
       {/* Pending Approvals */}
-      <div className={`rounded-2xl border p-5 shadow-card hover:shadow-card-hover transition-all duration-300 ${kpis.pendingApprovals > 0 ? 'bg-amber-50/40 border-amber-200' : 'bg-white border-gray-100'}`}>
+      <div
+        className={`rounded-2xl border p-5 shadow-card hover:shadow-card-hover transition-all duration-300 ${kpis.pendingApprovals > 0 ? 'bg-amber-50/40 border-amber-200' : 'bg-white border-gray-100'}`}
+      >
         <div className="flex items-start justify-between mb-3">
           <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
             <AlertTriangle size={18} className="text-amber-600" />
@@ -95,7 +110,9 @@ export default function AdminKPIBento() {
             </span>
           )}
         </div>
-        <div className="text-2xl font-extrabold text-amber-700 font-mono-nums mb-1">{kpis.pendingApprovals}</div>
+        <div className="text-2xl font-extrabold text-amber-700 font-mono-nums mb-1">
+          {kpis.pendingApprovals}
+        </div>
         <div className="text-xs font-semibold text-gray-500 mb-0.5">Pending Approvals</div>
         <div className="text-[11px] text-gray-400">
           {kpis.pendingRiderApprovals} riders · {kpis.pendingPartnerApprovals} partners
@@ -109,7 +126,9 @@ export default function AdminKPIBento() {
             <CheckCircle2 size={18} className="text-green-600" />
           </div>
         </div>
-        <div className="text-2xl font-extrabold text-[#1A0A5E] font-mono-nums mb-1">{kpis.completionRate}%</div>
+        <div className="text-2xl font-extrabold text-[#1A0A5E] font-mono-nums mb-1">
+          {kpis.completionRate}%
+        </div>
         <div className="text-xs font-semibold text-gray-500 mb-0.5">Completion Rate</div>
         <div className="text-[11px] text-gray-400">All-time orders</div>
       </div>
@@ -124,7 +143,9 @@ export default function AdminKPIBento() {
             {kpis.availablePartners} available
           </span>
         </div>
-        <div className="text-2xl font-extrabold text-[#1A0A5E] font-mono-nums mb-1">{kpis.totalPartners}</div>
+        <div className="text-2xl font-extrabold text-[#1A0A5E] font-mono-nums mb-1">
+          {kpis.totalPartners}
+        </div>
         <div className="text-xs font-semibold text-gray-500 mb-0.5">Registered Partners</div>
         <div className="text-[11px] text-gray-400">Approved laundry shops</div>
       </div>

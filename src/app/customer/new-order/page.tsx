@@ -412,8 +412,9 @@ export default function CustomerNewOrderPage() {
                   <p className="text-sm text-gray-600 mb-2">Items</p>
                   {orderSummary.items.map((item) => (
                     <p key={item.id} className="text-gray-700">
-                    {item.itemName} × {item.quantity} = ₦{(item.unitPrice * item.quantity).toLocaleString()}
-                  </p>
+                      {item.itemName} × {item.quantity} = ₦
+                      {(item.unitPrice * item.quantity).toLocaleString()}
+                    </p>
                   ))}
                 </div>
               )}

@@ -124,7 +124,9 @@ export default function HeroSection() {
           </h1>
 
           <p className="text-lg md:text-xl text-white/90 leading-relaxed mb-8 max-w-2xl">
-            Skip the hassle. Our professional laundry, home cleaning, and fumigation services come to you with real-time tracking, flexible scheduling, and unbeatable care for your belongings.
+            Skip the hassle. Our professional laundry, home cleaning, and fumigation services come
+            to you with real-time tracking, flexible scheduling, and unbeatable care for your
+            belongings.
           </p>
 
           {/* CTAs */}

@@ -6,7 +6,16 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, CheckCircle2, Lock, Mail, Phone, Sparkles, UserRound, AlertCircle } from 'lucide-react';
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Lock,
+  Mail,
+  Phone,
+  Sparkles,
+  UserRound,
+  AlertCircle,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 const BENEFITS = [
@@ -15,16 +24,18 @@ const BENEFITS = [
   'Access fumigation certificates and service history anytime.',
 ];
 
-const signupSchema = z.object({
-  fullName: z.string().min(2, 'Full name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  phone: z.string().min(10, 'Phone number must be at least 10 characters'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-});
+const signupSchema = z
+  .object({
+    fullName: z.string().min(2, 'Full name must be at least 2 characters'),
+    email: z.string().email('Invalid email address'),
+    phone: z.string().min(10, 'Phone number must be at least 10 characters'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
 
 type SignupFormData = z.infer<typeof signupSchema>;
 
@@ -70,7 +81,7 @@ export default function CustomerSignupPage() {
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   return (
     <main className="min-h-screen bg-slate-50 px-6 py-10 lg:px-10">
@@ -93,7 +104,7 @@ export default function CustomerSignupPage() {
               Customer Portal
             </p>
             <h1 className="max-w-xl text-3xl font-extrabold leading-tight md:text-4xl">
-              Create your 247 Sparkle account
+              Create your 247Sparkle account
             </h1>
             <p className="mt-4 max-w-xl text-sm leading-6 text-white/75">
               Save your details once, book faster next time, and keep every order, delivery update,

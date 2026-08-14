@@ -40,7 +40,7 @@ const AppLogo = memo(function AppLogo({
       {src ? (
         <AppImage
           src={src}
-          alt="Logo" 
+          alt="Logo"
           width={finalWidth}
           height={finalHeight}
           className="flex-shrink-0 object-contain"

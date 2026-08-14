@@ -39,7 +39,9 @@ export default function AdminDashboardPage() {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <LayoutDashboard size={16} className="text-gray-400" />
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Admin Console</span>
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                  Admin Console
+                </span>
               </div>
               <h1 className="text-2xl lg:text-3xl font-extrabold text-[#1A0A5E]">
                 Platform Overview

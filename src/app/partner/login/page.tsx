@@ -88,7 +88,7 @@ export default function PartnerLoginPage() {
             href="/partner/signup"
             className="text-sm font-semibold text-[#1A0A5E] hover:text-[#120843]"
           >
-            Don't have an account? Sign up →
+            Don&apos;t have an account? Sign up →
           </Link>
         </div>
       </div>
@@ -131,8 +131,8 @@ export default function PartnerLoginPage() {
                 <div>
                   <h3 className="font-bold text-amber-900 mb-1">Pending Approval?</h3>
                   <p className="text-sm text-amber-800">
-                    If you just applied, please wait for admin approval before logging in. You'll be
-                    notified once your account is activated.
+                    If you just applied, please wait for admin approval before logging in.
+                    You&apos;ll be notified once your account is activated.
                   </p>
                 </div>
               </div>
@@ -155,7 +155,10 @@ export default function PartnerLoginPage() {
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  <Mail
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    size={18}
+                  />
                   <input
                     {...register('email')}
                     type="email"
@@ -175,7 +178,10 @@ export default function PartnerLoginPage() {
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  <Lock
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    size={18}
+                  />
                   <input
                     {...register('password')}
                     type="password"
@@ -223,7 +229,7 @@ export default function PartnerLoginPage() {
                 <div className="w-full border-t border-gray-200" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-gray-500">New to 247 Sparkle?</span>
+                <span className="px-4 bg-white text-gray-500">New to 247Sparkle?</span>
               </div>
             </div>
 

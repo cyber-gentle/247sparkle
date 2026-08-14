@@ -36,7 +36,9 @@ export async function GET(request: NextRequest) {
       prisma.rider.count({
         where: {
           approvalStatus: 'APPROVED',
-          assignedOrders: { some: { status: { in: ['RIDER_ASSIGNED', 'PICKED_UP', 'OUT_FOR_DELIVERY'] } } },
+          assignedOrders: {
+            some: { status: { in: ['RIDER_ASSIGNED', 'PICKED_UP', 'OUT_FOR_DELIVERY'] } },
+          },
         },
       }),
       prisma.rider.count({ where: { approvalStatus: 'PENDING' } }),

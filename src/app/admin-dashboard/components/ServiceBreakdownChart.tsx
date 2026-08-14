@@ -31,7 +31,9 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   return (
     <div className="bg-white border border-gray-100 rounded-xl shadow-lg p-3">
       <p className="text-xs font-bold text-gray-600 mb-1.5">{label}</p>
-      <p className="text-sm font-extrabold text-[#1A0A5E] font-mono-nums">{payload[0]?.value} orders</p>
+      <p className="text-sm font-extrabold text-[#1A0A5E] font-mono-nums">
+        {payload[0]?.value} orders
+      </p>
     </div>
   );
 }
@@ -45,7 +47,11 @@ export default function ServiceBreakdownChart() {
       </div>
 
       <ResponsiveContainer width="100%" height={180}>
-        <BarChart data={SERVICE_DATA} margin={{ top: 0, right: 0, left: -20, bottom: 0 }} barSize={32}>
+        <BarChart
+          data={SERVICE_DATA}
+          margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
+          barSize={32}
+        >
           <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
           <XAxis
             dataKey="service"
@@ -61,7 +67,10 @@ export default function ServiceBreakdownChart() {
           <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0,0,0,0.04)' }} />
           <Bar dataKey="orders" radius={[6, 6, 0, 0]}>
             {SERVICE_DATA.map((entry, index) => (
-              <Cell key={`cell-service-${entry.service.toLowerCase().replace(/\s/g, '-')}`} fill={COLORS[index % COLORS.length]} />
+              <Cell
+                key={`cell-service-${entry.service.toLowerCase().replace(/\s/g, '-')}`}
+                fill={COLORS[index % COLORS.length]}
+              />
             ))}
           </Bar>
         </BarChart>
@@ -70,10 +79,18 @@ export default function ServiceBreakdownChart() {
       {/* Legend */}
       <div className="grid grid-cols-2 gap-2 mt-4">
         {SERVICE_DATA.map((item, i) => (
-          <div key={`legend-${item.service.toLowerCase().replace(/\s/g, '-')}`} className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: COLORS[i] }} />
+          <div
+            key={`legend-${item.service.toLowerCase().replace(/\s/g, '-')}`}
+            className="flex items-center gap-2"
+          >
+            <div
+              className="w-2.5 h-2.5 rounded-sm shrink-0"
+              style={{ backgroundColor: COLORS[i] }}
+            />
             <span className="text-xs text-gray-500 truncate">{item.service}</span>
-            <span className="text-xs font-bold text-gray-700 ml-auto font-mono-nums">{item.orders}</span>
+            <span className="text-xs font-bold text-gray-700 ml-auto font-mono-nums">
+              {item.orders}
+            </span>
           </div>
         ))}
       </div>

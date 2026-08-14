@@ -16,10 +16,7 @@ export async function POST(request: NextRequest) {
     const userRole = request.headers.get('x-user-role');
 
     if (!userId || userRole !== 'RIDER') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -56,10 +53,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(
-      { error: 'Failed to update location' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to update location' }, { status: 500 });
   }
 }
 
@@ -72,10 +66,7 @@ export async function GET(request: NextRequest) {
     const userRole = request.headers.get('x-user-role');
 
     if (!userId || userRole !== 'RIDER') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const rider = await prisma.rider.findUnique({
@@ -89,10 +80,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!rider) {
-      return NextResponse.json(
-        { error: 'Rider not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Rider not found' }, { status: 404 });
     }
 
     return NextResponse.json(
@@ -108,9 +96,6 @@ export async function GET(request: NextRequest) {
     );
   } catch (error: any) {
     console.error('Get location error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch location' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch location' }, { status: 500 });
   }
 }

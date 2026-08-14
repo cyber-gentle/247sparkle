@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     // pricing table doesn't know is a hard error — silently skipping it would
     // create underpriced (or zero-priced) orders.
     let totalAmount = 0;
-    let pricedItems: {
+    const pricedItems: {
       itemName: string;
       quantity: number;
       isWhiteGroup: boolean;

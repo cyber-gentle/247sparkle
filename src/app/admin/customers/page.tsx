@@ -21,7 +21,9 @@ export default function AdminCustomersPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   async function load() {
     try {
@@ -35,21 +37,40 @@ export default function AdminCustomersPage() {
     }
   }
 
-  const filtered = customers.filter(c => {
+  const filtered = customers.filter((c) => {
     const q = search.toLowerCase();
-    return !q || c.fullName.toLowerCase().includes(q) || c.email.toLowerCase().includes(q) || c.phone.includes(q);
+    return (
+      !q ||
+      c.fullName.toLowerCase().includes(q) ||
+      c.email.toLowerCase().includes(q) ||
+      c.phone.includes(q)
+    );
   });
 
   return (
     <main className="min-h-screen bg-slate-50 px-6 py-10">
       <section className="mx-auto w-full max-w-7xl space-y-6">
         <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#CC0000]">Admin Portal</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#CC0000]">
+            Admin Portal
+          </p>
           <h1 className="mt-2 text-3xl font-extrabold text-[#1A0A5E]">Customers</h1>
-          <p className="mt-1 text-sm text-slate-600">Customer records, contact details, and lifetime order activity.</p>
+          <p className="mt-1 text-sm text-slate-600">
+            Customer records, contact details, and lifetime order activity.
+          </p>
           <div className="mt-4 flex gap-3">
-            <Link href="/admin/dashboard" className="rounded-xl bg-[#1A0A5E] px-4 py-2 text-sm font-semibold text-white">Dashboard</Link>
-            <Link href="/admin/orders" className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">Orders</Link>
+            <Link
+              href="/admin/dashboard"
+              className="rounded-xl bg-[#1A0A5E] px-4 py-2 text-sm font-semibold text-white"
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/admin/orders"
+              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+            >
+              Orders
+            </Link>
           </div>
         </header>
 
@@ -59,7 +80,7 @@ export default function AdminCustomersPage() {
             type="text"
             placeholder="Search by name, email, or phone…"
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-xl border border-slate-200 bg-white pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A0A5E]"
           />
         </div>
@@ -85,17 +106,26 @@ export default function AdminCustomersPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map(c => (
-                    <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50 transition">
+                  {filtered.map((c) => (
+                    <tr
+                      key={c.id}
+                      className="border-b border-slate-100 hover:bg-slate-50 transition"
+                    >
                       <td className="px-5 py-4">
                         <p className="font-semibold text-slate-800">{c.fullName}</p>
                         <p className="text-xs text-slate-500">{c.email}</p>
                       </td>
                       <td className="px-5 py-4 text-slate-600">{c.phone}</td>
                       <td className="px-5 py-4 text-slate-700 font-semibold">{c.totalOrders}</td>
-                      <td className="px-5 py-4 font-semibold text-[#1A0A5E]">₦{c.totalSpend.toLocaleString()}</td>
-                      <td className="px-5 py-4 text-slate-500">{c.lastOrderDate ? new Date(c.lastOrderDate).toLocaleDateString() : '—'}</td>
-                      <td className="px-5 py-4 text-slate-500">{new Date(c.joinedAt).toLocaleDateString()}</td>
+                      <td className="px-5 py-4 font-semibold text-[#1A0A5E]">
+                        ₦{c.totalSpend.toLocaleString()}
+                      </td>
+                      <td className="px-5 py-4 text-slate-500">
+                        {c.lastOrderDate ? new Date(c.lastOrderDate).toLocaleDateString() : '—'}
+                      </td>
+                      <td className="px-5 py-4 text-slate-500">
+                        {new Date(c.joinedAt).toLocaleDateString()}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

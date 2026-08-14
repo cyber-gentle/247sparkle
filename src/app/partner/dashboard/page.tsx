@@ -3,7 +3,16 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Clock, ShieldAlert, CheckCircle, User, ArrowRight, Power, Loader, LogOut } from 'lucide-react';
+import {
+  Clock,
+  ShieldAlert,
+  CheckCircle,
+  User,
+  ArrowRight,
+  Power,
+  Loader,
+  LogOut,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import AppLogo from '@/components/ui/AppLogo';
 
@@ -34,7 +43,10 @@ export default function PartnerDashboardPage() {
     try {
       const response = await fetch('/api/partner/profile', { credentials: 'include' });
       if (!response.ok) {
-        if (response.status === 401) { router.push('/partner/login'); return; }
+        if (response.status === 401) {
+          router.push('/partner/login');
+          return;
+        }
         throw new Error('Failed to fetch profile');
       }
       const data = await response.json();
@@ -92,20 +104,32 @@ export default function PartnerDashboardPage() {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-4">
           <AppLogo size={32} src="/images/logo.jpeg" />
           <div className="flex-1">
-            <h1 className="text-xl font-bold text-[#1A0A5E]">{partner?.businessName ?? 'Partner Dashboard'}</h1>
+            <h1 className="text-xl font-bold text-[#1A0A5E]">
+              {partner?.businessName ?? 'Partner Dashboard'}
+            </h1>
             <p className="text-xs text-gray-500">{partner?.ownerName}</p>
           </div>
           <span
             className={`text-xs font-bold px-3 py-1 rounded-full ${
-              isApproved ? 'bg-green-100 text-green-700' : isSuspended ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+              isApproved
+                ? 'bg-green-100 text-green-700'
+                : isSuspended
+                  ? 'bg-red-100 text-red-700'
+                  : 'bg-amber-100 text-amber-700'
             }`}
           >
             {partner?.approvalStatus ?? 'PENDING'}
           </span>
-          <Link href="/partner/profile" className="text-sm font-semibold text-[#1A0A5E] hover:underline flex items-center gap-1">
+          <Link
+            href="/partner/profile"
+            className="text-sm font-semibold text-[#1A0A5E] hover:underline flex items-center gap-1"
+          >
             <User size={16} /> Profile
           </Link>
-          <button onClick={handleLogout} className="text-sm font-semibold text-red-600 hover:underline flex items-center gap-1">
+          <button
+            onClick={handleLogout}
+            className="text-sm font-semibold text-red-600 hover:underline flex items-center gap-1"
+          >
             <LogOut size={16} /> Sign Out
           </button>
         </div>
@@ -119,8 +143,8 @@ export default function PartnerDashboardPage() {
             <div>
               <p className="font-bold text-amber-900">Account Pending Approval</p>
               <p className="text-sm text-amber-800 mt-1">
-                Your partner application is under review. Once approved by an admin, you'll be able
-                to update your business profile, bank details, and start receiving orders.
+                Your partner application is under review. Once approved by an admin, you&apos;ll be
+                able to update your business profile, bank details, and start receiving orders.
               </p>
             </div>
           </div>
@@ -148,14 +172,17 @@ export default function PartnerDashboardPage() {
             <div>
               <p className="font-bold text-green-900">Account Approved</p>
               <p className="text-sm text-green-800 mt-1">
-                Your account is active. Keep your profile and bank details up to date to receive payouts.
+                Your account is active. Keep your profile and bank details up to date to receive
+                payouts.
               </p>
             </div>
           </div>
         )}
 
         {/* Workload toggle */}
-        <div className={`bg-white rounded-2xl border p-6 shadow-sm ${!isApproved ? 'opacity-60 border-gray-100' : 'border-gray-200'}`}>
+        <div
+          className={`bg-white rounded-2xl border p-6 shadow-sm ${!isApproved ? 'opacity-60 border-gray-100' : 'border-gray-200'}`}
+        >
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold text-[#1A0A5E] flex items-center gap-2">
@@ -166,20 +193,24 @@ export default function PartnerDashboardPage() {
                 {!isApproved
                   ? 'Available after account approval'
                   : partner?.workloadStatus === 'AVAILABLE'
-                  ? 'You are accepting new orders'
-                  : 'You are not accepting new orders'}
+                    ? 'You are accepting new orders'
+                    : 'You are not accepting new orders'}
               </p>
             </div>
             <button
               onClick={toggleWorkload}
               disabled={isTogglingWorkload || !isApproved}
               className={`relative inline-flex h-8 w-16 items-center rounded-full transition ${
-                partner?.workloadStatus === 'AVAILABLE' && isApproved ? 'bg-green-500' : 'bg-gray-300'
+                partner?.workloadStatus === 'AVAILABLE' && isApproved
+                  ? 'bg-green-500'
+                  : 'bg-gray-300'
               } disabled:cursor-not-allowed`}
             >
               <span
                 className={`inline-block h-6 w-6 transform rounded-full bg-white transition ${
-                  partner?.workloadStatus === 'AVAILABLE' && isApproved ? 'translate-x-9' : 'translate-x-1'
+                  partner?.workloadStatus === 'AVAILABLE' && isApproved
+                    ? 'translate-x-9'
+                    : 'translate-x-1'
                 }`}
               />
             </button>
@@ -201,7 +232,9 @@ export default function PartnerDashboardPage() {
             <ArrowRight size={20} className="text-gray-400 group-hover:text-[#1A0A5E] transition" />
           </Link>
 
-          <div className={`bg-white rounded-2xl border p-6 shadow-sm ${!isApproved ? 'opacity-50 border-gray-100' : 'border-gray-200'}`}>
+          <div
+            className={`bg-white rounded-2xl border p-6 shadow-sm ${!isApproved ? 'opacity-50 border-gray-100' : 'border-gray-200'}`}
+          >
             <p className="font-bold text-[#1A0A5E]">Incoming Orders</p>
             <p className="text-sm text-gray-500 mt-1">
               {isApproved ? 'No orders assigned yet' : 'Available after approval'}
