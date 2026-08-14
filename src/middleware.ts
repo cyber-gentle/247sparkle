@@ -5,6 +5,7 @@ import { rateLimit } from '@/lib/rate-limit';
 // Routes a user may visit WITHOUT being authenticated (no auth_token cookie).
 const publicRoutes = [
   '/',
+  '/homepage',
   '/services',
   '/how-it-works',
   '/become-a-partner',
