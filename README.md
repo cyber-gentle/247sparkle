@@ -73,6 +73,18 @@ Build the application for production:
   npm run build
   ```
 
+### Database standard: Supabase PostgreSQL
+
+247Sparkle uses Prisma with **Supabase PostgreSQL**. Configure secrets only in
+the target environment; never commit a real connection string. Use a pooled
+`DATABASE_URL` for application traffic and a `DIRECT_URL` for Prisma migration
+commands. The detailed role, connection, migration, and test-environment
+procedure is in [SUPABASE_SETUP.md](./SUPABASE_SETUP.md).
+
+> Use a separate Supabase development or test project for schema migrations,
+> seed data, and Paystack test-mode integration checks. Never run these tasks
+> against customer-facing production data.
+
 ## 📚 Learn More
 
 To learn more about Next.js, take a look at the following resources:

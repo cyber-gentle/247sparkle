@@ -6,10 +6,11 @@
   package = "@netlify/plugin-nextjs"
 
 # Required environment variables (set in Netlify UI → Site settings → Environment):
-#   DATABASE_URL         — Neon pooled connection string (…-pooler.…neon.tech, sslmode=require)
+#   DATABASE_URL         — Supabase Supavisor transaction-pooler connection (port 6543, pgbouncer=true)
+#   DIRECT_URL           — Supabase direct or session-pooler connection for Prisma CLI migrations (port 5432)
 #   JWT_SECRET           — openssl rand -base64 48
-#   PAYSTACK_SECRET_KEY  — live secret key
-#   PAYSTACK_PUBLIC_KEY  — live public key
+#   PAYSTACK_SECRET_KEY  — test key outside production; live key only in the production environment
+#   PAYSTACK_PUBLIC_KEY  — matching test or live public key for the selected environment
 #   NEXT_PUBLIC_SITE_URL — https://<your-domain>
 #   NEXT_PUBLIC_API_URL  — https://<your-domain>/api
 #   SEED_ADMIN_PASSWORD  — strong admin password (used once, by the seed)

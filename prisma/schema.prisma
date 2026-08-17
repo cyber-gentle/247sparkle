@@ -1,5 +1,5 @@
-// Prisma schema — PostgreSQL (Neon in production; use a Neon dev branch or
-// local Postgres for development).
+// Prisma schema — PostgreSQL hosted on Supabase. Use an isolated Supabase
+// development or test project for migrations and automated tests.
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
@@ -8,8 +8,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ============= USERS & AUTH =============
