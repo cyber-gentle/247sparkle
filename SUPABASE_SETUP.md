@@ -69,6 +69,21 @@ The Phase 2 financial-integrity and Phase 3 security migrations must both be
 applied before integration tests run. Confirm the test database is isolated
 before the command: `migrate deploy` changes schema state and is not a dry run.
 
+## Server-only row-level security
+
+247Sparkle is designed to use its own Next.js API and Prisma connection for
+all application data access. The `20260817_server_only_rls` migration enables
+Row Level Security (RLS) on every application table and intentionally creates
+**no** policies for Supabase browser-client roles. Consequently, a Supabase
+publishable/anon or authenticated client cannot read or mutate application
+tables directly.
+
+The trusted Prisma database user must remain a server-side credential with the
+necessary database privileges; it must never be shipped to the browser. If a
+future feature needs a Supabase client to access tables directly, design and
+review narrow, role-aware RLS policies first. Do not add permissive policies
+such as `USING (true)` merely to make a client request work.
+
 ## Financial integration-test gate
 
 Before running the next integration-test sprint, provide a disposable Supabase
