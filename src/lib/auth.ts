@@ -1,5 +1,6 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
+import type { NextRequest } from 'next/server';
 
 // jose is Web-Crypto based and runs in both the Edge Runtime (middleware) and
 // the Node Runtime (route handlers). jsonwebtoken was used previously but its
@@ -22,6 +23,9 @@ export type JWTPayload = {
   email: string;
   role: 'CUSTOMER' | 'RIDER' | 'PARTNER' | 'ADMIN';
 };
+
+export const USER_ROLES = ['CUSTOMER', 'RIDER', 'PARTNER', 'ADMIN'] as const;
+export type UserRole = (typeof USER_ROLES)[number];
 
 function getSecretKey(): Uint8Array {
   return new TextEncoder().encode(JWT_SECRET);
@@ -46,10 +50,24 @@ export async function verifyToken(token: string): Promise<JWTPayload | null> {
     const { payload } = await jwtVerify(token, getSecretKey(), {
       algorithms: ['HS256'],
     });
+    if (
+      typeof payload.userId !== 'string' ||
+      typeof payload.email !== 'string' ||
+      typeof payload.role !== 'string' ||
+      !(USER_ROLES as readonly string[]).includes(payload.role)
+    ) {
+      return null;
+    }
+
     return payload as unknown as JWTPayload;
-  } catch (err) {
+  } catch {
     return null;
   }
+}
+
+export async function getSessionFromRequest(request: Pick<NextRequest, 'cookies'>) {
+  const token = request.cookies.get('auth_token')?.value;
+  return token ? verifyToken(token) : null;
 }
 
 /**

@@ -1,6 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth';
-import { rateLimit } from '@/lib/rate-limit';
+
+type Role = 'CUSTOMER' | 'RIDER' | 'PARTNER' | 'ADMIN';
+
+function requiredApiRoles(pathname: string, method: string): readonly Role[] | null {
+  if (pathname.startsWith('/api/admin/')) return ['ADMIN'];
+  if (pathname.startsWith('/api/customer/')) return ['CUSTOMER'];
+  if (pathname.startsWith('/api/rider/') || pathname.startsWith('/api/riders/')) return ['RIDER'];
+  if (pathname.startsWith('/api/orders/') && pathname.endsWith('/status'))
+    return ['RIDER', 'ADMIN'];
+  if (pathname === '/api/orders' || pathname.startsWith('/api/orders/'))
+    return ['CUSTOMER', 'ADMIN'];
+  if (pathname.startsWith('/api/payment/verify/')) return ['CUSTOMER', 'ADMIN'];
+  if (pathname === '/api/pricing' && method !== 'GET') return ['ADMIN'];
+  if (pathname.startsWith('/api/certificates/customer/')) return ['CUSTOMER', 'ADMIN'];
+  if (
+    pathname.startsWith('/api/quotations/') ||
+    (pathname === '/api/quotations' && method === 'GET')
+  ) {
+    return ['ADMIN'];
+  }
+
+  return null;
+}
 
 // Routes a user may visit WITHOUT being authenticated (no auth_token cookie).
 const publicRoutes = [
@@ -53,24 +75,6 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get('auth_token')?.value;
   const isApiRoute = pathname.startsWith('/api/');
 
-  // Throttle credential endpoints (login/signup) per IP to blunt brute-force
-  // and enumeration attacks. Logout is exempt — it's harmless and clearing a
-  // session should never be blocked.
-  if (request.method === 'POST' && pathname.startsWith('/api/auth/') && pathname !== logoutPath) {
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-    const { allowed, retryAfterSeconds } = rateLimit(
-      `auth:${ip}`,
-      10, // 10 attempts
-      60_000 // per minute
-    );
-    if (!allowed) {
-      return NextResponse.json(
-        { error: 'Too many attempts. Please try again shortly.' },
-        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
-      );
-    }
-  }
-
   // API routes expect a JSON 401 (not an HTML redirect) so fetch callers can
   // react to it — e.g. by routing to the portal login page.
   const unauthorized = () =>
@@ -100,6 +104,23 @@ export async function middleware(request: NextRequest) {
 
   if (!payload && !isPublicPath(pathname)) {
     return unauthorized();
+  }
+
+  if (isApiRoute && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
+    const origin = request.headers.get('origin');
+    if (origin && origin !== request.nextUrl.origin) {
+      return NextResponse.json({ error: 'Cross-origin request blocked' }, { status: 403 });
+    }
+  }
+
+  const roles = isApiRoute ? requiredApiRoles(pathname, request.method) : null;
+  if (roles && (!payload || !roles.includes(payload.role))) {
+    return NextResponse.json(
+      { error: payload ? 'Forbidden' : 'Unauthorized' },
+      {
+        status: payload ? 403 : 401,
+      }
+    );
   }
 
   // Attach identity headers for route handlers.

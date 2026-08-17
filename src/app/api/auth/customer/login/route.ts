@@ -3,6 +3,7 @@ import { compare } from 'bcryptjs';
 import { z } from 'zod';
 import prisma from '@/lib/db';
 import { signToken } from '@/lib/auth';
+import { RATE_LIMIT_POLICIES, rateLimitRequest } from '@/lib/api-rate-limit';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -10,6 +11,9 @@ const loginSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const limited = await rateLimitRequest(request, 'auth', RATE_LIMIT_POLICIES.auth);
+  if (limited) return limited;
+
   try {
     const body = await request.json();
 

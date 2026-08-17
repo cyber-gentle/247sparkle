@@ -10,8 +10,6 @@ type VerificationResponse = {
   message?: string;
   certificate?: {
     certificateNumber: string;
-    customerName: string;
-    propertyAddress: string;
     propertyType: string;
     serviceDate: string;
     serviceType: 'fumigation';
@@ -134,8 +132,6 @@ export default function VerifyCertificatePage() {
                     <dl className="grid gap-0 sm:grid-cols-2">
                       {[
                         ['Certificate Number', result.certificate.certificateNumber],
-                        ['Customer Name', result.certificate.customerName],
-                        ['Property Address', result.certificate.propertyAddress],
                         ['Service Type', result.certificate.serviceType],
                         ['Property Type', result.certificate.propertyType],
                         ['Date of Service', formatServiceDate(result.certificate.serviceDate)],

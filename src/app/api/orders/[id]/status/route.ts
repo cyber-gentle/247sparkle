@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/db';
+import { requireRole } from '@/lib/api-auth';
+import { RATE_LIMIT_POLICIES, rateLimitRequest } from '@/lib/api-rate-limit';
 import { transitionPaidOrder } from '@/lib/order-integrity';
 import { canTransitionOrder, type OrderStatus } from '@/lib/order-state';
 
@@ -12,14 +14,20 @@ const updateStatusSchema = z.object({
  * POST /api/orders/[id]/status - Update order status
  */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const limited = await rateLimitRequest(
+    request,
+    'order-status-mutation',
+    RATE_LIMIT_POLICIES.mutation
+  );
+  if (limited) return limited;
+
+  const auth = await requireRole(request, ['RIDER', 'ADMIN']);
+  if (!auth.ok) return auth.response;
+
   try {
     const { id } = await params;
-    const userId = request.headers.get('x-user-id');
-    const userRole = request.headers.get('x-user-role');
-
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const userId = auth.session.userId;
+    const userRole = auth.session.role;
 
     const body = await request.json();
     const { status } = updateStatusSchema.parse(body);

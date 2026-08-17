@@ -2,23 +2,31 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyPayment } from '@/lib/paystack';
 import { confirmOrderPayment } from '@/lib/payments';
 import prisma from '@/lib/db';
+import { requireRole } from '@/lib/api-auth';
+import { RATE_LIMIT_POLICIES, rateLimitRequest } from '@/lib/api-rate-limit';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ reference: string }> }
 ) {
-  try {
-    const userId = request.headers.get('x-user-id');
-    const userRole = request.headers.get('x-user-role');
+  const limited = await rateLimitRequest(
+    request,
+    'payment-verification',
+    RATE_LIMIT_POLICIES.paymentVerification
+  );
+  if (limited) return limited;
 
-    if (!userId || !userRole) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  const auth = await requireRole(request, ['CUSTOMER', 'ADMIN']);
+  if (!auth.ok) return auth.response;
+
+  try {
+    const userId = auth.session.userId;
+    const userRole = auth.session.role;
 
     const { reference } = await params;
 
     // Find order by Paystack reference
-    const order = await prisma.order.findFirst({
+    const order = await prisma.order.findUnique({
       where: { paystackReference: reference },
       include: {
         customer: {

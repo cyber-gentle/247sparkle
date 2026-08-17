@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/db';
+import { requireRole } from '@/lib/api-auth';
+import { RATE_LIMIT_POLICIES, rateLimitRequest } from '@/lib/api-rate-limit';
 import { koboToNaira, nairaToKobo } from '@/lib/money';
 import { initializePayment } from '@/lib/paystack';
 
@@ -24,12 +26,14 @@ const createOrderSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  try {
-    const userId = request.headers.get('x-user-id');
+  const limited = await rateLimitRequest(request, 'order-mutation', RATE_LIMIT_POLICIES.mutation);
+  if (limited) return limited;
 
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  const auth = await requireRole(request, ['CUSTOMER']);
+  if (!auth.ok) return auth.response;
+
+  try {
+    const userId = auth.session.userId;
 
     const body = await request.json();
     const validatedData = createOrderSchema.parse(body);
@@ -215,12 +219,11 @@ export async function POST(request: NextRequest) {
  * GET /api/orders - Get customer's orders
  */
 export async function GET(request: NextRequest) {
-  try {
-    const userId = request.headers.get('x-user-id');
+  const auth = await requireRole(request, ['CUSTOMER']);
+  if (!auth.ok) return auth.response;
 
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  try {
+    const userId = auth.session.userId;
 
     const customer = await prisma.customer.findUnique({
       where: { userId },

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { hash } from 'bcryptjs';
 import { z } from 'zod';
 import prisma from '@/lib/db';
+import { RATE_LIMIT_POLICIES, rateLimitRequest } from '@/lib/api-rate-limit';
 
 const riderSignupSchema = z
   .object({
@@ -18,6 +19,9 @@ const riderSignupSchema = z
   });
 
 export async function POST(request: NextRequest) {
+  const limited = await rateLimitRequest(request, 'auth', RATE_LIMIT_POLICIES.auth);
+  if (limited) return limited;
+
   try {
     const body = await request.json();
     const validatedData = riderSignupSchema.parse(body);

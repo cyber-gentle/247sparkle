@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/db';
+import { requireRole } from '@/lib/api-auth';
+import { RATE_LIMIT_POLICIES, rateLimitRequest } from '@/lib/api-rate-limit';
 import { assignRiderToPaidOrder } from '@/lib/order-integrity';
 
 const acceptJobSchema = z.object({
@@ -11,14 +13,15 @@ const acceptJobSchema = z.object({
  * POST /api/riders/jobs/[id]/accept - Accept a job
  */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const limited = await rateLimitRequest(request, 'rider-assignment', RATE_LIMIT_POLICIES.mutation);
+  if (limited) return limited;
+
+  const auth = await requireRole(request, ['RIDER']);
+  if (!auth.ok) return auth.response;
+
   try {
     const { id } = await params;
-    const userId = request.headers.get('x-user-id');
-    const userRole = request.headers.get('x-user-role');
-
-    if (!userId || userRole !== 'RIDER') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const userId = auth.session.userId;
 
     const body = await request.json();
     const { orderId } = acceptJobSchema.parse(body);

@@ -1,14 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { RATE_LIMIT_POLICIES, rateLimitRequest } from '@/lib/api-rate-limit';
 
 /**
  * GET /api/certificates/verify/[number] — PUBLIC, no login required.
  * Looks up a fumigation certificate by its certificate number.
  */
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ number: string }> }
 ) {
+  const limited = await rateLimitRequest(
+    request,
+    'certificate-lookup',
+    RATE_LIMIT_POLICIES.certificateLookup
+  );
+  if (limited) return limited;
+
   const { number } = await params;
   const certificateNumber = decodeURIComponent(number ?? '')
     .trim()
@@ -45,8 +53,6 @@ export async function GET(
       valid: true,
       certificate: {
         certificateNumber: certificate.certificateNumber,
-        customerName: certificate.customerName,
-        propertyAddress: certificate.propertyAddress,
         propertyType: certificate.propertyType,
         serviceDate: certificate.serviceDate.toISOString(),
         serviceType: 'fumigation',

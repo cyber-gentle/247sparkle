@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { requireRole } from '@/lib/api-auth';
 
 /**
  * GET /api/riders/jobs - Get available jobs for a rider
  */
 export async function GET(request: NextRequest) {
-  try {
-    const userId = request.headers.get('x-user-id');
-    const userRole = request.headers.get('x-user-role');
+  const auth = await requireRole(request, ['RIDER']);
+  if (!auth.ok) return auth.response;
 
-    if (!userId || userRole !== 'RIDER') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  try {
+    const userId = auth.session.userId;
 
     // Get rider
     const rider = await prisma.rider.findUnique({

@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/db';
+import { requireRole } from '@/lib/api-auth';
 import { nairaToKobo } from '@/lib/money';
 
 const pricingUpdatesSchema = z.object({
@@ -31,13 +32,10 @@ export async function GET() {
  * PUT /api/pricing - Update pricing (admin only)
  */
 export async function PUT(request: NextRequest) {
+  const auth = await requireRole(request, ['ADMIN']);
+  if (!auth.ok) return auth.response;
+
   try {
-    const userRole = request.headers.get('x-user-role');
-
-    if (userRole !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized - Admin only' }, { status: 403 });
-    }
-
     const { updates } = pricingUpdatesSchema.parse(await request.json());
 
     // Update each pricing
