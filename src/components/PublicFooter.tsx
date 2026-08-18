@@ -47,7 +47,7 @@ export default function PublicFooter() {
           {/* Brand */}
           <div className="lg:col-span-1">
             <div className="flex items-center gap-2.5 mb-4">
-              <AppLogo width={184} height={48} showWordmark tone="dark" />
+              <AppLogo width={196} height={52} showWordmark tone="dark" />
             </div>
             <p className="text-sm text-white/65 leading-relaxed mb-5">
               Otukpo&apos;s most reliable on-demand laundry, home cleaning and fumigation service.

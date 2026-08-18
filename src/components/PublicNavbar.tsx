@@ -36,7 +36,7 @@ export default function PublicNavbar() {
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2.5 group">
-              <AppLogo width={184} height={48} showWordmark tone={solidNavbar ? 'light' : 'dark'} />
+              <AppLogo width={196} height={52} showWordmark tone={solidNavbar ? 'light' : 'dark'} />
             </Link>
 
             {/* Desktop Nav */}

@@ -1,10 +1,9 @@
 'use client';
 
 import React, { memo, useMemo } from 'react';
-import { Sparkles } from 'lucide-react';
+import Image from 'next/image';
 
 interface AppLogoProps {
-  /** Retained for backward compatibility while the old photographic logo is retired. */
   src?: string;
   size?: number;
   width?: number;
@@ -16,6 +15,7 @@ interface AppLogoProps {
 }
 
 const AppLogo = memo(function AppLogo({
+  src = '/images/logo.jpeg',
   size = 64,
   width,
   height,
@@ -39,24 +39,20 @@ const AppLogo = memo(function AppLogo({
   return (
     <div className={containerClassName} onClick={onClick} aria-label="247Sparkle">
       <div
-        className={`relative flex shrink-0 items-center justify-center overflow-hidden rounded-xl border shadow-sm ${
+        className={`relative shrink-0 overflow-hidden rounded-xl border shadow-sm ${
           isDark
-            ? 'border-white/25 bg-white text-[#1A0A5E] shadow-black/15'
-            : 'border-[#1A0A5E]/15 bg-[#1A0A5E] text-[#F5C200] shadow-[#1A0A5E]/20'
+            ? 'border-[#F5C200]/80 bg-white shadow-black/15'
+            : 'border-[#1A0A5E]/25 bg-white shadow-[#1A0A5E]/20'
         }`}
         style={{ width: finalHeight, height: finalHeight }}
-        aria-hidden="true"
       >
-        <span
-          className="relative z-10 font-black tracking-[-0.14em]"
-          style={{ fontSize: Math.max(10, Math.round(finalHeight * 0.34)) }}
-        >
-          247
-        </span>
-        <Sparkles
-          className={`absolute right-[9%] top-[7%] ${isDark ? 'text-[#F5C200]' : 'text-white/70'}`}
-          size={Math.max(10, Math.round(finalHeight * 0.27))}
-          strokeWidth={2.5}
+        <Image
+          src={src}
+          alt="247Sparkle official logo"
+          fill
+          sizes={`${finalHeight}px`}
+          className="object-contain object-center p-px mix-blend-multiply contrast-125 saturate-125"
+          priority
         />
       </div>
 
