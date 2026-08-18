@@ -81,7 +81,7 @@ export default function CustomerLoginPage() {
           <p className="text-gray-600 mt-2">Customer Portal Login</p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form method="post" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Email */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">

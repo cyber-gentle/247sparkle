@@ -149,7 +149,7 @@ export default function RiderLoginPage() {
               <p className="text-sm text-gray-600 mt-1">Enter your credentials to continue</p>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            <form method="post" onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               <div>
                 <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">
                   Email Address
