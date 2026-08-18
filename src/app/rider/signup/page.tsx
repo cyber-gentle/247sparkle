@@ -95,7 +95,7 @@ export default function RiderSignupPage() {
       loginLabel="Already registered? Sign in"
       steps={riderSteps}
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-7">
+      <form method="post" onSubmit={handleSubmit(onSubmit)} className="space-y-7">
         <fieldset>
           <legend className="text-sm font-bold text-slate-900">Your details</legend>
           <p className="mt-1 text-sm text-slate-500">

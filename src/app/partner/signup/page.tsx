@@ -109,7 +109,7 @@ export default function PartnerSignupPage() {
       loginLabel="Already registered? Sign in"
       steps={partnerSteps}
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-7">
+      <form method="post" onSubmit={handleSubmit(onSubmit)} className="space-y-7">
         <fieldset>
           <legend className="text-sm font-bold text-slate-900">Business profile</legend>
           <p className="mt-1 text-sm text-slate-500">
