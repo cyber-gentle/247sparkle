@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { describe, expect, it } from 'vitest';
 import { enforceSameOrigin, requireRole } from '../../src/lib/api-auth';
 import { signToken } from '../../src/lib/auth';
+import { config as middlewareConfig } from '../../src/middleware';
 
 describe('API authorization helpers', () => {
   it('returns forbidden when a verified session lacks the required role', async () => {
@@ -27,5 +28,13 @@ describe('API authorization helpers', () => {
     });
 
     expect(enforceSameOrigin(request)?.status).toBe(403);
+  });
+
+  it('excludes public image assets from the protected-route matcher', () => {
+    const matcher = new RegExp(`^${middlewareConfig.matcher[0]}$`);
+
+    expect('/images/bg-image.jpeg').not.toMatch(matcher);
+    expect('/images/home_cleaning__2__.jpeg').not.toMatch(matcher);
+    expect('/customer/dashboard').toMatch(matcher);
   });
 });
