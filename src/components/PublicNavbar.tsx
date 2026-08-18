@@ -36,25 +36,7 @@ export default function PublicNavbar() {
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2.5 group">
-              <AppLogo
-                width={140}
-                height={50}
-                src="/images/logo.jpeg"
-                className={solidNavbar ? 'mix-blend-multiply' : 'rounded-lg'}
-              />
-              <div className="flex flex-col leading-none">
-                <span
-                  className={`font-extrabold text-xl tracking-tight transition-colors ${solidNavbar ? 'text-[#1A0A5E]' : 'text-white'}`}
-                >
-                  <span className="text-[#F5C200]">247</span>
-                  <span className="text-[#CC0000]"> Sparkle</span>
-                </span>
-                <span
-                  className={`text-[10px] font-medium tracking-widest uppercase transition-colors ${solidNavbar ? 'text-gray-500' : 'text-white/70'}`}
-                >
-                  Laundry & Cleaning
-                </span>
-              </div>
+              <AppLogo width={184} height={48} showWordmark tone={solidNavbar ? 'light' : 'dark'} />
             </Link>
 
             {/* Desktop Nav */}

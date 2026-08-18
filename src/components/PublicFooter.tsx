@@ -47,16 +47,7 @@ export default function PublicFooter() {
           {/* Brand */}
           <div className="lg:col-span-1">
             <div className="flex items-center gap-2.5 mb-4">
-              <AppLogo width={140} height={50} src="/images/logo.jpeg" className="rounded-xl" />
-              <div className="flex flex-col leading-none">
-                <span className="font-extrabold text-xl">
-                  <span className="text-[#F5C200]">247</span>
-                  <span className="text-[#CC0000]"> Sparkle</span>
-                </span>
-                <span className="text-[10px] font-medium tracking-widest uppercase text-white/50">
-                  Laundry & Cleaning
-                </span>
-              </div>
+              <AppLogo width={184} height={48} showWordmark tone="dark" />
             </div>
             <p className="text-sm text-white/65 leading-relaxed mb-5">
               Otukpo&apos;s most reliable on-demand laundry, home cleaning and fumigation service.
