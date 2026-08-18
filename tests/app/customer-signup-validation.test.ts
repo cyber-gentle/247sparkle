@@ -8,15 +8,25 @@ const customerSignupPage = resolve(projectRoot, 'src/app/customer/signup/page.ts
 
 describe('customer signup validation safeguards', () => {
   it('rejects blank and whitespace-only required values', () => {
-    expect(
-      customerSignupSchema.safeParse({
-        fullName: ' ',
-        email: ' ',
-        phone: ' ',
-        password: '',
-        confirmPassword: '',
-      }).success
-    ).toBe(false);
+    const result = customerSignupSchema.safeParse({
+      fullName: ' ',
+      email: ' ',
+      phone: ' ',
+      password: '',
+      confirmPassword: '',
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.map((issue) => issue.message)).toContain('Full name is required');
+      expect(result.error.issues.map((issue) => issue.message)).toContain(
+        'Email address is required'
+      );
+      expect(result.error.issues.map((issue) => issue.message)).toContain(
+        'Phone number is required'
+      );
+      expect(result.error.issues.map((issue) => issue.message)).toContain('Password is required');
+    }
   });
 
   it('uses POST with visible client-side invalid-submission feedback', () => {
@@ -26,6 +36,8 @@ describe('customer signup validation safeguards', () => {
       /<form\s+method="post"\s+noValidate\s+className="space-y-4"\s+onSubmit=\{handleSubmit\(onSubmit, onInvalid\)\}/
     );
     expect(source).toContain("mode: 'onBlur'");
+    expect(source).toContain('shouldFocusError: true');
+    expect(source).toContain('setFocus(firstInvalidField)');
     expect(source).toContain('aria-invalid');
     expect(source).toContain('role="alert"');
   });

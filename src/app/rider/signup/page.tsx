@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { type FieldErrors, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -36,11 +36,13 @@ export default function RiderSignupPage() {
   const {
     register,
     handleSubmit,
+    setFocus,
     formState: { errors },
   } = useForm<RiderSignupFormData>({
     resolver: zodResolver(riderSignupSchema),
     mode: 'onBlur',
     reValidateMode: 'onChange',
+    shouldFocusError: true,
   });
 
   const onSubmit = async (data: RiderSignupFormData) => {
@@ -72,7 +74,11 @@ export default function RiderSignupPage() {
     }
   };
 
-  const onInvalid = () => {
+  const onInvalid = (invalidFields: FieldErrors<RiderSignupFormData>) => {
+    const firstInvalidField = Object.keys(invalidFields)[0] as
+      keyof RiderSignupFormData | undefined;
+    if (firstInvalidField) setFocus(firstInvalidField);
+
     const message = 'Please complete the highlighted fields before submitting your application.';
     setSubmitError(message);
     toast.error(message);

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { type FieldErrors, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -44,11 +44,13 @@ export default function PartnerSignupPage() {
   const {
     register,
     handleSubmit,
+    setFocus,
     formState: { errors },
   } = useForm<PartnerSignupFormData>({
     resolver: zodResolver(partnerSignupSchema),
     mode: 'onBlur',
     reValidateMode: 'onChange',
+    shouldFocusError: true,
   });
 
   const toggleDay = (day: string) => {
@@ -98,7 +100,11 @@ export default function PartnerSignupPage() {
     }
   };
 
-  const onInvalid = () => {
+  const onInvalid = (invalidFields: FieldErrors<PartnerSignupFormData>) => {
+    const firstInvalidField = Object.keys(invalidFields)[0] as
+      keyof PartnerSignupFormData | undefined;
+    if (firstInvalidField) setFocus(firstInvalidField);
+
     const message = 'Please complete the highlighted fields before submitting your application.';
     setSubmitError(message);
     toast.error(message);

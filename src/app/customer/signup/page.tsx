@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { type FieldErrors, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   ArrowLeft,
@@ -35,11 +35,13 @@ export default function CustomerSignupPage() {
   const {
     register,
     handleSubmit,
+    setFocus,
     formState: { errors },
   } = useForm<CustomerSignupFormData>({
     resolver: zodResolver(customerSignupSchema),
     mode: 'onBlur',
     reValidateMode: 'onChange',
+    shouldFocusError: true,
   });
 
   const onSubmit = async (data: CustomerSignupFormData) => {
@@ -73,7 +75,11 @@ export default function CustomerSignupPage() {
     }
   };
 
-  const onInvalid = () => {
+  const onInvalid = (invalidFields: FieldErrors<CustomerSignupFormData>) => {
+    const firstInvalidField = Object.keys(invalidFields)[0] as
+      keyof CustomerSignupFormData | undefined;
+    if (firstInvalidField) setFocus(firstInvalidField);
+
     const message = 'Please complete the highlighted fields before creating your account.';
     setSubmitError(message);
     toast.error(message);

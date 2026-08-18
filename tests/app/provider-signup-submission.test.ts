@@ -26,6 +26,8 @@ describe('provider signup submission safeguards', () => {
       );
       expect(source).toMatch(/method:\s*'POST'/);
       expect(source).toContain("mode: 'onBlur'");
+      expect(source).toContain('shouldFocusError: true');
+      expect(source).toContain('setFocus(firstInvalidField)');
       expect(source).toContain('aria-invalid');
       expect(source).toContain('role="alert"');
     }
@@ -37,32 +39,49 @@ describe('provider signup submission safeguards', () => {
   });
 
   it('rejects blank and whitespace-only rider application fields', () => {
-    expect(
-      riderSignupSchema.safeParse({
-        fullName: ' ',
-        email: ' ',
-        phone: ' ',
-        address: ' ',
-        password: '',
-        confirmPassword: '',
-      }).success
-    ).toBe(false);
+    const result = riderSignupSchema.safeParse({
+      fullName: ' ',
+      email: ' ',
+      phone: ' ',
+      address: ' ',
+      password: '',
+      confirmPassword: '',
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.map((issue) => issue.message)).toContain('Full name is required');
+      expect(result.error.issues.map((issue) => issue.message)).toContain(
+        'Pickup-area address is required'
+      );
+      expect(result.error.issues.map((issue) => issue.message)).toContain('Password is required');
+    }
   });
 
   it('rejects blank partner profile, schedule, and credential fields', () => {
-    expect(
-      partnerSignupSchema.safeParse({
-        businessName: ' ',
-        ownerName: ' ',
-        email: ' ',
-        phone: ' ',
-        address: ' ',
-        openingTime: '',
-        closingTime: '',
-        password: '',
-        confirmPassword: '',
-      }).success
-    ).toBe(false);
+    const result = partnerSignupSchema.safeParse({
+      businessName: ' ',
+      ownerName: ' ',
+      email: ' ',
+      phone: ' ',
+      address: ' ',
+      openingTime: '',
+      closingTime: '',
+      password: '',
+      confirmPassword: '',
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.map((issue) => issue.message)).toContain(
+        'Business name is required'
+      );
+      expect(result.error.issues.map((issue) => issue.message)).toContain('Owner name is required');
+      expect(result.error.issues.map((issue) => issue.message)).toContain(
+        'Business address is required'
+      );
+      expect(result.error.issues.map((issue) => issue.message)).toContain('Password is required');
+    }
   });
 
   it('rejects partner signup requests without an operating day', () => {
