@@ -5,7 +5,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import {
   ArrowLeft,
   CheckCircle2,
@@ -17,27 +16,16 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  customerSignupSchema,
+  type CustomerSignupFormData,
+} from '@/lib/customer-signup-validation';
 
 const BENEFITS = [
   'Book laundry, home cleaning, and fumigation from one account.',
   'Track pickup, service progress, and delivery updates in real time.',
   'Access fumigation certificates and service history anytime.',
 ];
-
-const signupSchema = z
-  .object({
-    fullName: z.string().min(2, 'Full name must be at least 2 characters'),
-    email: z.string().email('Invalid email address'),
-    phone: z.string().min(10, 'Phone number must be at least 10 characters'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  });
-
-type SignupFormData = z.infer<typeof signupSchema>;
 
 export default function CustomerSignupPage() {
   const router = useRouter();
@@ -48,11 +36,13 @@ export default function CustomerSignupPage() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<SignupFormData>({
-    resolver: zodResolver(signupSchema),
+  } = useForm<CustomerSignupFormData>({
+    resolver: zodResolver(customerSignupSchema),
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
   });
 
-  const onSubmit = async (data: SignupFormData) => {
+  const onSubmit = async (data: CustomerSignupFormData) => {
     setIsLoading(true);
     setSubmitError('');
     try {
@@ -81,6 +71,12 @@ export default function CustomerSignupPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const onInvalid = () => {
+    const message = 'Please complete the highlighted fields before creating your account.';
+    setSubmitError(message);
+    toast.error(message);
   };
 
   return (
@@ -137,7 +133,12 @@ export default function CustomerSignupPage() {
               <span className="public-pill w-fit">Secure access</span>
             </div>
 
-            <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+            <form
+              method="post"
+              noValidate
+              className="space-y-4"
+              onSubmit={handleSubmit(onSubmit, onInvalid)}
+            >
               <label className="block">
                 <span className="mb-1.5 block text-sm font-bold text-slate-700">Full Name</span>
                 <span className="relative block">
@@ -148,12 +149,17 @@ export default function CustomerSignupPage() {
                   <input
                     {...register('fullName')}
                     type="text"
+                    aria-invalid={!!errors.fullName}
+                    aria-describedby={errors.fullName ? 'fullName-error' : undefined}
                     placeholder="Adaeze Okonkwo"
                     className={`public-field-with-icon ${errors.fullName ? 'border-red-500' : ''}`}
                   />
                 </span>
                 {errors.fullName && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                  <p
+                    id="fullName-error"
+                    className="mt-1 text-sm text-red-600 flex items-center gap-1"
+                  >
                     <AlertCircle size={14} /> {errors.fullName.message}
                   </p>
                 )}
@@ -170,12 +176,16 @@ export default function CustomerSignupPage() {
                     <input
                       {...register('email')}
                       type="email"
+                      aria-invalid={!!errors.email}
+                      aria-describedby={errors.email ? 'email-error' : undefined}
                       placeholder="you@email.com"
                       className={`public-field-with-icon ${errors.email ? 'border-red-500' : ''}`}
                     />
                   </span>
                   {errors.email && (
-                    <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                    <p id="email-error" className="mt-1 text-sm text-red-600">
+                      {errors.email.message}
+                    </p>
                   )}
                 </label>
 
@@ -191,12 +201,16 @@ export default function CustomerSignupPage() {
                     <input
                       {...register('phone')}
                       type="tel"
+                      aria-invalid={!!errors.phone}
+                      aria-describedby={errors.phone ? 'phone-error' : undefined}
                       placeholder="080XXXXXXXX"
                       className={`public-field-with-icon ${errors.phone ? 'border-red-500' : ''}`}
                     />
                   </span>
                   {errors.phone && (
-                    <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
+                    <p id="phone-error" className="mt-1 text-sm text-red-600">
+                      {errors.phone.message}
+                    </p>
                   )}
                 </label>
               </div>
@@ -212,13 +226,17 @@ export default function CustomerSignupPage() {
                     <input
                       {...register('password')}
                       type="password"
+                      aria-invalid={!!errors.password}
+                      aria-describedby={errors.password ? 'password-error' : undefined}
                       minLength={6}
                       placeholder="At least 6 characters"
                       className={`public-field-with-icon ${errors.password ? 'border-red-500' : ''}`}
                     />
                   </span>
                   {errors.password && (
-                    <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+                    <p id="password-error" className="mt-1 text-sm text-red-600">
+                      {errors.password.message}
+                    </p>
                   )}
                 </label>
 
@@ -234,19 +252,28 @@ export default function CustomerSignupPage() {
                     <input
                       {...register('confirmPassword')}
                       type="password"
+                      aria-invalid={!!errors.confirmPassword}
+                      aria-describedby={
+                        errors.confirmPassword ? 'confirmPassword-error' : undefined
+                      }
                       minLength={6}
                       placeholder="Repeat password"
                       className={`public-field-with-icon ${errors.confirmPassword ? 'border-red-500' : ''}`}
                     />
                   </span>
                   {errors.confirmPassword && (
-                    <p className="mt-1 text-sm text-red-600">{errors.confirmPassword.message}</p>
+                    <p id="confirmPassword-error" className="mt-1 text-sm text-red-600">
+                      {errors.confirmPassword.message}
+                    </p>
                   )}
                 </label>
               </div>
 
               {submitError && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800 flex items-center gap-2">
+                <div
+                  role="alert"
+                  className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800 flex items-center gap-2"
+                >
                   <AlertCircle size={18} />
                   {submitError}
                 </div>
