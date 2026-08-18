@@ -55,6 +55,11 @@ The examples are patterns, not credentials. Supabase project references,
 regions, roles, and hostnames differ per project. Do not paste actual values
 into documentation, source files, commits, issue trackers, or chat.
 
+> **Legacy template notice:** The committed `.env.example` still contains a
+> historical Neon connection example. It is not the source of truth for this
+> Supabase deployment. Use the variable names and Supabase connection patterns
+> in this guide, then place real values only in the approved secret store.
+
 ## Apply the committed migrations safely
 
 First target the isolated Supabase **test** database and make sure the values
