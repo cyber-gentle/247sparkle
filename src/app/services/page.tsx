@@ -127,40 +127,38 @@ export default function ServicesPage() {
               return (
                 <article
                   key={item.title}
-                  className="group relative isolate min-h-[360px] overflow-hidden rounded-3xl bg-[#1A0A5E] shadow-[0_24px_65px_rgba(15,23,42,0.16)] transition-transform duration-300 hover:-translate-y-1"
+                  className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_24px_65px_rgba(15,23,42,0.12)] transition-transform duration-300 hover:-translate-y-1"
                 >
-                  <AppImage
-                    src={item.image}
-                    alt={item.imageAlt}
-                    fill
-                    className="object-cover transition duration-500 group-hover:scale-[1.04]"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#10073D] via-[#1A0A5E]/65 to-[#1A0A5E]/10" />
-                  <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#F5C200] via-[#CC0000] to-[#1A0A5E]" />
-                  <div className="relative flex min-h-[360px] flex-col justify-between p-6 sm:p-7">
+                  <div className="relative h-64 overflow-hidden bg-slate-200">
+                    <AppImage
+                      src={item.image}
+                      alt={item.imageAlt}
+                      fill
+                      className="object-cover transition duration-500 group-hover:scale-[1.04]"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#1A0A5E]/45 via-[#1A0A5E]/10 to-transparent" />
+                    <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#F5C200] via-[#CC0000] to-[#1A0A5E]" />
                     <div className="flex items-start justify-between gap-4">
-                      <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-[#1A0A5E]/55 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.13em] text-white backdrop-blur-sm">
+                      <span className="absolute left-5 top-5 inline-flex items-center gap-2 rounded-full border border-white/35 bg-[#1A0A5E]/50 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.13em] text-white backdrop-blur-sm">
                         <Icon size={15} className="text-[#F5C200]" />
                         {item.label}
                       </span>
-                      <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#F5C200] text-[#1A0A5E] shadow-[0_12px_30px_rgba(245,194,0,0.26)]">
+                      <span className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-2xl bg-[#F5C200] text-[#1A0A5E] shadow-[0_12px_30px_rgba(245,194,0,0.26)]">
                         <Icon size={19} />
                       </span>
                     </div>
-                    <div>
-                      <h2 className="text-2xl font-extrabold text-white">{item.title}</h2>
-                      <p className="mt-2 max-w-md text-sm leading-6 text-white/80">
-                        {item.details}
-                      </p>
-                      <Link
-                        href="/customer/signup"
-                        className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-[#1A0A5E] transition hover:bg-[#F5C200] focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#1A0A5E]"
-                      >
-                        Start a request
-                        <ArrowUpRight size={16} />
-                      </Link>
-                    </div>
+                  </div>
+                  <div className="flex min-h-[180px] flex-col p-6 sm:p-7">
+                    <h2 className="text-2xl font-extrabold text-[#1A0A5E]">{item.title}</h2>
+                    <p className="mt-2 max-w-md text-sm leading-6 text-slate-600">{item.details}</p>
+                    <Link
+                      href="/customer/signup"
+                      className="mt-5 inline-flex w-fit items-center gap-2 rounded-xl bg-[#1A0A5E] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#CC0000] focus:outline-none focus:ring-2 focus:ring-[#1A0A5E] focus:ring-offset-2"
+                    >
+                      Start a request
+                      <ArrowUpRight size={16} />
+                    </Link>
                   </div>
                 </article>
               );

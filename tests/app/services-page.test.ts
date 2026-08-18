@@ -14,10 +14,12 @@ describe('services page visual service cards', () => {
     expect(source).toContain('/images/fumigation-service.jpg');
   });
 
-  it('keeps each service card image-led with a direct customer request path', () => {
+  it('keeps a lighter image overlay above a separate explanatory content panel and request path', () => {
     const source = readFileSync(servicesPage, 'utf8');
 
-    expect(source).toContain('bg-gradient-to-t from-[#10073D]');
+    expect(source).toContain('bg-gradient-to-t from-[#1A0A5E]/45');
+    expect(source).toContain('bg-white shadow-[0_24px_65px_rgba(15,23,42,0.12)]');
+    expect(source).toContain('text-slate-600');
     expect(source).toContain('Start a request');
     expect(source).toContain('href="/customer/signup"');
   });
