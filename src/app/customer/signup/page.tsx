@@ -21,10 +21,19 @@ import {
   type CustomerSignupFormData,
 } from '@/lib/customer-signup-validation';
 
-const BENEFITS = [
-  'Book laundry, home cleaning, and fumigation from one account.',
-  'Track pickup, service progress, and delivery updates in real time.',
-  'Access fumigation certificates and service history anytime.',
+const CUSTOMER_JOURNEY = [
+  {
+    title: 'Choose a service',
+    description: 'Start with laundry, cleaning, or fumigation when you are ready.',
+  },
+  {
+    title: 'Confirm the next step',
+    description: 'Keep your contact details in one place for every booking.',
+  },
+  {
+    title: 'Follow your service',
+    description: 'Return to your account for order updates and service history.',
+  },
 ];
 
 export default function CustomerSignupPage() {
@@ -88,7 +97,13 @@ export default function CustomerSignupPage() {
   return (
     <main className="min-h-screen bg-slate-50 px-6 py-10 lg:px-10">
       <section className="mx-auto grid w-full max-w-6xl gap-6 lg:min-h-[calc(100vh-5rem)] lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
-        <div className="public-card public-card-accent bg-[#1A0A5E] text-white">
+        <div className="public-card public-card-accent isolate !border-[#1A0A5E] !bg-[#1A0A5E] text-white shadow-[0_30px_80px_rgba(26,10,94,0.28)]">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full border border-white/10" />
+            <div className="absolute -right-8 top-16 h-40 w-40 rounded-full border border-[#F5C200]/25" />
+            <div className="absolute -bottom-24 -left-16 h-56 w-56 rounded-full bg-[#CC0000]/15 blur-3xl" />
+            <div className="absolute right-12 top-8 h-2 w-2 rounded-full bg-[#F5C200] shadow-[0_0_0_7px_rgba(245,194,0,0.08)]" />
+          </div>
           <div className="public-card-body p-8 sm:p-10">
             <Link
               href="/"
@@ -113,11 +128,53 @@ export default function CustomerSignupPage() {
               and certificate neatly in one place.
             </p>
 
-            <div className="mt-8 space-y-3">
-              {BENEFITS.map((benefit) => (
-                <div key={benefit} className="flex gap-3 rounded-xl bg-white/10 p-3">
-                  <CheckCircle2 className="mt-0.5 shrink-0 text-[#F5C200]" size={18} />
-                  <p className="text-sm leading-6 text-white/85">{benefit}</p>
+            <div className="mt-8 overflow-hidden rounded-2xl border border-white/15 bg-white/[0.06] p-4">
+              <div className="relative h-28" aria-hidden="true">
+                <svg
+                  className="absolute inset-0 h-full w-full"
+                  viewBox="0 0 360 112"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M34 82C84 82 83 33 139 33C193 33 193 75 252 75C288 75 307 55 330 29"
+                    stroke="rgba(245,194,0,0.78)"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeDasharray="5 7"
+                  />
+                  <circle cx="34" cy="82" r="6" fill="#F5C200" />
+                  <circle cx="139" cy="33" r="6" fill="#F5C200" />
+                  <circle cx="252" cy="75" r="6" fill="#F5C200" />
+                  <circle cx="330" cy="29" r="6" fill="#F5C200" />
+                </svg>
+                <div className="absolute left-3 top-[52px] flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F5C200] text-[#1A0A5E] shadow-[0_14px_30px_rgba(245,194,0,0.2)]">
+                  <Sparkles size={22} />
+                </div>
+                <div className="absolute right-3 top-2 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-white/10 text-[#F5C200]">
+                  <CheckCircle2 size={22} />
+                </div>
+              </div>
+              <div className="mt-1 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.16em] text-white/55">
+                <span>Request</span>
+                <span>Service</span>
+                <span>Update</span>
+              </div>
+            </div>
+
+            <div className="mt-7 space-y-4">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#F5C200]">
+                Your service journey
+              </p>
+              {CUSTOMER_JOURNEY.map((step, index) => (
+                <div key={step.title} className="flex gap-3">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#F5C200]/70 bg-[#F5C200]/10 text-[11px] font-extrabold text-[#F5C200]">
+                    0{index + 1}
+                  </span>
+                  <div>
+                    <p className="text-sm font-bold text-white">{step.title}</p>
+                    <p className="mt-0.5 text-sm leading-5 text-white/70">{step.description}</p>
+                  </div>
                 </div>
               ))}
             </div>

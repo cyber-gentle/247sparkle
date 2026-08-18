@@ -41,4 +41,13 @@ describe('customer signup validation safeguards', () => {
     expect(source).toContain('aria-invalid');
     expect(source).toContain('role="alert"');
   });
+
+  it('keeps the customer signup panel visibly branded and service-oriented', () => {
+    const source = readFileSync(customerSignupPage, 'utf8');
+
+    expect(source).toContain('!bg-[#1A0A5E]');
+    expect(source).toContain('CUSTOMER_JOURNEY');
+    expect(source).toContain('Your service journey');
+    expect(source).toContain('Choose a service');
+  });
 });
