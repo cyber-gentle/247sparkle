@@ -1,22 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { hash } from 'bcryptjs';
-import { z } from 'zod';
+import { ZodError } from 'zod';
 import prisma from '@/lib/db';
 import { RATE_LIMIT_POLICIES, rateLimitRequest } from '@/lib/api-rate-limit';
-
-const riderSignupSchema = z
-  .object({
-    fullName: z.string().min(2, 'Full name must be at least 2 characters'),
-    email: z.string().email('Invalid email address'),
-    phone: z.string().min(10, 'Phone number must be at least 10 characters'),
-    address: z.string().optional(),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  });
+import { riderSignupSchema } from '@/lib/provider-signup-validation';
 
 export async function POST(request: NextRequest) {
   const limited = await rateLimitRequest(request, 'auth', RATE_LIMIT_POLICIES.auth);
@@ -73,7 +60,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Rider signup error:', error);
 
-    if (error instanceof z.ZodError) {
+    if (error instanceof ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', details: error.issues },
         { status: 400 }

@@ -4,26 +4,10 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import ProviderApplicationShell from '@/components/ProviderApplicationShell';
-
-const riderSignupSchema = z
-  .object({
-    fullName: z.string().min(2, 'Full name must be at least 2 characters'),
-    email: z.string().email('Enter a valid email address'),
-    phone: z.string().min(10, 'Phone number must be at least 10 characters'),
-    address: z.string().min(5, 'Address is required'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  });
-
-type RiderSignupFormData = z.infer<typeof riderSignupSchema>;
+import { riderSignupSchema, type RiderSignupFormData } from '@/lib/provider-signup-validation';
 
 const fieldClass = (hasError: boolean) =>
   `w-full rounded-lg border bg-white px-3 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#1A0A5E] focus:ring-4 focus:ring-[#1A0A5E]/10 ${
@@ -53,7 +37,11 @@ export default function RiderSignupPage() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<RiderSignupFormData>({ resolver: zodResolver(riderSignupSchema) });
+  } = useForm<RiderSignupFormData>({
+    resolver: zodResolver(riderSignupSchema),
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
+  });
 
   const onSubmit = async (data: RiderSignupFormData) => {
     setIsLoading(true);
@@ -84,6 +72,12 @@ export default function RiderSignupPage() {
     }
   };
 
+  const onInvalid = () => {
+    const message = 'Please complete the highlighted fields before submitting your application.';
+    setSubmitError(message);
+    toast.error(message);
+  };
+
   return (
     <ProviderApplicationShell
       eyebrow="Rider applications"
@@ -95,7 +89,12 @@ export default function RiderSignupPage() {
       loginLabel="Already registered? Sign in"
       steps={riderSteps}
     >
-      <form method="post" onSubmit={handleSubmit(onSubmit)} className="space-y-7">
+      <form
+        method="post"
+        noValidate
+        onSubmit={handleSubmit(onSubmit, onInvalid)}
+        className="space-y-7"
+      >
         <fieldset>
           <legend className="text-sm font-bold text-slate-900">Your details</legend>
           <p className="mt-1 text-sm text-slate-500">
@@ -112,11 +111,15 @@ export default function RiderSignupPage() {
               <input
                 {...register('fullName')}
                 id="fullName"
+                aria-invalid={!!errors.fullName}
+                aria-describedby={errors.fullName ? 'fullName-error' : undefined}
                 placeholder="Your full name"
                 className={fieldClass(!!errors.fullName)}
               />
               {errors.fullName && (
-                <p className="mt-1.5 text-xs font-medium text-red-600">{errors.fullName.message}</p>
+                <p id="fullName-error" className="mt-1.5 text-xs font-medium text-red-600">
+                  {errors.fullName.message}
+                </p>
               )}
             </div>
             <div>
@@ -127,11 +130,15 @@ export default function RiderSignupPage() {
                 {...register('email')}
                 id="email"
                 type="email"
+                aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? 'email-error' : undefined}
                 placeholder="you@example.com"
                 className={fieldClass(!!errors.email)}
               />
               {errors.email && (
-                <p className="mt-1.5 text-xs font-medium text-red-600">{errors.email.message}</p>
+                <p id="email-error" className="mt-1.5 text-xs font-medium text-red-600">
+                  {errors.email.message}
+                </p>
               )}
             </div>
             <div>
@@ -142,11 +149,15 @@ export default function RiderSignupPage() {
                 {...register('phone')}
                 id="phone"
                 type="tel"
+                aria-invalid={!!errors.phone}
+                aria-describedby={errors.phone ? 'phone-error' : undefined}
                 placeholder="08012345678"
                 className={fieldClass(!!errors.phone)}
               />
               {errors.phone && (
-                <p className="mt-1.5 text-xs font-medium text-red-600">{errors.phone.message}</p>
+                <p id="phone-error" className="mt-1.5 text-xs font-medium text-red-600">
+                  {errors.phone.message}
+                </p>
               )}
             </div>
             <div className="sm:col-span-2">
@@ -160,11 +171,15 @@ export default function RiderSignupPage() {
                 {...register('address')}
                 id="address"
                 rows={3}
+                aria-invalid={!!errors.address}
+                aria-describedby={errors.address ? 'address-error' : undefined}
                 placeholder="Your address in Otukpo"
                 className={fieldClass(!!errors.address)}
               />
               {errors.address && (
-                <p className="mt-1.5 text-xs font-medium text-red-600">{errors.address.message}</p>
+                <p id="address-error" className="mt-1.5 text-xs font-medium text-red-600">
+                  {errors.address.message}
+                </p>
               )}
             </div>
           </div>
@@ -184,11 +199,15 @@ export default function RiderSignupPage() {
                 {...register('password')}
                 id="password"
                 type="password"
+                aria-invalid={!!errors.password}
+                aria-describedby={errors.password ? 'password-error' : undefined}
                 placeholder="At least 6 characters"
                 className={fieldClass(!!errors.password)}
               />
               {errors.password && (
-                <p className="mt-1.5 text-xs font-medium text-red-600">{errors.password.message}</p>
+                <p id="password-error" className="mt-1.5 text-xs font-medium text-red-600">
+                  {errors.password.message}
+                </p>
               )}
             </div>
             <div>
@@ -202,11 +221,13 @@ export default function RiderSignupPage() {
                 {...register('confirmPassword')}
                 id="confirmPassword"
                 type="password"
+                aria-invalid={!!errors.confirmPassword}
+                aria-describedby={errors.confirmPassword ? 'confirmPassword-error' : undefined}
                 placeholder="Repeat your password"
                 className={fieldClass(!!errors.confirmPassword)}
               />
               {errors.confirmPassword && (
-                <p className="mt-1.5 text-xs font-medium text-red-600">
+                <p id="confirmPassword-error" className="mt-1.5 text-xs font-medium text-red-600">
                   {errors.confirmPassword.message}
                 </p>
               )}
@@ -215,7 +236,10 @@ export default function RiderSignupPage() {
         </fieldset>
 
         {submitError && (
-          <div className="flex gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-800">
+          <div
+            role="alert"
+            className="flex gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-800"
+          >
             <AlertCircle className="mt-0.5 shrink-0" size={17} />
             {submitError}
           </div>

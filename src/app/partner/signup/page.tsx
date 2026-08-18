@@ -4,31 +4,16 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import ProviderApplicationShell from '@/components/ProviderApplicationShell';
+import {
+  getOperatingDaysError,
+  partnerSignupSchema,
+  type PartnerSignupFormData,
+} from '@/lib/provider-signup-validation';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-const partnerSignupSchema = z
-  .object({
-    businessName: z.string().min(2, 'Business name must be at least 2 characters'),
-    ownerName: z.string().min(2, 'Owner name must be at least 2 characters'),
-    email: z.string().email('Enter a valid email address'),
-    phone: z.string().min(10, 'Phone number must be at least 10 digits'),
-    address: z.string().min(5, 'Business address is required'),
-    openingTime: z.string().min(1, 'Opening time is required'),
-    closingTime: z.string().min(1, 'Closing time is required'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  });
-
-type PartnerSignupFormData = z.infer<typeof partnerSignupSchema>;
 
 const fieldClass = (hasError: boolean) =>
   `w-full rounded-lg border bg-white px-3 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#1A0A5E] focus:ring-4 focus:ring-[#1A0A5E]/10 ${
@@ -55,13 +40,19 @@ export default function PartnerSignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
+  const [daysError, setDaysError] = useState('');
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<PartnerSignupFormData>({ resolver: zodResolver(partnerSignupSchema) });
+  } = useForm<PartnerSignupFormData>({
+    resolver: zodResolver(partnerSignupSchema),
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
+  });
 
   const toggleDay = (day: string) => {
+    setDaysError('');
     setSelectedDays((current) =>
       current.includes(day)
         ? current.filter((selectedDay) => selectedDay !== day)
@@ -70,6 +61,15 @@ export default function PartnerSignupPage() {
   };
 
   const onSubmit = async (data: PartnerSignupFormData) => {
+    const operatingDaysError = getOperatingDaysError(selectedDays);
+    if (operatingDaysError) {
+      const message = operatingDaysError;
+      setDaysError(message);
+      setSubmitError(message);
+      toast.error(message);
+      return;
+    }
+
     setIsLoading(true);
     setSubmitError('');
     try {
@@ -98,6 +98,12 @@ export default function PartnerSignupPage() {
     }
   };
 
+  const onInvalid = () => {
+    const message = 'Please complete the highlighted fields before submitting your application.';
+    setSubmitError(message);
+    toast.error(message);
+  };
+
   return (
     <ProviderApplicationShell
       eyebrow="Laundry partner applications"
@@ -109,7 +115,12 @@ export default function PartnerSignupPage() {
       loginLabel="Already registered? Sign in"
       steps={partnerSteps}
     >
-      <form method="post" onSubmit={handleSubmit(onSubmit)} className="space-y-7">
+      <form
+        method="post"
+        noValidate
+        onSubmit={handleSubmit(onSubmit, onInvalid)}
+        className="space-y-7"
+      >
         <fieldset>
           <legend className="text-sm font-bold text-slate-900">Business profile</legend>
           <p className="mt-1 text-sm text-slate-500">
@@ -126,6 +137,7 @@ export default function PartnerSignupPage() {
               <input
                 {...register('businessName')}
                 id="businessName"
+                aria-invalid={!!errors.businessName}
                 placeholder="Your laundry business"
                 className={fieldClass(!!errors.businessName)}
               />
@@ -145,6 +157,7 @@ export default function PartnerSignupPage() {
               <input
                 {...register('ownerName')}
                 id="ownerName"
+                aria-invalid={!!errors.ownerName}
                 placeholder="Your full name"
                 className={fieldClass(!!errors.ownerName)}
               />
@@ -162,6 +175,7 @@ export default function PartnerSignupPage() {
                 {...register('email')}
                 id="email"
                 type="email"
+                aria-invalid={!!errors.email}
                 placeholder="you@example.com"
                 className={fieldClass(!!errors.email)}
               />
@@ -177,6 +191,7 @@ export default function PartnerSignupPage() {
                 {...register('phone')}
                 id="phone"
                 type="tel"
+                aria-invalid={!!errors.phone}
                 placeholder="08012345678"
                 className={fieldClass(!!errors.phone)}
               />
@@ -195,6 +210,7 @@ export default function PartnerSignupPage() {
                 {...register('address')}
                 id="address"
                 rows={3}
+                aria-invalid={!!errors.address}
                 placeholder="Full shop address in Otukpo"
                 className={fieldClass(!!errors.address)}
               />
@@ -222,6 +238,7 @@ export default function PartnerSignupPage() {
                 {...register('openingTime')}
                 id="openingTime"
                 type="time"
+                aria-invalid={!!errors.openingTime}
                 className={fieldClass(!!errors.openingTime)}
               />
               {errors.openingTime && (
@@ -241,6 +258,7 @@ export default function PartnerSignupPage() {
                 {...register('closingTime')}
                 id="closingTime"
                 type="time"
+                aria-invalid={!!errors.closingTime}
                 className={fieldClass(!!errors.closingTime)}
               />
               {errors.closingTime && (
@@ -251,7 +269,12 @@ export default function PartnerSignupPage() {
             </div>
             <div className="sm:col-span-2">
               <span className="mb-2 block text-sm font-semibold text-slate-700">Open days</span>
-              <div className="flex flex-wrap gap-2" aria-label="Days your business is open">
+              <div
+                className="flex flex-wrap gap-2"
+                aria-label="Days your business is open"
+                aria-invalid={!!daysError}
+                aria-describedby={daysError ? 'daysOfOpening-error' : undefined}
+              >
                 {DAYS.map((day) => {
                   const isSelected = selectedDays.includes(day);
                   return (
@@ -267,6 +290,11 @@ export default function PartnerSignupPage() {
                   );
                 })}
               </div>
+              {daysError && (
+                <p id="daysOfOpening-error" className="mt-2 text-xs font-medium text-red-600">
+                  {daysError}
+                </p>
+              )}
             </div>
           </div>
         </fieldset>
@@ -285,6 +313,7 @@ export default function PartnerSignupPage() {
                 {...register('password')}
                 id="password"
                 type="password"
+                aria-invalid={!!errors.password}
                 placeholder="At least 6 characters"
                 className={fieldClass(!!errors.password)}
               />
@@ -303,6 +332,7 @@ export default function PartnerSignupPage() {
                 {...register('confirmPassword')}
                 id="confirmPassword"
                 type="password"
+                aria-invalid={!!errors.confirmPassword}
                 placeholder="Repeat your password"
                 className={fieldClass(!!errors.confirmPassword)}
               />
@@ -316,7 +346,10 @@ export default function PartnerSignupPage() {
         </fieldset>
 
         {submitError && (
-          <div className="flex gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-800">
+          <div
+            role="alert"
+            className="flex gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-800"
+          >
             <AlertCircle className="mt-0.5 shrink-0" size={17} />
             {submitError}
           </div>
