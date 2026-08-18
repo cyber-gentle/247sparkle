@@ -52,9 +52,6 @@ const SERVICE_ITEMS = [
   },
 ];
 
-const IRONING_NOTE =
-  'To avoid friction that wear out fabrics we use dedicated fabric prosteam machine instead of conventional pressing iron. So fast, so clean.';
-
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('en-NG', {
     style: 'currency',
@@ -93,8 +90,21 @@ export default function ServicesPage() {
   return (
     <>
       <PublicNavbar />
-      <main className="bg-slate-50 pb-20 pt-24">
-        <section className="mx-auto w-full max-w-6xl px-6 lg:px-10">
+      <main className="relative isolate overflow-hidden bg-slate-50 pb-20 pt-24">
+        <div aria-hidden="true" className="absolute inset-0 z-0 overflow-hidden">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            className="h-full w-full object-cover opacity-[0.09]"
+          >
+            <source src="/iron/iron.mp4" type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-slate-50/80" />
+        </div>
+        <section className="relative z-10 mx-auto w-full max-w-6xl px-6 lg:px-10">
           <div className="relative mb-10 overflow-hidden rounded-3xl bg-[#1A0A5E] p-8 text-white sm:p-10">
             <div aria-hidden="true" className="absolute inset-y-0 right-0 w-2/5 opacity-30">
               <AppImage
@@ -176,16 +186,6 @@ export default function ServicesPage() {
                     <h2 className="mt-1 text-xl font-bold text-[#1A0A5E]">Laundry Pricing</h2>
                   </div>
                   <span className="public-pill">Live rates</span>
-                </div>
-                <div className="mb-5 overflow-hidden rounded-xl border border-slate-200">
-                  <video
-                    className="aspect-video w-full bg-black/5 object-cover"
-                    controls
-                    preload="metadata"
-                  >
-                    <source src="/iron/iron.mp4" type="video/mp4" />
-                  </video>
-                  <p className="px-4 py-3 text-sm text-slate-700">{IRONING_NOTE}</p>
                 </div>
                 {loading ? <p className="text-sm text-slate-600">Loading pricing...</p> : null}
                 {!loading && laundryPricing.length === 0 ? (

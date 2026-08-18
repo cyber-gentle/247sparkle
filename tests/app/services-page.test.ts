@@ -23,4 +23,17 @@ describe('services page visual service cards', () => {
     expect(source).toContain('Start a request');
     expect(source).toContain('href="/customer/signup"');
   });
+
+  it('plays the supplied ironing video as a muted looping page background while retaining both pricing cards', () => {
+    const source = readFileSync(servicesPage, 'utf8');
+
+    expect(source).toContain('autoPlay');
+    expect(source).toContain('loop');
+    expect(source).toContain('muted');
+    expect(source).toContain('playsInline');
+    expect(source).toContain('src="/iron/iron.mp4"');
+    expect(source).toContain('Laundry Pricing');
+    expect(source).toContain('Fumigation Pricing');
+    expect(source).not.toContain('controls');
+  });
 });
