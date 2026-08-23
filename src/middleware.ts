@@ -55,6 +55,8 @@ const publicApiRoutes = [
   '/api/certificates/verify', // public certificate lookup (no login required)
   '/api/pricing', // public price list for the booking flow
   '/api/payment/webhook', // Paystack server-to-server; authenticated via HMAC signature in the handler
+  '/api/health', // public liveness probe; exposes no database state
+  '/api/readiness', // public readiness probe; returns generic dependency state only
 ];
 
 const isPublicPath = (pathname: string) => {
