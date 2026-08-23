@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+integration-test.env.example
 
 # Local databases
 *.db

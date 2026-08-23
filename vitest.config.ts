@@ -10,6 +10,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['tests/**/*.test.{ts,tsx}'],
+    exclude: ['tests/integration/**'],
     env: {
       JWT_SECRET: 'phase-3-test-secret-that-is-long-enough-to-sign-tokens',
     },

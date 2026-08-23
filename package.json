@@ -19,6 +19,8 @@
     "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:integration": "node scripts/run-integration-tests.mjs",
+    "test:integration:reset": "node scripts/run-integration-tests.mjs --reset",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:migrate": "prisma migrate dev",
