@@ -1,113 +1,74 @@
 # 247Sparkle
 
-A modern Next.js 15 application built with TypeScript and Tailwind CSS.
+247Sparkle is a multi-role laundry, cleaning, fumigation, delivery, and partner-management platform. It provides customer booking and order tracking, rider job fulfilment, partner onboarding, administration, pricing management, and fumigation certificate verification.
 
-## 🚀 Features
+## Current release posture
 
-- **Next.js 15** - Latest version with improved performance and features
-- **React 19** - Latest React version with enhanced capabilities
-- **Tailwind CSS** - Utility-first CSS framework for rapid UI development
+247Sparkle is a **pre-production release candidate**. Its codebase has a release baseline, financial-order integrity controls, role-based API access, a guarded local PostgreSQL integration suite, and production liveness/readiness operations checks. Live launch remains blocked on real Paystack **test-mode** validation, a hosted Supabase test-environment rehearsal, backup/restore validation, and a dedicated dependency-upgrade branch.
 
-## 🛠️ Installation
+| Area | Current approach |
+| --- | --- |
+| Application | Next.js 15 App Router, React 19, TypeScript, and Tailwind CSS |
+| Database | Prisma with Supabase PostgreSQL |
+| Authentication | Server-side HS256 JWT in an HttpOnly `auth_token` cookie |
+| Payments | Paystack integration; real-provider testing is paused until the owner supplies test-only keys |
+| Runtime checks | `GET /api/health` and `GET /api/readiness` |
+| Local integration tests | Guarded, disposable PostgreSQL database named `sparkle247_test` |
 
-1. Install dependencies:
-  ```bash
-  npm install
-  # or
-  yarn install
-  ```
+## Quick start
 
-2. Start the development server:
-  ```bash
-  npm run dev
-  # or
-  yarn dev
-  ```
-3. Open [http://localhost:4028](http://localhost:4028) with your browser to see the result.
+Use Node.js `22.13.x` and npm `10.9.x` as declared by the repository. Install dependencies with the lockfile, configure an **isolated development or test database**, apply migrations there, and then start the server on the fixed local port.
 
-## 📁 Project Structure
-
-```
-nextjs/
-├── public/             # Static assets
-├── src/
-│   ├── app/            # App router components
-│   │   ├── layout.tsx  # Root layout component
-│   │   └── page.tsx    # Main page component
-│   ├── components/     # Reusable UI components
-│   ├── styles/         # Global styles and Tailwind configuration
-├── next.config.mjs     # Next.js configuration
-├── package.json        # Project dependencies and scripts
-├── postcss.config.js   # PostCSS configuration
-└── tailwind.config.js  # Tailwind CSS configuration
-
+```bash
+npm ci
+npx prisma generate
+npm run dev
 ```
 
-## 🧩 Page Editing
+Open [http://localhost:4028](http://localhost:4028). Public pages and the liveness probe can load without a database, but authenticated pages and dynamic API routes require a configured development/test database.
 
-You can start editing the page by modifying `src/app/page.tsx`. The page auto-updates as you edit the file.
+> Never point local development, Prisma migrations, seeds, tests, or Paystack test mode at customer-facing production data.
 
-## 🎨 Styling
+## Environment and database configuration
 
-This project uses Tailwind CSS for styling with the following features:
-- Utility-first approach for rapid development
-- Custom theme configuration
-- Responsive design utilities
-- PostCSS and Autoprefixer integration
+The supported provider is **Supabase PostgreSQL**. Runtime application traffic uses the Supavisor transaction pooler, while Prisma migrations use a direct connection or the session pooler. Configure actual values only in a local secret file or the hosting provider secret store.
 
-## 📦 Available Scripts
+| Variable | Required use |
+| --- | --- |
+| `DATABASE_URL` | Runtime application connection through the Supabase transaction pooler on port `6543` with `pgbouncer=true` |
+| `DIRECT_URL` | Prisma migration and introspection connection through a direct or session-pooler connection on port `5432` |
+| `JWT_SECRET` | High-entropy server-side JWT signing secret |
+| `PAYSTACK_SECRET_KEY` / `PAYSTACK_PUBLIC_KEY` | Matching test keys outside production; live keys only after all launch gates are complete |
+| `NEXT_PUBLIC_SITE_URL` / `NEXT_PUBLIC_API_URL` | Public origin and API origin for the active environment |
+| `SEED_ADMIN_PASSWORD` | Required when creating a production seed administrator |
 
-- `npm run dev` - Start development server on port 4028
-- `npm run build` - Build the application for production
-- `npm run start` - Start the development server
-- `npm run serve` - Start the production server
-- `npm run lint` - Run ESLint to check code quality
-- `npm run lint:fix` - Fix ESLint issues automatically
-- `npm run format` - Format code with Prettier
+Read [ENVIRONMENT_REFERENCE.md](./ENVIRONMENT_REFERENCE.md) and [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) before configuring any connection. Do not commit a real connection string, payment key, JWT secret, or administrator password.
 
-## 📱 Deployment
+## Development, testing, and operations commands
 
-Build the application for production:
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Starts the local application on port `4028`. |
+| `npm test` | Runs the fast unit and regression suite without a database. |
+| `npm run test:integration` | Runs the guarded local PostgreSQL integration suite. |
+| `npm run test:integration:reset` | Destructively resets only the local `sparkle247_test` integration database. |
+| `npm run type-check` | Runs the TypeScript quality check. |
+| `npm run lint` | Runs linting; existing legacy warnings are tracked separately. |
+| `npm run build` | Produces the production Next.js build. |
+| `npm run db:seed` | Seeds an isolated development/test database only; production demo records are always blocked. |
 
-  ```bash
-  npm run build
-  ```
+The local integration setup is documented in [LOCAL_INTEGRATION_TESTING.md](./LOCAL_INTEGRATION_TESTING.md). The manual test matrix is in [TESTING.md](./TESTING.md). Operational probe and incident guidance is in [OPERATIONS_RUNBOOK.md](./OPERATIONS_RUNBOOK.md).
 
-### Database standard: Supabase PostgreSQL
+## Production handoff
 
-247Sparkle uses Prisma with **Supabase PostgreSQL**. Configure secrets only in
-the target environment; never commit a real connection string. Use a pooled
-`DATABASE_URL` for application traffic and a `DIRECT_URL` for Prisma migration
-commands. The detailed role, connection, migration, and test-environment
-procedure is in [SUPABASE_SETUP.md](./SUPABASE_SETUP.md).
+The application is prepared for Netlify using `@netlify/plugin-nextjs`; publishing is intentionally a manual owner action. Before a production deployment, complete every release gate below.
 
-> Use a separate Supabase development or test project for schema migrations,
-> seed data, and Paystack test-mode integration checks. Never run these tasks
-> against customer-facing production data.
+| Release gate | Required evidence |
+| --- | --- |
+| Supabase runtime | Isolated test-environment rehearsal with the least-privilege Prisma role, migrations, RLS posture, and connection-pool configuration validated. |
+| Payments | Paystack **test-mode** checkout, verification, signed webhook, duplicate callback, and failure-path validation. |
+| Operations | Healthy `/api/health` and `/api/readiness` probes, structured logs in the selected host, and a successful Supabase backup-and-restore rehearsal. |
+| Quality | Unit, local database integration, type, lint, and production-build checks pass for the release commit. |
+| Dependencies | Production dependency audit findings are addressed on a separately tested upgrade branch. |
 
-## 📚 Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial
-
-You can check out the [Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## 🔎 Verify Certificate Flow (Current Dev Data)
-
-After running the app, open `http://localhost:4028/verify` and test with:
-
-- `SPKFUM-2026-00001` (valid — Adaeze Okonkwo, 2 Rooms Apartment)
-- `SPKFUM-2026-00002` (valid — Tunde Afolayan, Office)
-- Any other number (invalid)
-
-> These certificates are seeded by `npm run db:seed`.
-
-## 🔑 Test Credentials (after `npm run db:seed`)
-
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@247sparkle.com | <set via SEED_ADMIN_PASSWORD (or printed once by the seed)> |
-| Customer | customer@test.com | <dev-seed demo password — dev/demo databases only, never seeded in production> |
-| Rider (approved) | rider@test.com | <dev-seed demo password — dev/demo databases only, never seeded in production> |
+See [SETUP.md](./SETUP.md) for the complete development-to-production handoff and [OPERATIONS_RUNBOOK.md](./OPERATIONS_RUNBOOK.md) for monitoring and recovery expectations.

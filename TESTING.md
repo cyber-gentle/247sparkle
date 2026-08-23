@@ -1,245 +1,66 @@
-# MVP Testing Guide - 247Sparkle
+# 247Sparkle Testing Guide
 
-## Overview
-This guide walks through testing the complete MVP flow from customer signup through rider job acceptance.
+## Test layers
 
-## Prerequisites
+247Sparkle uses complementary test layers rather than relying on a single coverage percentage.
 
-### Required Services
-- Node.js and npm running the dev server (`npm run dev`)
-- PostgreSQL database running (for production data)
-- SQLite database (created automatically in development via Prisma)
+| Layer | Command | Database requirement | Focus |
+| --- | --- | --- | --- |
+| Unit and regression | `npm test` | None | Validation, money handling, order state rules, authentication helpers, middleware, health endpoints, structured-log redaction, and UI regression assertions |
+| Local database integration | `npm run test:integration` | Guarded local `sparkle247_test` PostgreSQL database | Real persistence for order pricing, payment-event idempotency, session login, rider claims, order transitions, and readiness checks |
+| Manual browser validation | `npm run dev` | Isolated development/test database for dynamic flows | Signup, login, booking, rider/admin workflow, public pages, and accessibility review |
+| Provider validation | Owner-approved Paystack test mode | Isolated Supabase test environment and `sk_test_` / `pk_test_` pair | Checkout, verification, signed webhook, replay, and failure behavior |
 
-### Environment Setup
+## Fast automated checks
+
+Run the following before requesting a review or creating a release commit:
+
 ```bash
-# Install dependencies
-npm install
-
-# Create .env.local with valid database connection
-DATABASE_URL="postgresql://user:password@localhost:5432/sparkle247"
-JWT_SECRET="dev-secret-key-12345"
-PAYSTACK_SECRET_KEY="sk_test_xxx"
-PAYSTACK_PUBLIC_KEY="pk_test_xxx"
-
-# Push schema to database
-npm run db:push
-
-# Seed default data (admin user + pricing)
-npm run db:seed
-
-# Start dev server
-npm run dev -- -p 3000
+npm test
+npm run type-check
+npm run lint
+npm run build
 ```
 
-## Testing Workflow
+The production build currently emits known `jose` Edge-runtime warnings related to compression APIs. Record any change to that warning profile; do not suppress it blindly.
 
-### Phase 1: Customer Registration & Login
+## Local PostgreSQL integration suite
 
-#### 1.1 Customer Signup
-1. Navigate to `http://localhost:3000/customer/signup`
-2. Fill in form:
-   - Full Name: "Test Customer"
-   - Email: "customer@test.com"
-   - Phone: "09012345678"
-   - Password: "<dev-seed demo password — dev/demo databases only, never seeded in production>"
-   - Confirm: "<dev-seed demo password — dev/demo databases only, never seeded in production>"
-3. Click "Create Customer Account"
-4. **Expected**: Redirects to `/customer/login` with success toast
+The integration suite only runs through the guarded script below. It refuses non-local hosts and database names other than `sparkle247_test`.
 
-#### 1.2 Customer Login
-1. Navigate to `http://localhost:3000/customer/login`
-2. Enter credentials:
-   - Email: "customer@test.com"
-   - Password: "<dev-seed demo password — dev/demo databases only, never seeded in production>"
-3. Click "Login"
-4. **Expected**: 
-   - Sets `auth_token` cookie
-   - Redirects to `/customer/dashboard`
+```bash
+npm run test:integration:reset
+npm run test:integration
+```
 
-### Phase 2: Order Creation
+Follow [LOCAL_INTEGRATION_TESTING.md](./LOCAL_INTEGRATION_TESTING.md) for first-time local PostgreSQL setup. Do not point this suite at Supabase production, any customer database, or a live Paystack account.
 
-#### 2.1 Create Order
-1. From customer dashboard, click "New Order" or navigate to `/customer/new-order`
-2. **Step 1 - Service Selection**: Select "Laundry Service"
-3. **Step 2 - Item Selection**: 
-   - Select 2 items (e.g., White Shirts ×2, Trousers ×1)
-   - Click "Next"
-4. **Step 3 - Pickup Option**: 
-   - Select "We Pick Up from Your Home"
-   - Click "Next"
-5. **Step 4 - Delivery Details**:
-   - Address: "123 Main Street, Lagos"
-   - Delivery Date: Select future date
-   - Click "Review Order"
-6. **Step 5 - Order Summary**:
-   - Verify total calculated correctly (₦600 + ₦400 = ₦1000)
-   - Click "Proceed to Payment"
-7. **Expected**: 
-   - If database connected: Redirects to Paystack payment
-   - If no database: 500 error (expected, shows API integration works)
+## Manual browser smoke test
 
-### Phase 3: Rider Workflow
+Start the application with `npm run dev` and open [http://localhost:4028](http://localhost:4028).
 
-#### 3.1 Rider Signup
-1. Navigate to `http://localhost:3000/rider/signup`
-2. Fill form with required details:
-   - Full Name: "Test Rider"
-   - Email: "rider@test.com"
-   - Phone: "09087654321"
-   - Password: "<dev-seed demo password — dev/demo databases only, never seeded in production>"
-   - Bank Details (dummy values acceptable)
-3. Click "Sign Up as Rider"
-4. **Expected**: Redirects to rider login (approval pending)
+| Workflow | Expected behavior |
+| --- | --- |
+| Public pages | Homepage, services, contact, partner onboarding, certificate verification, and `/api/health` are reachable without an account. |
+| Customer signup and login | Empty fields show field-level errors; credentials are submitted with protected POST requests; a valid login creates an HttpOnly session. |
+| Rider and partner onboarding | Required-field feedback appears, submissions use POST, and unapproved riders cannot claim work. |
+| Customer order | The server derives price from the Pricing table; unknown laundry items and zero-priced cleaning orders are rejected. |
+| Rider fulfilment | One approved, working rider can claim a paid unassigned order; unauthorized or duplicate claims are rejected. |
+| Order status | Only the assigned rider or an administrator can make valid paid-order transitions. |
+| Operations | `/api/health` returns `200`; `/api/readiness` returns `200` only when its database dependency is configured and reachable. |
 
-#### 3.2 Admin Approval of Rider
-1. Using admin credentials (from seed: admin@247sparkle.com/<set via SEED_ADMIN_PASSWORD (or printed once by the seed)>):
-   - POST to `/api/admin/riders/{riderId}`
-   - Body: `{ "action": "APPROVE" }`
-2. **Expected**: Rider now has `approvalStatus='APPROVED'`
+## Paystack test-mode checklist
 
-#### 3.3 Rider Login & Job View
-1. Navigate to `http://localhost:3000/rider/login`
-2. Enter rider credentials:
-   - Email: "rider@test.com"
-   - Password: "<dev-seed demo password — dev/demo databases only, never seeded in production>"
-3. Click "Login"
-4. **Expected**: Redirects to `/rider/dashboard`
+Paystack validation is intentionally deferred until the owner supplies test-only credentials through the approved secret channel. When available, validate all items below in a Supabase **test** environment:
 
-#### 3.4 Available Jobs
-1. On rider dashboard, view list of available jobs
-2. Each job card shows:
-   - Order number & service type
-   - Customer phone number (clickable)
-   - Pickup and delivery addresses
-   - Item count & creation date
-   - Amount (commission calculated as 20%)
-3. **Expected**: Shows paid orders waiting for rider assignment
+1. Initialize a checkout with the expected kobo amount and metadata.
+2. Verify a successful transaction only for the signed-in customer or administrator.
+3. Send a valid signed `charge.success` webhook and confirm exactly one payment event, paid transition, and audit entry.
+4. Replay the same signed webhook and confirm idempotent behavior.
+5. Reject invalid signatures, failed status, amount mismatch, currency mismatch, and unknown references.
 
-#### 3.5 Accept Job
-1. Click "Accept Job" on any available job
-2. **Expected**:
-   - Button shows loading state
-   - Job accepted successfully (toast notification)
-   - Job removed from available list
-   - Commission record created (20% of order total)
+No live keys, live card details, business identity forms, or live payment attempts are required for this checklist.
 
-#### 3.6 Job Details & Status Updates
-1. After accepting job, navigate to job detail page or `/rider/job/{orderId}`
-2. View complete job details:
-   - Customer name, phone, email
-   - Pickup and delivery addresses
-   - Items and total amount
-   - Current delivery progress
-3. Update job status by clicking status progression buttons:
-   - Click "Mark as IN_TRANSIT" → shows "Out for Delivery"
-   - Click "Mark as ARRIVED" → shows "At Destination"
-   - Click "Mark as COMPLETED" → shows "Delivery Complete"
-4. **Expected**: Each status update succeeds, UI updates to show progress
+## Failure reporting
 
-### Phase 4: Customer Order Tracking
-
-#### 4.1 View Orders
-1. From customer dashboard, click "View Orders" or navigate to `/customer/orders`
-2. View order list with:
-   - Order number
-   - Service type
-   - Items ordered
-   - Total amount
-   - Current status
-   - Payment status
-3. **Expected**: Shows created order with RIDER_ASSIGNED status
-
-#### 4.2 Track Order
-1. Click on order to view details
-2. See:
-   - Assigned rider information
-   - Pickup and delivery addresses
-   - Real-time status (in-transit, arrived, etc.)
-   - Order timeline
-3. **Expected**: Updates reflect rider's status changes
-
-### Phase 5: Data Validation Tests
-
-#### 5.1 Form Validation
-- Try signup with invalid email → Shows error
-- Try login with wrong password → Shows "Invalid credentials"
-- Try order with no items → Shows validation error
-- Try delivery date in the past → Shows validation error
-
-#### 5.2 Authorization Tests
-- Try accessing `/customer/dashboard` without login → Redirects to login
-- Try accessing `/rider/job/{id}` as customer → Shows 403 Forbidden
-- Try accessing admin endpoints as regular user → Returns 401
-
-#### 5.3 Data Integrity Tests
-- Create multiple orders → Each gets unique ID
-- Accept same job twice → Second attempt shows "Order no longer available"
-- Check commission calculation → 20% of order total stored correctly
-
-## API Endpoints Reference
-
-### Customer APIs
-- `POST /api/auth/customer/signup` - Register customer
-- `POST /api/auth/customer/login` - Login customer
-- `POST /api/orders` - Create order (requires auth)
-- `GET /api/orders` - Get customer's orders (requires auth)
-- `POST /api/payment/verify/[reference]` - Verify Paystack payment
-
-### Rider APIs
-- `POST /api/auth/rider/signup` - Register rider
-- `POST /api/auth/rider/login` - Login rider (requires approval)
-- `GET /api/riders/jobs` - Get available jobs (requires auth)
-- `POST /api/riders/jobs/[id]/accept` - Accept job (requires auth)
-- `POST /api/riders/location` - Update rider location
-- `GET /api/riders/location` - Get rider location
-- `POST /api/orders/[id]/status` - Update order status
-
-### Admin APIs
-- `POST /api/admin/riders/[id]` - Approve/suspend rider
-- `GET /api/admin/riders` - List all riders
-- `GET /api/admin/orders` - Get all orders (admin view)
-
-## Troubleshooting
-
-### Issue: "Can't reach database server"
-**Solution**: Ensure PostgreSQL is running or switch to SQLite for development
-
-### Issue: Middleware redirects to login on protected routes
-**Solution**: Check that auth_token cookie is being set. Verify JWT_SECRET matches between signup and login
-
-### Issue: "Rider not approved" error when logging in
-**Solution**: Use admin endpoint to approve rider first (see Phase 3.2)
-
-### Issue: Order status doesn't update
-**Solution**: Verify rider is the one updating (x-user-id header must match order.riderId)
-
-### Issue: "Order no longer available" when accepting job
-**Solution**: Ensure order payment status is 'PAID'. Check that order.riderId is null
-
-## Success Criteria
-
-✅ Customer can signup and login
-✅ Customer can create multi-step order with items selection
-✅ Customer sees order in dashboard
-✅ Rider can signup and view available jobs
-✅ Rider can accept job (order assigned, commission created)
-✅ Rider can update job status through progress tracking
-✅ Customer sees real-time status updates
-✅ All validations work correctly
-✅ Authentication prevents unauthorized access
-
-## Next Steps (Post-MVP)
-
-1. **Real-time Updates**: Implement Socket.io for live job notifications and order tracking
-2. **Maps Integration**: Add Google Maps for route visualization
-3. **Payment Processing**: Connect to real Paystack account for production
-4. **File Uploads**: Implement Cloudinary integration for rider photos
-5. **Notifications**: Add email/SMS notifications for order status changes
-6. **Analytics**: Dashboard showing metrics (daily earnings, completed orders, etc.)
-7. **Admin Dashboard**: Full admin UI for order management and metrics
-8. **Mobile App**: React Native mobile clients for customers and riders
-
----
-
-**Last Updated**: June 5, 2026
-**MVP Version**: 1.0.0
+When a test fails, capture the command, commit hash, route or workflow, safe reproduction steps, and the timestamped structured error event. Do not copy cookies, tokens, database URLs, Paystack keys, customer addresses, phone numbers, or passwords into tickets or logs.

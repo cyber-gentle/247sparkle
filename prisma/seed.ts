@@ -8,30 +8,38 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Starting database seed...');
 
-  // Create default admin.
-  // Password comes from SEED_ADMIN_PASSWORD; if unset, a random one is
-  // generated and printed ONCE. Never hardcode credentials here — they end up
-  // in git and in every deployed database.
-  const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@247sparkle.com';
-  const generatedPassword = randomBytes(12).toString('base64url');
-  const adminPasswordPlain = process.env.SEED_ADMIN_PASSWORD || generatedPassword;
-  const adminPassword = await hash(adminPasswordPlain, 12);
-
-  const admin = await prisma.user.create({
-    data: {
-      fullName: 'Admin User',
-      email: adminEmail,
-      phone: '09039661885',
-      passwordHash: adminPassword,
-      role: 'ADMIN',
-    },
-  });
-
-  console.log('✓ Admin user created:', admin.email);
-  if (!process.env.SEED_ADMIN_PASSWORD) {
-    console.log(
-      `✓ Generated admin password (store it now, it will not be shown again): ${adminPasswordPlain}`
+  const isProduction = process.env.NODE_ENV === 'production';
+  if (isProduction && (!process.env.SEED_ADMIN_EMAIL || !process.env.SEED_ADMIN_PASSWORD)) {
+    throw new Error(
+      'SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD are required when creating a production administrator.'
     );
+  }
+
+  const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@247sparkle.com';
+  const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
+
+  if (!existingAdmin) {
+    const generatedPassword = randomBytes(12).toString('base64url');
+    const adminPasswordPlain = process.env.SEED_ADMIN_PASSWORD || generatedPassword;
+    const adminPassword = await hash(adminPasswordPlain, 12);
+    const admin = await prisma.user.create({
+      data: {
+        fullName: 'Admin User',
+        email: adminEmail,
+        phone: '09039661885',
+        passwordHash: adminPassword,
+        role: 'ADMIN',
+      },
+    });
+
+    console.log('✓ Admin user created:', admin.email);
+    if (!process.env.SEED_ADMIN_PASSWORD) {
+      console.log(
+        `✓ Generated non-production admin password (store it now, it will not be shown again): ${adminPasswordPlain}`
+      );
+    }
+  } else {
+    console.log('✓ Existing administrator retained; seed will not reset its password.');
   }
 
   // Create default pricing for laundry items
@@ -49,15 +57,20 @@ async function main() {
   ];
 
   for (const item of laundryItems) {
-    await prisma.pricing.create({
-      data: {
-        serviceType: 'LAUNDRY',
-        itemName: item.itemName,
-        unitPrice: item.unitPrice,
-        unitPriceKobo: nairaToKobo(item.unitPrice),
-        description: `Laundry service for ${item.itemName}`,
-      },
+    const existingPricing = await prisma.pricing.findUnique({
+      where: { serviceType_itemName: { serviceType: 'LAUNDRY', itemName: item.itemName } },
     });
+    if (!existingPricing) {
+      await prisma.pricing.create({
+        data: {
+          serviceType: 'LAUNDRY',
+          itemName: item.itemName,
+          unitPrice: item.unitPrice,
+          unitPriceKobo: nairaToKobo(item.unitPrice),
+          description: `Laundry service for ${item.itemName}`,
+        },
+      });
+    }
   }
 
   console.log('✓ Laundry pricing created');
@@ -73,15 +86,20 @@ async function main() {
   ];
 
   for (const item of fumigationItems) {
-    await prisma.pricing.create({
-      data: {
-        serviceType: 'FUMIGATION',
-        itemName: item.itemName,
-        unitPrice: item.unitPrice,
-        unitPriceKobo: nairaToKobo(item.unitPrice),
-        description: `Fumigation service for ${item.itemName}`,
-      },
+    const existingPricing = await prisma.pricing.findUnique({
+      where: { serviceType_itemName: { serviceType: 'FUMIGATION', itemName: item.itemName } },
     });
+    if (!existingPricing) {
+      await prisma.pricing.create({
+        data: {
+          serviceType: 'FUMIGATION',
+          itemName: item.itemName,
+          unitPrice: item.unitPrice,
+          unitPriceKobo: nairaToKobo(item.unitPrice),
+          description: `Fumigation service for ${item.itemName}`,
+        },
+      });
+    }
   }
 
   console.log('✓ Fumigation pricing created');
@@ -90,8 +108,15 @@ async function main() {
   // Provides an end-to-end demonstrable record for the public certificate
   // verification page (/verify) and the customer certificates page.
   // NEVER seeded in production — these accounts have a well-known password.
-  if (process.env.NODE_ENV === 'production' && process.env.SEED_DEMO_DATA !== 'true') {
+  if (isProduction) {
     console.log('✓ Skipping demo accounts (production seed)');
+    console.log('\n✨ Database seeded successfully!');
+    return;
+  }
+
+  const existingDemoUser = await prisma.user.findUnique({ where: { email: 'customer@test.com' } });
+  if (existingDemoUser) {
+    console.log('✓ Existing demo records retained; seed will not duplicate them.');
     console.log('\n✨ Database seeded successfully!');
     return;
   }
