@@ -9,10 +9,13 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['tests/**/*.test.{ts,tsx}'],
-    exclude: ['tests/integration/**'],
+    include: ['tests/integration/**/*.test.ts'],
+    setupFiles: ['tests/integration/setup.ts'],
+    fileParallelism: false,
+    maxWorkers: 1,
+    minWorkers: 1,
     env: {
-      JWT_SECRET: 'phase-3-test-secret-that-is-long-enough-to-sign-tokens',
+      JWT_SECRET: 'local-integration-test-secret-that-is-long-enough-to-sign-tokens',
     },
   },
 });
