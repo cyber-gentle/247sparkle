@@ -33,7 +33,7 @@ export default function CustomerCertificatesPage() {
   useEffect(() => {
     async function loadCertificates() {
       try {
-        const response = await fetch('/api/certificates/customer/current', {
+        const response = await fetch('/api/certificates/customer/me', {
           credentials: 'include',
         });
 
