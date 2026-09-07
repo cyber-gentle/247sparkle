@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { CheckCircle, XCircle, ShieldOff, Loader, ChevronDown } from 'lucide-react';
+import { CheckCircle, XCircle, ShieldOff, Loader, ChevronDown, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 
 type Rider = {
@@ -17,6 +17,19 @@ type Rider = {
   commissions: { amount: number; status: string }[];
 };
 
+type Withdrawal = {
+  id: string;
+  amount: number;
+  status: string;
+  requestedAt: string;
+  processedAt?: string | null;
+  rider: {
+    id: string;
+    walletBalanceKobo: number;
+    user: { fullName: string; email: string; phone: string };
+  };
+};
+
 const STATUS_COLORS: Record<string, string> = {
   APPROVED: 'bg-green-100 text-green-700',
   PENDING: 'bg-amber-100 text-amber-700',
@@ -24,14 +37,23 @@ const STATUS_COLORS: Record<string, string> = {
   SUSPENDED: 'bg-gray-100 text-gray-600',
 };
 
+const WITHDRAWAL_STATUS_COLORS: Record<string, string> = {
+  PENDING: 'bg-amber-100 text-amber-700',
+  PAID: 'bg-green-100 text-green-700',
+  REJECTED: 'bg-red-100 text-red-700',
+};
+
 export default function AdminRidersPage() {
   const [riders, setRiders] = useState<Rider[]>([]);
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [withdrawalsLoading, setWithdrawalsLoading] = useState(true);
   const [busyId, setBusyId] = useState('');
   const [filter, setFilter] = useState('ALL');
 
   useEffect(() => {
     load();
+    loadWithdrawals();
   }, []);
 
   async function load() {
@@ -43,6 +65,47 @@ export default function AdminRidersPage() {
       toast.error('Failed to load riders');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadWithdrawals() {
+    try {
+      const res = await fetch('/api/admin/withdrawals');
+      const data = await res.json();
+      setWithdrawals(data.withdrawals ?? []);
+    } catch {
+      toast.error('Failed to load withdrawal requests');
+    } finally {
+      setWithdrawalsLoading(false);
+    }
+  }
+
+  async function processWithdrawal(id: string, action: 'MARK_PAID' | 'REJECT') {
+    setBusyId(id);
+    try {
+      const res = await fetch(`/api/admin/withdrawals/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error ?? 'Action failed');
+        return;
+      }
+      setWithdrawals((prev) => prev.map((w) => (w.id === id ? { ...w, status: data.withdrawal.status } : w)));
+      toast.success(
+        action === 'MARK_PAID'
+          ? 'Withdrawal marked as paid'
+          : 'Withdrawal rejected and wallet refunded'
+      );
+      // Wallet balances and approval views may have changed — refresh both.
+      load();
+      loadWithdrawals();
+    } catch {
+      toast.error('Network error');
+    } finally {
+      setBusyId('');
     }
   }
 
@@ -229,6 +292,93 @@ export default function AdminRidersPage() {
                               </button>
                             )}
                           </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+        {/* Withdrawal Requests */}
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-5 py-4">
+            <Wallet size={16} className="text-[#1A0A5E]" />
+            <h2 className="text-sm font-bold uppercase tracking-wide text-slate-600">
+              Withdrawal Requests
+            </h2>
+            <span className="ml-auto text-xs text-slate-400">
+              Mark requests paid after completing the bank transfer; rejecting refunds the rider
+              wallet.
+            </span>
+          </div>
+          {withdrawalsLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader className="animate-spin text-[#1A0A5E]" size={24} />
+            </div>
+          ) : withdrawals.length === 0 ? (
+            <p className="py-10 text-center text-sm text-slate-500">No withdrawal requests yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-left text-sm">
+                <thead className="border-b border-slate-200 bg-slate-50 text-xs font-bold uppercase tracking-wide text-slate-500">
+                  <tr>
+                    <th className="px-5 py-3">Rider</th>
+                    <th className="px-5 py-3">Amount</th>
+                    <th className="px-5 py-3">Requested</th>
+                    <th className="px-5 py-3">Status</th>
+                    <th className="px-5 py-3">Processed</th>
+                    <th className="px-5 py-3">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {withdrawals.map((w) => (
+                    <tr key={w.id} className="border-b border-slate-100 hover:bg-slate-50 transition">
+                      <td className="px-5 py-4">
+                        <p className="font-semibold text-slate-800">{w.rider.user.fullName}</p>
+                        <p className="text-xs text-slate-500">{w.rider.user.email}</p>
+                      </td>
+                      <td className="px-5 py-4 font-semibold text-[#1A0A5E]">
+                        ₦{w.amount.toLocaleString()}
+                      </td>
+                      <td className="px-5 py-4 text-slate-500">
+                        {new Date(w.requestedAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-5 py-4">
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-xs font-bold ${WITHDRAWAL_STATUS_COLORS[w.status] ?? 'bg-slate-100 text-slate-600'}`}
+                        >
+                          {w.status}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 text-slate-500">
+                        {w.processedAt ? new Date(w.processedAt).toLocaleDateString() : '—'}
+                      </td>
+                      <td className="px-5 py-4">
+                        {w.status === 'PENDING' ? (
+                          busyId === w.id ? (
+                            <Loader size={16} className="animate-spin text-slate-400" />
+                          ) : (
+                            <div className="flex gap-1.5">
+                              <button
+                                onClick={() => processWithdrawal(w.id, 'MARK_PAID')}
+                                title="Mark as Paid (after bank transfer)"
+                                className="rounded-lg bg-green-600 p-1.5 text-white hover:bg-green-700"
+                              >
+                                <CheckCircle size={14} />
+                              </button>
+                              <button
+                                onClick={() => processWithdrawal(w.id, 'REJECT')}
+                                title="Reject and refund wallet"
+                                className="rounded-lg bg-red-500 p-1.5 text-white hover:bg-red-600"
+                              >
+                                <XCircle size={14} />
+                              </button>
+                            </div>
+                          )
+                        ) : (
+                          <span className="text-xs text-slate-400">No actions</span>
                         )}
                       </td>
                     </tr>

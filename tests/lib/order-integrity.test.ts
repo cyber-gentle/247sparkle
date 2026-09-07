@@ -9,9 +9,26 @@ const database = vi.hoisted(() => ({
 
 vi.mock('@/lib/db', () => ({ default: database }));
 
-import { assignRiderToPaidOrder, confirmOrderPayment } from '../../src/lib/order-integrity';
+import {
+  assignRiderToPaidOrder,
+  confirmOrderPayment,
+  transitionPaidOrder,
+} from '../../src/lib/order-integrity';
 
-function createTransaction(overrides: Record<string, unknown> = {}) {
+type TransactionMock = {
+  paymentEvent: { findUnique: ReturnType<typeof vi.fn>; create: ReturnType<typeof vi.fn> };
+  order: { updateMany: ReturnType<typeof vi.fn>; findUnique: ReturnType<typeof vi.fn> };
+  commission: {
+    upsert: ReturnType<typeof vi.fn>;
+    findUnique?: ReturnType<typeof vi.fn>;
+    create?: ReturnType<typeof vi.fn>;
+  };
+  auditLog: { create: ReturnType<typeof vi.fn> };
+  rider?: { update: ReturnType<typeof vi.fn> };
+  [key: string]: unknown;
+};
+
+function createTransaction(overrides: Record<string, unknown> = {}): TransactionMock {
   return {
     paymentEvent: {
       findUnique: vi.fn().mockResolvedValue(null),
@@ -36,7 +53,6 @@ function createTransaction(overrides: Record<string, unknown> = {}) {
     ...overrides,
   };
 }
-
 describe('Phase 2 order integrity service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -138,5 +154,140 @@ describe('Phase 2 order integrity service', () => {
     expect([firstAttempt, secondAttempt].filter(Boolean)).toHaveLength(1);
     expect(tx.commission.upsert).toHaveBeenCalledTimes(1);
     expect(tx.auditLog.create).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Rider wallet crediting on order completion', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  function createCompletionTransaction({
+    riderId = 'rider-1',
+    commissionKobo = 25000,
+    updateCount = 1,
+  }: {
+    riderId?: string | null;
+    commissionKobo?: number | null;
+    updateCount?: number;
+  } = {}): TransactionMock & { rider: { update: ReturnType<typeof vi.fn> } } {
+    return createTransaction({
+      order: {
+        updateMany: vi.fn().mockResolvedValue({ count: updateCount }),
+        findUnique: vi.fn().mockImplementation((args) => {
+          // First findUnique call: the completion credit lookup (select riderId).
+          // Final call: the returned order.
+          if (args?.select) {
+            return Promise.resolve({ riderId, totalKobo: 125000 });
+          }
+          return Promise.resolve({ id: 'order-1', status: 'COMPLETED' });
+        }),
+      },
+      commission: {
+        upsert: vi.fn(),
+        findUnique: vi.fn().mockResolvedValue(
+          commissionKobo === null ? null : { amountKobo: commissionKobo }
+        ),
+        create: vi.fn().mockResolvedValue({ id: 'commission-new' }),
+      },
+      rider: {
+        update: vi.fn().mockResolvedValue({ id: 'rider-1' }),
+      },
+    }) as TransactionMock & { rider: { update: ReturnType<typeof vi.fn> } };
+  }
+
+  it('credits the wallet with the commission amount when an order completes', async () => {
+    const tx = createCompletionTransaction({ commissionKobo: 25000 });
+    database.$transaction.mockImplementation(
+      async (callback: (transaction: typeof tx) => unknown) => callback(tx)
+    );
+
+    const result = await transitionPaidOrder({
+      orderId: 'order-1',
+      currentStatus: 'OUT_FOR_DELIVERY',
+      nextStatus: 'COMPLETED',
+      actorUserId: 'user-rider',
+    });
+
+    expect(result).toMatchObject({ id: 'order-1', status: 'COMPLETED' });
+    expect(tx.commission.findUnique).toHaveBeenCalledWith({
+      where: { orderId_riderId: { orderId: 'order-1', riderId: 'rider-1' } },
+      select: { amountKobo: true },
+    });
+    expect(tx.rider.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'rider-1' },
+        data: {
+          walletBalanceKobo: { increment: 25000 },
+          walletBalance: { increment: 250 },
+        },
+      })
+    );
+    expect(tx.auditLog.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ action: 'RIDER_WALLET_CREDITED' }),
+      })
+    );
+  });
+
+  it('falls back to a 20% commission calculation when no commission row exists', async () => {
+    const tx = createCompletionTransaction({ commissionKobo: null, riderId: 'rider-1' });
+    database.$transaction.mockImplementation(
+      async (callback: (transaction: typeof tx) => unknown) => callback(tx)
+    );
+
+    await transitionPaidOrder({
+      orderId: 'order-1',
+      currentStatus: 'OUT_FOR_DELIVERY',
+      nextStatus: 'COMPLETED',
+      actorUserId: 'user-rider',
+    });
+
+    // 20% of 125000 kobo = 25000 kobo
+    expect(tx.commission.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ amountKobo: 25000, riderId: 'rider-1', status: 'PENDING' }),
+      })
+    );
+    expect(tx.rider.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { walletBalanceKobo: { increment: 25000 }, walletBalance: { increment: 250 } },
+      })
+    );
+  });
+
+  it('does not credit anything when the guarded transition loses the race', async () => {
+    const tx = createCompletionTransaction({ updateCount: 0 });
+    database.$transaction.mockImplementation(
+      async (callback: (transaction: typeof tx) => unknown) => callback(tx)
+    );
+
+    const result = await transitionPaidOrder({
+      orderId: 'order-1',
+      currentStatus: 'OUT_FOR_DELIVERY',
+      nextStatus: 'COMPLETED',
+      actorUserId: 'user-rider',
+    });
+
+    expect(result).toBeNull();
+    expect(tx.rider.update).not.toHaveBeenCalled();
+    expect(tx.commission.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('does not credit anything for non-terminal transitions', async () => {
+    const tx = createCompletionTransaction();
+    database.$transaction.mockImplementation(
+      async (callback: (transaction: typeof tx) => unknown) => callback(tx)
+    );
+
+    await transitionPaidOrder({
+      orderId: 'order-1',
+      currentStatus: 'RIDER_ASSIGNED',
+      nextStatus: 'PICKED_UP',
+      actorUserId: 'user-rider',
+    });
+
+    expect(tx.rider.update).not.toHaveBeenCalled();
+    expect(tx.commission.findUnique).not.toHaveBeenCalled();
   });
 });
