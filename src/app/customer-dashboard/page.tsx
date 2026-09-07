@@ -1,5 +1,6 @@
 'use client';
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Toaster } from 'sonner';
 import CustomerSidebar from './components/CustomerSidebar';
 import CustomerTopbar from './components/CustomerTopbar';
@@ -8,11 +9,69 @@ import ActiveOrderTracker from './components/ActiveOrderTracker';
 import RecentOrdersTable from './components/RecentOrdersTable';
 import QuickActions from './components/QuickActions';
 import CertificatesWidget from './components/CertificatesWidget';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Loader } from 'lucide-react';
+
+interface CustomerProfile {
+  id: string;
+  fullName: string;
+  email: string;
+  phone?: string;
+}
 
 export default function CustomerDashboardPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const [customer, setCustomer] = useState<CustomerProfile | null>(null);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadDashboardData() {
+      try {
+        const [profileRes, ordersRes] = await Promise.all([
+          fetch('/api/customer/profile'),
+          fetch('/api/orders'),
+        ]);
+
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          if (profileData.customer) {
+            setCustomer(profileData.customer);
+          }
+        }
+
+        if (ordersRes.ok) {
+          const ordersData = await ordersRes.json();
+          setOrders(ordersData.orders || []);
+        }
+      } catch (error) {
+        console.error('Failed to load dashboard data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadDashboardData();
+  }, []);
+
+  const totalOrders = orders.length;
+
+  const activeOrders = orders.filter((o) =>
+    ['PENDING', 'PAID_UNASSIGNED', 'RIDER_ASSIGNED', 'PICKED_UP', 'IN_CLEANING', 'OUT_FOR_DELIVERY'].includes(
+      o.status
+    )
+  );
+
+  const completedOrders = orders.filter((o) => o.status === 'COMPLETED');
+
+  const totalSpent = orders
+    .filter((o) => o.paymentStatus === 'PAID')
+    .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+
+  const mostActiveOrder = activeOrders[0] || null;
+
+  const firstName = customer?.fullName ? customer.fullName.split(' ')[0] : 'there';
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -46,6 +105,7 @@ export default function CustomerDashboardPage() {
             sidebarCollapsed={sidebarCollapsed}
             onMobileMenuToggle={() => setMobileMenuOpen(!mobileMenuOpen)}
             mobileMenuOpen={mobileMenuOpen}
+            customerName={customer?.fullName}
           />
         </div>
 
@@ -61,29 +121,54 @@ export default function CustomerDashboardPage() {
                 </span>
               </div>
               <h1 className="text-2xl lg:text-3xl font-extrabold text-[#1A0A5E]">
-                Welcome back, <span className="text-[#CC0000]">Adaeze</span> 👋
+                Welcome back,{' '}
+                <span className="text-[#CC0000]">
+                  {isLoading ? '...' : firstName}
+                </span>{' '}
+                👋
               </h1>
               <p className="text-sm text-gray-500 mt-1">
-                You have <strong className="text-[#CC0000]">3 active orders</strong> — 1 out for
-                delivery right now.
+                {isLoading ? (
+                  'Loading your account summary...'
+                ) : activeOrders.length === 0 ? (
+                  'No active orders right now. Ready to book laundry or certified fumigation?'
+                ) : activeOrders.length === 1 ? (
+                  <>
+                    You have <strong className="text-[#CC0000]">1 active order</strong> currently in progress.
+                  </>
+                ) : (
+                  <>
+                    You have{' '}
+                    <strong className="text-[#CC0000]">
+                      {activeOrders.length} active orders
+                    </strong>{' '}
+                    in progress.
+                  </>
+                )}
               </p>
             </div>
             <div className="flex items-center gap-2 text-xs text-gray-400 bg-white border border-gray-200 rounded-xl px-3 py-2">
               <div className="w-2 h-2 rounded-full bg-green-400" />
-              Last updated: Just now
+              Live Dashboard
             </div>
           </div>
 
           {/* KPI Cards */}
           <div className="mb-6">
-            <CustomerKPICards />
+            <CustomerKPICards
+              totalOrders={totalOrders}
+              activeOrders={activeOrders.length}
+              completedOrders={completedOrders.length}
+              totalSpent={totalSpent}
+              isLoading={isLoading}
+            />
           </div>
 
           {/* Main Grid */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
             {/* Active Tracker + Recent Orders — Left 2 cols */}
             <div className="xl:col-span-2 space-y-6">
-              <ActiveOrderTracker />
+              <ActiveOrderTracker order={mostActiveOrder} isLoading={isLoading} />
               <RecentOrdersTable />
             </div>
 

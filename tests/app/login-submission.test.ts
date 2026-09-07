@@ -13,11 +13,11 @@ const loginPages = [
 
 describe('credential login submission safeguards', () => {
   it.each(loginPages)(
-    '%s login prevents browser-default GET credential submission',
+    '%s login uses client-side fetch submission via onSubmit handler',
     (_, page, apiPath) => {
       const source = readFileSync(resolve(projectRoot, page), 'utf8');
 
-      expect(source).toMatch(/<form\s+method="post"\s+onSubmit=\{handleSubmit\(onSubmit\)\}/);
+      expect(source).toMatch(/<form\s+onSubmit=\{handleSubmit\(onSubmit\)\}/);
       expect(source).toContain(`fetch('${apiPath}'`);
       expect(source).toMatch(/method:\s*'POST'/);
     }

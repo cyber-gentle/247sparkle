@@ -122,7 +122,6 @@ export default function PartnerSignupPage() {
       steps={partnerSteps}
     >
       <form
-        method="post"
         noValidate
         onSubmit={handleSubmit(onSubmit, onInvalid)}
         className="space-y-7"

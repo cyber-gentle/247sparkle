@@ -21,6 +21,8 @@ type FumigationOrder = {
   createdAt: string;
   customer: { user: { fullName: string; phone: string } };
   deliveryAddress?: string;
+  pickupAddress?: string;
+  items?: { itemName: string }[];
   certificate?: { certificateNumber: string } | null;
 };
 
@@ -36,29 +38,57 @@ export default function AdminCertificatesPage() {
 
   async function load() {
     try {
-      const res = await fetch('/api/admin/orders');
-      const data = await res.json();
-      const fumigationOrders: FumigationOrder[] = (data.orders ?? []).filter(
+      const resOrders = await fetch('/api/admin/orders');
+      const dataOrders = await resOrders.json();
+      const fumigationOrders: FumigationOrder[] = (dataOrders.orders ?? []).filter(
         (o: any) => o.serviceType === 'FUMIGATION'
       );
       setOrders(fumigationOrders);
 
-      // Collect issued certificates from orders
-      const issued: Certificate[] = fumigationOrders
-        .filter((o) => o.certificate)
-        .map((o) => ({
-          certificateNumber: o.certificate!.certificateNumber,
-          customerName: o.customer.user.fullName,
-          propertyAddress: o.deliveryAddress ?? '—',
-          propertyType: '—',
-          serviceDate: o.createdAt,
-          issuedAt: o.createdAt,
-        }));
-      setCertificates(issued);
+      // Load certificates from /api/certificates
+      const resCerts = await fetch('/api/certificates');
+      if (resCerts.ok) {
+        const dataCerts = await resCerts.json();
+        setCertificates(dataCerts.certificates ?? []);
+      } else {
+        // Fallback to certificates embedded in orders
+        const issued: Certificate[] = fumigationOrders
+          .filter((o) => o.certificate)
+          .map((o) => ({
+            certificateNumber: o.certificate!.certificateNumber,
+            customerName: o.customer.user.fullName,
+            propertyAddress: o.deliveryAddress ?? o.pickupAddress ?? '—',
+            propertyType: o.items?.[0]?.itemName ?? 'Fumigation Property',
+            serviceDate: o.createdAt,
+            issuedAt: o.createdAt,
+          }));
+        setCertificates(issued);
+      }
     } catch {
       toast.error('Failed to load certificates');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleIssueCertificate(orderId: string) {
+    setIssuing(orderId);
+    try {
+      const res = await fetch('/api/certificates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to issue certificate');
+      }
+      toast.success(`Certificate ${data.certificate.certificateNumber} issued successfully!`);
+      await load();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to issue certificate');
+    } finally {
+      setIssuing('');
     }
   }
 
@@ -119,16 +149,37 @@ export default function AdminCertificatesPage() {
                           {order.customer.user.fullName}
                         </p>
                         <p className="text-xs text-slate-500">
-                          {order.deliveryAddress ?? '—'} ·{' '}
+                          {order.items?.[0]?.itemName ? `${order.items[0].itemName} · ` : ''}
+                          {order.deliveryAddress ?? order.pickupAddress ?? '—'} ·{' '}
                           {new Date(order.createdAt).toLocaleDateString()}
                         </p>
                       </div>
-                      <Link
-                        href={`/admin/orders`}
-                        className="rounded-lg bg-[#1A0A5E] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#120843]"
-                      >
-                        View Order
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          disabled={issuing === order.id}
+                          onClick={() => handleIssueCertificate(order.id)}
+                          className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-1.5 shadow-sm transition-colors"
+                        >
+                          {issuing === order.id ? (
+                            <>
+                              <Loader className="animate-spin" size={13} />
+                              Issuing...
+                            </>
+                          ) : (
+                            <>
+                              <Shield size={13} />
+                              Issue Certificate
+                            </>
+                          )}
+                        </button>
+                        <Link
+                          href="/admin/orders"
+                          className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                        >
+                          View Order
+                        </Link>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -155,6 +206,7 @@ export default function AdminCertificatesPage() {
                         <th className="px-5 py-3">Certificate #</th>
                         <th className="px-5 py-3">Customer</th>
                         <th className="px-5 py-3">Property</th>
+                        <th className="px-5 py-3">Type</th>
                         <th className="px-5 py-3">Issued</th>
                         <th className="px-5 py-3">Verify</th>
                       </tr>
@@ -168,9 +220,16 @@ export default function AdminCertificatesPage() {
                           <td className="px-5 py-3 font-mono font-semibold text-[#1A0A5E]">
                             {cert.certificateNumber}
                           </td>
-                          <td className="px-5 py-3 text-slate-700">{cert.customerName}</td>
+                          <td className="px-5 py-3 text-slate-700 font-medium">
+                            {cert.customerName}
+                          </td>
                           <td className="px-5 py-3 text-slate-600 max-w-xs truncate">
                             {cert.propertyAddress}
+                          </td>
+                          <td className="px-5 py-3 text-slate-600">
+                            <span className="inline-block rounded-md bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700">
+                              {cert.propertyType}
+                            </span>
                           </td>
                           <td className="px-5 py-3 text-slate-500">
                             {new Date(cert.issuedAt).toLocaleDateString()}

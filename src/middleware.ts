@@ -13,7 +13,13 @@ function requiredApiRoles(pathname: string, method: string): readonly Role[] | n
     return ['CUSTOMER', 'ADMIN'];
   if (pathname.startsWith('/api/payment/verify/')) return ['CUSTOMER', 'ADMIN'];
   if (pathname === '/api/pricing' && method !== 'GET') return ['ADMIN'];
-  if (pathname.startsWith('/api/certificates/customer/')) return ['CUSTOMER', 'ADMIN'];
+  if (pathname.startsWith('/api/certificates/customer')) return ['CUSTOMER', 'ADMIN'];
+  if (pathname === '/api/certificates' || pathname.startsWith('/api/certificates/')) {
+    if (pathname.startsWith('/api/certificates/verify') || pathname.includes('/download')) {
+      return null;
+    }
+    return ['ADMIN'];
+  }
   if (
     pathname.startsWith('/api/quotations/') ||
     (pathname === '/api/quotations' && method === 'GET')
@@ -51,6 +57,8 @@ const logoutPath = '/api/auth/logout';
 // /api/quotations) can enforce role checks inside the route handler.
 const publicApiRoutes = [
   '/api/auth', // login/signup flows must be reachable without a session (rate-limited above)
+  '/api/banks', // public Nigerian bank list and account resolution for signup/profile
+  '/api/contact', // public contact message submission
   '/api/quotations', // POST (contact form) is public; GET is admin-gated in the handler
   '/api/certificates/verify', // public certificate lookup (no login required)
   '/api/pricing', // public price list for the booking flow

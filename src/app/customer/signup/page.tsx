@@ -197,7 +197,6 @@ export default function CustomerSignupPage() {
             </div>
 
             <form
-              method="post"
               noValidate
               className="space-y-4"
               onSubmit={handleSubmit(onSubmit, onInvalid)}

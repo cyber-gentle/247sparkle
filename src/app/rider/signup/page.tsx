@@ -96,7 +96,6 @@ export default function RiderSignupPage() {
       steps={riderSteps}
     >
       <form
-        method="post"
         noValidate
         onSubmit={handleSubmit(onSubmit, onInvalid)}
         className="space-y-7"

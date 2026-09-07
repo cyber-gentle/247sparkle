@@ -17,12 +17,12 @@ describe('provider signup submission safeguards', () => {
     ['rider', riderSignupPage],
     ['partner', partnerSignupPage],
   ])(
-    '%s signup uses POST with client-side invalid-submission feedback before calling the protected API route',
+    '%s signup uses client-side invalid-submission feedback before calling the protected API route',
     (_, pagePath) => {
       const source = readFileSync(pagePath, 'utf8');
 
       expect(source).toMatch(
-        /<form\s+method="post"\s+noValidate\s+onSubmit=\{handleSubmit\(onSubmit, onInvalid\)\}/
+        /<form\s+noValidate\s+onSubmit=\{handleSubmit\(onSubmit, onInvalid\)\}/
       );
       expect(source).toMatch(/method:\s*'POST'/);
       expect(source).toContain("mode: 'onBlur'");

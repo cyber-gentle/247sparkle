@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useMemo, useState } from 'react';
+import { Download } from 'lucide-react';
 
 import PublicFooter from '@/components/PublicFooter';
 import PublicNavbar from '@/components/PublicNavbar';
@@ -147,6 +148,16 @@ export default function VerifyCertificatePage() {
                         </div>
                       ))}
                     </dl>
+                    <div className="bg-white/80 p-4 border-t border-emerald-200 flex justify-end">
+                      <a
+                        href={`/api/certificates/${encodeURIComponent(result.certificate.certificateNumber)}/download`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-[#1A0A5E] px-4 py-2 text-xs font-bold text-white hover:bg-[#120843] transition shadow-sm"
+                      >
+                        <Download size={14} /> Download Official PDF
+                      </a>
+                    </div>
                   </div>
                 ) : (
                   <div className="mt-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900 shadow-sm">
