@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
         rider: {
           create: {
             address: validatedData.address,
+            facePhotoUrl: validatedData.facePhotoUrl || null,
             approvalStatus: 'PENDING',
           },
         },

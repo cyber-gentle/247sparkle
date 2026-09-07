@@ -109,13 +109,18 @@ export default function CustomerCertificatesPage() {
                 </thead>
                 <tbody>
                   {certificates.map((item) => (
-                    <tr key={item.certificateNumber} className="border-b border-slate-100 hover:bg-slate-50/60">
+                    <tr
+                      key={item.certificateNumber}
+                      className="border-b border-slate-100 hover:bg-slate-50/60"
+                    >
                       <td className="py-3 pr-4 font-mono font-semibold text-slate-800">
                         {item.certificateNumber}
                       </td>
                       <td className="py-3 pr-4 text-slate-600">{item.propertyAddress}</td>
                       <td className="py-3 pr-4 font-medium text-slate-700">{item.propertyType}</td>
-                      <td className="py-3 pr-4 text-slate-500">{formatServiceDate(item.serviceDate)}</td>
+                      <td className="py-3 pr-4 text-slate-500">
+                        {formatServiceDate(item.serviceDate)}
+                      </td>
                       <td className="py-3">
                         <div className="flex items-center gap-3">
                           <Link

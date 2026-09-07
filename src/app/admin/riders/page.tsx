@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 
 type Rider = {
   id: string;
+  facePhotoUrl?: string | null;
   approvalStatus: string;
   availabilityStatus: string;
   walletBalance: number;
@@ -154,8 +155,24 @@ export default function AdminRidersPage() {
                       className="border-b border-slate-100 hover:bg-slate-50 transition"
                     >
                       <td className="px-5 py-4">
-                        <p className="font-semibold text-slate-800">{rider.user.fullName}</p>
-                        <p className="text-xs text-slate-500">{rider.user.email}</p>
+                        <div className="flex items-center gap-3">
+                          {rider.facePhotoUrl ? (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img
+                              src={rider.facePhotoUrl}
+                              alt={rider.user.fullName}
+                              className="h-9 w-9 rounded-full object-cover border border-slate-200 shadow-xs"
+                            />
+                          ) : (
+                            <div className="h-9 w-9 rounded-full bg-[#1A0A5E]/10 text-[#1A0A5E] flex items-center justify-center font-bold text-xs">
+                              {rider.user.fullName.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <div>
+                            <p className="font-semibold text-slate-800">{rider.user.fullName}</p>
+                            <p className="text-xs text-slate-500">{rider.user.email}</p>
+                          </div>
+                        </div>
                       </td>
                       <td className="px-5 py-4 text-slate-600">{rider.user.phone || '—'}</td>
                       <td className="px-5 py-4">

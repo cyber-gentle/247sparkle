@@ -9,10 +9,7 @@ export const runtime = 'nodejs';
  * GET /api/certificates/[id]/download — Stream official PDF fumigation certificate
  * Matches by certificate ID or certificateNumber (e.g. SPKFUM-2026-00001).
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const limited = await rateLimitRequest(
     request,
     'certificate-download',
@@ -30,10 +27,7 @@ export async function GET(
   try {
     const certificate = await prisma.certificate.findFirst({
       where: {
-        OR: [
-          { id: identifier },
-          { certificateNumber: identifier.toUpperCase() },
-        ],
+        OR: [{ id: identifier }, { certificateNumber: identifier.toUpperCase() }],
       },
     });
 
@@ -60,9 +54,6 @@ export async function GET(
     });
   } catch (error) {
     console.error('Download certificate error:', error);
-    return NextResponse.json(
-      { error: 'Failed to generate certificate PDF' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to generate certificate PDF' }, { status: 500 });
   }
 }

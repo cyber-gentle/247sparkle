@@ -18,6 +18,7 @@ import {
   Package,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import AddressAutocomplete from '@/components/AddressAutocomplete';
 
 // Zod schemas for each step
 const step1Schema = z.object({
@@ -124,10 +125,7 @@ export default function CustomerNewOrderPage() {
         unitPrice: item?.unitPrice || 0,
       };
     });
-    const total = selectedItemsArray.reduce(
-      (sum, item) => sum + item.unitPrice * item.quantity,
-      0
-    );
+    const total = selectedItemsArray.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
 
     setOrderSummary((prev) => ({
       ...prev,
@@ -353,7 +351,8 @@ export default function CustomerNewOrderPage() {
                     <ShieldCheck size={16} className="text-emerald-600" /> Fumigation & Pest Control
                   </span>
                   <p className="text-xs text-slate-500 mt-1">
-                    Certified on-site pest eradication with an official verifiable fumigation certificate.
+                    Certified on-site pest eradication with an official verifiable fumigation
+                    certificate.
                   </p>
                 </div>
               </label>
@@ -624,8 +623,8 @@ export default function CustomerNewOrderPage() {
               <p className="text-xs text-blue-900 leading-relaxed">
                 <strong>On-Site Service Guarantee:</strong> Our certified fumigation team will visit
                 your premises on the scheduled date. An official{' '}
-                <strong>247Sparkle Fumigation Certificate</strong> will be issued to your account and
-                publicly verifiable upon service completion.
+                <strong>247Sparkle Fumigation Certificate</strong> will be issued to your account
+                and publicly verifiable upon service completion.
               </p>
             </div>
 
@@ -634,20 +633,20 @@ export default function CustomerNewOrderPage() {
               className="space-y-4"
             >
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 flex items-center gap-1">
-                  <MapPin size={14} className="text-[#CC0000]" /> Property Address
-                </label>
-                <textarea
-                  {...fumigationDetailsForm.register('address')}
+                <AddressAutocomplete
+                  id="fumigation-address"
+                  label="Property Address"
+                  value={fumigationDetailsForm.watch('address') || ''}
+                  onChange={(val) =>
+                    fumigationDetailsForm.setValue('address', val, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    })
+                  }
                   placeholder="e.g. 12 Ochacho Avenue, Flat 3B, Otukpo, Benue State"
-                  className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1A0A5E] focus:outline-none text-sm"
-                  rows={3}
+                  error={fumigationDetailsForm.formState.errors.address?.message}
+                  required
                 />
-                {fumigationDetailsForm.formState.errors.address && (
-                  <p className="text-red-600 text-xs mt-1">
-                    {fumigationDetailsForm.formState.errors.address.message}
-                  </p>
-                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -715,20 +714,20 @@ export default function CustomerNewOrderPage() {
               className="space-y-4"
             >
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 flex items-center gap-1">
-                  <MapPin size={14} className="text-[#CC0000]" /> Delivery Address
-                </label>
-                <textarea
-                  {...laundryDeliveryForm.register('address')}
-                  placeholder="Enter your delivery address"
-                  className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1A0A5E] focus:outline-none text-sm"
-                  rows={3}
+                <AddressAutocomplete
+                  id="delivery-address"
+                  label="Delivery Address"
+                  value={laundryDeliveryForm.watch('address') || ''}
+                  onChange={(val) =>
+                    laundryDeliveryForm.setValue('address', val, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    })
+                  }
+                  placeholder="Enter your delivery address in Otukpo"
+                  error={laundryDeliveryForm.formState.errors.address?.message}
+                  required
                 />
-                {laundryDeliveryForm.formState.errors.address && (
-                  <p className="text-red-600 text-xs mt-1">
-                    {laundryDeliveryForm.formState.errors.address.message}
-                  </p>
-                )}
               </div>
 
               <div>
@@ -846,7 +845,9 @@ export default function CustomerNewOrderPage() {
                   <p className="text-xs font-bold uppercase tracking-wider text-slate-600">
                     Total Amount Due
                   </p>
-                  <p className="text-xs text-slate-500 mt-0.5">Includes all taxes and service charges</p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Includes all taxes and service charges
+                  </p>
                 </div>
                 <p className="text-2xl font-black text-[#1A0A5E]">
                   ₦{orderSummary.totalPrice.toLocaleString()}

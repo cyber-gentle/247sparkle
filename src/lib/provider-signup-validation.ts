@@ -22,6 +22,7 @@ export const riderSignupSchema = z
       .trim()
       .min(1, 'Pickup-area address is required')
       .min(5, 'Pickup-area address must be at least 5 characters'),
+    facePhotoUrl: z.string().trim().optional().or(z.literal('')),
     password: z
       .string()
       .min(1, 'Password is required')
@@ -62,6 +63,7 @@ export const partnerSignupSchema = z
       .trim()
       .min(1, 'Business address is required')
       .min(5, 'Business address must be at least 5 characters'),
+    ownerPhotoUrl: z.string().trim().optional().or(z.literal('')),
     openingTime: z.string().trim().min(1, 'Opening time is required'),
     closingTime: z.string().trim().min(1, 'Closing time is required'),
     password: z

@@ -7,6 +7,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import ProviderApplicationShell from '@/components/ProviderApplicationShell';
+import ImageUploadField from '@/components/ImageUploadField';
+import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { riderSignupSchema, type RiderSignupFormData } from '@/lib/provider-signup-validation';
 
 const fieldClass = (hasError: boolean) =>
@@ -36,6 +38,8 @@ export default function RiderSignupPage() {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     setFocus,
     formState: { errors },
   } = useForm<RiderSignupFormData>({
@@ -95,11 +99,7 @@ export default function RiderSignupPage() {
       loginLabel="Already registered? Sign in"
       steps={riderSteps}
     >
-      <form
-        noValidate
-        onSubmit={handleSubmit(onSubmit, onInvalid)}
-        className="space-y-7"
-      >
+      <form noValidate onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-7">
         <fieldset>
           <legend className="text-sm font-bold text-slate-900">Your details</legend>
           <p className="mt-1 text-sm text-slate-500">
@@ -166,26 +166,32 @@ export default function RiderSignupPage() {
               )}
             </div>
             <div className="sm:col-span-2">
-              <label
-                htmlFor="address"
-                className="mb-1.5 block text-sm font-semibold text-slate-700"
-              >
-                Pickup-area address
-              </label>
-              <textarea
-                {...register('address')}
+              <AddressAutocomplete
                 id="address"
-                rows={3}
+                label="Pickup-area address"
+                value={watch('address') || ''}
+                onChange={(val) =>
+                  setValue('address', val, { shouldValidate: true, shouldDirty: true })
+                }
+                placeholder="Your address in Otukpo (e.g. 14 Upu Road, GRA)"
+                error={errors.address?.message}
                 aria-invalid={!!errors.address}
                 aria-describedby={errors.address ? 'address-error' : undefined}
-                placeholder="Your address in Otukpo"
-                className={fieldClass(!!errors.address)}
+                required
               />
-              {errors.address && (
-                <p id="address-error" className="mt-1.5 text-xs font-medium text-red-600">
-                  {errors.address.message}
-                </p>
-              )}
+            </div>
+            <div className="sm:col-span-2">
+              <ImageUploadField
+                id="facePhoto"
+                label="Passport / Face photo"
+                description="Upload a clear front-facing photograph for identity verification and rider badge."
+                value={watch('facePhotoUrl') || ''}
+                onChange={(url) =>
+                  setValue('facePhotoUrl', url, { shouldValidate: true, shouldDirty: true })
+                }
+                folder="247sparkle/riders"
+                error={errors.facePhotoUrl?.message}
+              />
             </div>
           </div>
         </fieldset>

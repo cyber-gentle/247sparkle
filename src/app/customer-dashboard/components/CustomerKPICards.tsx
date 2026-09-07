@@ -16,8 +16,7 @@ export default function CustomerKPICards({
   totalSpent = 0,
   isLoading = false,
 }: CustomerKPICardsProps) {
-  const completionRate =
-    totalOrders > 0 ? Math.round((completedOrders / totalOrders) * 100) : 0;
+  const completionRate = totalOrders > 0 ? Math.round((completedOrders / totalOrders) * 100) : 0;
 
   const kpis = [
     {

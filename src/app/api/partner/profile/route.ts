@@ -7,6 +7,7 @@ const updateProfileSchema = z.object({
   ownerName: z.string().min(2),
   phone: z.string().min(10),
   address: z.string().min(5),
+  ownerPhotoUrl: z.string().optional(),
   openingTime: z.string().optional(),
   closingTime: z.string().optional(),
   daysOfOpening: z.array(z.string()).optional(),
@@ -39,6 +40,7 @@ export async function GET(request: NextRequest) {
         email: partner.user.email,
         phone: partner.user.phone,
         address: partner.address,
+        ownerPhotoUrl: partner.ownerPhotoUrl,
         openingTime: partner.openingTime,
         closingTime: partner.closingTime,
         daysOfOpening: partner.daysOfOpening ? JSON.parse(partner.daysOfOpening) : [],
@@ -74,6 +76,7 @@ export async function PUT(request: NextRequest) {
       data: {
         businessName: data.businessName,
         ownerName: data.ownerName,
+        ownerPhotoUrl: data.ownerPhotoUrl,
         address: data.address,
         openingTime: data.openingTime,
         closingTime: data.closingTime,

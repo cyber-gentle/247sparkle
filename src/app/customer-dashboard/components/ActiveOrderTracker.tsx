@@ -2,7 +2,16 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { CheckCircle2, Circle, Phone, ChevronDown, ChevronUp, Package, ShieldCheck, ArrowRight } from 'lucide-react';
+import {
+  CheckCircle2,
+  Circle,
+  Phone,
+  ChevronDown,
+  ChevronUp,
+  Package,
+  ShieldCheck,
+  ArrowRight,
+} from 'lucide-react';
 
 interface ActiveOrderTrackerProps {
   order?: any | null;
@@ -61,7 +70,8 @@ export default function ActiveOrderTracker({ order, isLoading = false }: ActiveO
             <div>
               <h3 className="text-base font-bold text-[#1A0A5E]">No Active Orders Right Now</h3>
               <p className="text-xs text-gray-500 mt-1 max-w-md">
-                Your garments and premises are all set! Schedule your next laundry pickup or certified fumigation anytime.
+                Your garments and premises are all set! Schedule your next laundry pickup or
+                certified fumigation anytime.
               </p>
             </div>
           </div>

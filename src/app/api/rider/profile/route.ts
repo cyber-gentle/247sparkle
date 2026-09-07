@@ -6,6 +6,7 @@ const updateProfileSchema = z.object({
   fullName: z.string().min(2),
   phone: z.string().min(10),
   address: z.string().min(5),
+  facePhotoUrl: z.string().optional(),
   bankName: z.string().optional(),
   bankCode: z.string().optional(),
   accountNumber: z.string().optional(),
@@ -44,6 +45,7 @@ export async function GET(request: NextRequest) {
         email: rider.user.email,
         phone: rider.user.phone,
         address: rider.address,
+        facePhotoUrl: rider.facePhotoUrl,
         bankName: rider.bankName,
         bankCode: rider.bankCode,
         accountNumber: rider.accountNumber,
@@ -83,6 +85,7 @@ export async function PUT(request: NextRequest) {
       where: { userId },
       data: {
         address: validatedData.address,
+        facePhotoUrl: validatedData.facePhotoUrl,
         bankName: validatedData.bankName,
         bankCode: validatedData.bankCode,
         accountNumber: validatedData.accountNumber,

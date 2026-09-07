@@ -7,6 +7,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import ProviderApplicationShell from '@/components/ProviderApplicationShell';
+import ImageUploadField from '@/components/ImageUploadField';
+import AddressAutocomplete from '@/components/AddressAutocomplete';
 import {
   getOperatingDaysError,
   partnerSignupSchema,
@@ -44,6 +46,8 @@ export default function PartnerSignupPage() {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     setFocus,
     formState: { errors },
   } = useForm<PartnerSignupFormData>({
@@ -121,11 +125,7 @@ export default function PartnerSignupPage() {
       loginLabel="Already registered? Sign in"
       steps={partnerSteps}
     >
-      <form
-        noValidate
-        onSubmit={handleSubmit(onSubmit, onInvalid)}
-        className="space-y-7"
-      >
+      <form noValidate onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-7">
         <fieldset>
           <legend className="text-sm font-bold text-slate-900">Business profile</legend>
           <p className="mt-1 text-sm text-slate-500">
@@ -205,23 +205,32 @@ export default function PartnerSignupPage() {
               )}
             </div>
             <div className="sm:col-span-2">
-              <label
-                htmlFor="address"
-                className="mb-1.5 block text-sm font-semibold text-slate-700"
-              >
-                Shop address
-              </label>
-              <textarea
-                {...register('address')}
+              <AddressAutocomplete
                 id="address"
-                rows={3}
+                label="Shop address"
+                value={watch('address') || ''}
+                onChange={(val) =>
+                  setValue('address', val, { shouldValidate: true, shouldDirty: true })
+                }
+                placeholder="Full shop address in Otukpo (e.g. 24 Commercial Avenue)"
+                error={errors.address?.message}
                 aria-invalid={!!errors.address}
-                placeholder="Full shop address in Otukpo"
-                className={fieldClass(!!errors.address)}
+                aria-describedby={errors.address ? 'address-error' : undefined}
+                required
               />
-              {errors.address && (
-                <p className="mt-1.5 text-xs font-medium text-red-600">{errors.address.message}</p>
-              )}
+            </div>
+            <div className="sm:col-span-2">
+              <ImageUploadField
+                id="ownerPhoto"
+                label="Owner / Manager photo"
+                description="Upload a photo of the business owner or branch manager for partner verification."
+                value={watch('ownerPhotoUrl') || ''}
+                onChange={(url) =>
+                  setValue('ownerPhotoUrl', url, { shouldValidate: true, shouldDirty: true })
+                }
+                folder="247sparkle/partners"
+                error={errors.ownerPhotoUrl?.message}
+              />
             </div>
           </div>
         </fieldset>

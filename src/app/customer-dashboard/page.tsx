@@ -58,9 +58,14 @@ export default function CustomerDashboardPage() {
   const totalOrders = orders.length;
 
   const activeOrders = orders.filter((o) =>
-    ['PENDING', 'PAID_UNASSIGNED', 'RIDER_ASSIGNED', 'PICKED_UP', 'IN_CLEANING', 'OUT_FOR_DELIVERY'].includes(
-      o.status
-    )
+    [
+      'PENDING',
+      'PAID_UNASSIGNED',
+      'RIDER_ASSIGNED',
+      'PICKED_UP',
+      'IN_CLEANING',
+      'OUT_FOR_DELIVERY',
+    ].includes(o.status)
   );
 
   const completedOrders = orders.filter((o) => o.status === 'COMPLETED');
@@ -122,10 +127,7 @@ export default function CustomerDashboardPage() {
               </div>
               <h1 className="text-2xl lg:text-3xl font-extrabold text-[#1A0A5E]">
                 Welcome back,{' '}
-                <span className="text-[#CC0000]">
-                  {isLoading ? '...' : firstName}
-                </span>{' '}
-                👋
+                <span className="text-[#CC0000]">{isLoading ? '...' : firstName}</span> 👋
               </h1>
               <p className="text-sm text-gray-500 mt-1">
                 {isLoading ? (
@@ -134,14 +136,13 @@ export default function CustomerDashboardPage() {
                   'No active orders right now. Ready to book laundry or certified fumigation?'
                 ) : activeOrders.length === 1 ? (
                   <>
-                    You have <strong className="text-[#CC0000]">1 active order</strong> currently in progress.
+                    You have <strong className="text-[#CC0000]">1 active order</strong> currently in
+                    progress.
                   </>
                 ) : (
                   <>
                     You have{' '}
-                    <strong className="text-[#CC0000]">
-                      {activeOrders.length} active orders
-                    </strong>{' '}
+                    <strong className="text-[#CC0000]">{activeOrders.length} active orders</strong>{' '}
                     in progress.
                   </>
                 )}

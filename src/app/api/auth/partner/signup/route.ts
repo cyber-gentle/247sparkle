@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
           create: {
             businessName: validatedData.businessName,
             ownerName: validatedData.ownerName,
+            ownerPhotoUrl: validatedData.ownerPhotoUrl || null,
             address: validatedData.address,
             openingTime: validatedData.openingTime,
             closingTime: validatedData.closingTime,
