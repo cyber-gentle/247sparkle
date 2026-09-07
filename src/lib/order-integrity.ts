@@ -217,6 +217,61 @@ export async function transitionPaidOrder({
       },
     });
 
+    // COMPLETED is terminal in the state machine, so the guarded updateMany
+    // above can only succeed once per order. Crediting here is therefore
+    // idempotent by construction — a replayed or racing transition finds the
+    // order already COMPLETED, gets count 0, and returns before this block.
+    if (nextStatus === 'COMPLETED') {
+      const completedOrder = await tx.order.findUnique({
+        where: { id: orderId },
+        select: { riderId: true, totalKobo: true },
+      });
+
+      const riderId = completedOrder?.riderId;
+      if (riderId) {
+        // Prefer the commission recorded at assignment; fall back to the
+        // standard 20% calculation if the row is missing (e.g. an order
+        // assigned outside assignRiderToPaidOrder).
+        const commission = await tx.commission.findUnique({
+          where: { orderId_riderId: { orderId, riderId } },
+          select: { amountKobo: true },
+        });
+        const commissionKobo =
+          commission?.amountKobo ??
+          calculatePercentageKobo(completedOrder?.totalKobo ?? 0, 20);
+
+        if (!commission) {
+          await tx.commission.create({
+            data: {
+              orderId,
+              riderId,
+              amountKobo: commissionKobo,
+              amount: koboToNaira(commissionKobo),
+              status: 'PENDING',
+            },
+          });
+        }
+
+        await tx.rider.update({
+          where: { id: riderId },
+          data: {
+            walletBalanceKobo: { increment: commissionKobo },
+            walletBalance: { increment: koboToNaira(commissionKobo) },
+          },
+        });
+
+        await tx.auditLog.create({
+          data: {
+            action: 'RIDER_WALLET_CREDITED',
+            entityType: 'RIDER',
+            entityId: riderId,
+            userId: actorUserId,
+            changes: JSON.stringify({ orderId, commissionKobo }),
+          },
+        });
+      }
+    }
+
     return tx.order.findUnique({ where: { id: orderId } });
   });
 }
