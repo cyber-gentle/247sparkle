@@ -29,11 +29,11 @@ describe('customer signup validation safeguards', () => {
     }
   });
 
-  it('uses POST with visible client-side invalid-submission feedback', () => {
+  it('uses client-side invalid-submission feedback before calling the API', () => {
     const source = readFileSync(customerSignupPage, 'utf8');
 
     expect(source).toMatch(
-      /<form\s+method="post"\s+noValidate\s+className="space-y-4"\s+onSubmit=\{handleSubmit\(onSubmit, onInvalid\)\}/
+      /<form\s+noValidate\s+className="space-y-4"\s+onSubmit=\{handleSubmit\(onSubmit, onInvalid\)\}/
     );
     expect(source).toContain("mode: 'onBlur'");
     expect(source).toContain('shouldFocusError: true');

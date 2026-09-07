@@ -22,11 +22,25 @@ export default function ContactSection() {
 
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
-    // TODO: Backend integration — POST /api/contact with form data
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsSubmitting(false);
-    reset();
-    toast.success("Message sent! We'll get back to you within 24 hours.");
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to send message');
+      }
+
+      reset();
+      toast.success(result.message || "Message sent! We'll get back to you within 24 hours.");
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send message. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
