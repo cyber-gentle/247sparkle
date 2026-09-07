@@ -14,7 +14,11 @@ const contactSchema = z.object({
  * POST /api/contact — Public contact message submission
  */
 export async function POST(request: NextRequest) {
-  const limited = await rateLimitRequest(request, 'contact-submission', RATE_LIMIT_POLICIES.mutation);
+  const limited = await rateLimitRequest(
+    request,
+    'contact-submission',
+    RATE_LIMIT_POLICIES.mutation
+  );
   if (limited) return limited;
 
   try {

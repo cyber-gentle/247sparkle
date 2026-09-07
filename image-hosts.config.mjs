@@ -15,4 +15,8 @@ export const imageHosts = [
     protocol: 'https',
     hostname: 'images.pixabay.com',
   },
+  {
+    protocol: 'https',
+    hostname: 'res.cloudinary.com',
+  },
 ];

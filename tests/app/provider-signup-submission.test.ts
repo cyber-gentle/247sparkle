@@ -100,4 +100,46 @@ describe('provider signup submission safeguards', () => {
       }).success
     ).toBe(false);
   });
+
+  it('accepts valid rider signup with facePhotoUrl', () => {
+    const result = riderSignupSchema.safeParse({
+      fullName: 'John Rider',
+      email: 'rider@example.com',
+      phone: '08012345678',
+      address: '14 Upu Road, Otukpo',
+      facePhotoUrl: 'https://res.cloudinary.com/demo/image/upload/v1/sample.jpg',
+      password: 'password123',
+      confirmPassword: 'password123',
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.facePhotoUrl).toBe(
+        'https://res.cloudinary.com/demo/image/upload/v1/sample.jpg'
+      );
+    }
+  });
+
+  it('accepts valid partner signup with ownerPhotoUrl', () => {
+    const result = partnerSignupRequestSchema.safeParse({
+      businessName: 'Sparkle Laundry Hub',
+      ownerName: 'Jane Partner',
+      email: 'partner@example.com',
+      phone: '08012345678',
+      address: '24 Commercial Avenue, Otukpo',
+      ownerPhotoUrl: 'https://res.cloudinary.com/demo/image/upload/v1/owner.jpg',
+      openingTime: '08:00',
+      closingTime: '18:00',
+      daysOfOpening: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+      password: 'password123',
+      confirmPassword: 'password123',
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.ownerPhotoUrl).toBe(
+        'https://res.cloudinary.com/demo/image/upload/v1/owner.jpg'
+      );
+    }
+  });
 });

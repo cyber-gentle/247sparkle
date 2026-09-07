@@ -33,9 +33,7 @@ describe('Banks API proxy', () => {
 
   describe('GET /api/banks', () => {
     it('returns banks from Paystack when available', async () => {
-      paystackLib.getNigerianBanks.mockResolvedValue([
-        { id: 1, name: 'Access Bank', code: '044' },
-      ]);
+      paystackLib.getNigerianBanks.mockResolvedValue([{ id: 1, name: 'Access Bank', code: '044' }]);
 
       const request = new NextRequest('http://localhost/api/banks');
       const response = await getBanks(request);
