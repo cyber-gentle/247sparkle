@@ -9,6 +9,7 @@ type Partner = {
   id: string;
   businessName: string;
   ownerName: string;
+  ownerPhotoUrl?: string | null;
   address: string;
   approvalStatus: string;
   workloadStatus: string;
@@ -154,8 +155,24 @@ export default function AdminPartnersPage() {
                       className="border-b border-slate-100 hover:bg-slate-50 transition"
                     >
                       <td className="px-5 py-4">
-                        <p className="font-semibold text-slate-800">{partner.businessName}</p>
-                        <p className="text-xs text-slate-500">{partner.user.email}</p>
+                        <div className="flex items-center gap-3">
+                          {partner.ownerPhotoUrl ? (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img
+                              src={partner.ownerPhotoUrl}
+                              alt={partner.businessName}
+                              className="h-9 w-9 rounded-full object-cover border border-slate-200 shadow-xs"
+                            />
+                          ) : (
+                            <div className="h-9 w-9 rounded-full bg-[#1A0A5E]/10 text-[#1A0A5E] flex items-center justify-center font-bold text-xs">
+                              {partner.businessName.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <div>
+                            <p className="font-semibold text-slate-800">{partner.businessName}</p>
+                            <p className="text-xs text-slate-500">{partner.user.email}</p>
+                          </div>
+                        </div>
                       </td>
                       <td className="px-5 py-4 text-slate-600">{partner.ownerName}</td>
                       <td className="px-5 py-4 text-slate-600">{partner.user.phone || '—'}</td>

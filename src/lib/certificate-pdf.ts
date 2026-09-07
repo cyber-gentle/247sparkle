@@ -36,13 +36,22 @@ export async function generateCertificatePDF(data: CertificatePDFData): Promise<
     const height = 595.28;
 
     // Outer decorative border (Deep Navy)
-    doc.rect(20, 20, width - 40, height - 40).lineWidth(3).stroke('#1A0A5E');
+    doc
+      .rect(20, 20, width - 40, height - 40)
+      .lineWidth(3)
+      .stroke('#1A0A5E');
 
     // Inner decorative border (Sparkle Gold)
-    doc.rect(26, 26, width - 52, height - 52).lineWidth(1.5).stroke('#F5C200');
+    doc
+      .rect(26, 26, width - 52, height - 52)
+      .lineWidth(1.5)
+      .stroke('#F5C200');
 
     // Thin accent inner border
-    doc.rect(30, 30, width - 60, height - 60).lineWidth(0.5).stroke('#E2E8F0');
+    doc
+      .rect(30, 30, width - 60, height - 60)
+      .lineWidth(0.5)
+      .stroke('#E2E8F0');
 
     // Top Header Banner
     doc
@@ -78,9 +87,14 @@ export async function generateCertificatePDF(data: CertificatePDFData): Promise<
       .fontSize(10)
       .font('Helvetica-Oblique')
       .fillColor('#64748B')
-      .text('This document certifies that pest control and fumigation treatment has been conducted on the premises below.', 0, 138, {
-        align: 'center',
-      });
+      .text(
+        'This document certifies that pest control and fumigation treatment has been conducted on the premises below.',
+        0,
+        138,
+        {
+          align: 'center',
+        }
+      );
 
     // Certificate Number Badge
     const certNumberText = `Certificate No: ${data.certificateNumber}`;
@@ -105,8 +119,7 @@ export async function generateCertificatePDF(data: CertificatePDFData): Promise<
 
     const sDate =
       typeof data.serviceDate === 'string' ? new Date(data.serviceDate) : data.serviceDate;
-    const iDate =
-      typeof data.issuedAt === 'string' ? new Date(data.issuedAt) : data.issuedAt;
+    const iDate = typeof data.issuedAt === 'string' ? new Date(data.issuedAt) : data.issuedAt;
 
     const formattedServiceDate = sDate.toLocaleDateString('en-GB', {
       day: 'numeric',
@@ -121,27 +134,71 @@ export async function generateCertificatePDF(data: CertificatePDFData): Promise<
     });
 
     // Row 1: Customer Name
-    doc.fontSize(9).font('Helvetica-Bold').fillColor('#64748B').text('ISSUED TO / CLIENT:', col1X, boxY + 20);
-    doc.fontSize(14).font('Helvetica-Bold').fillColor('#1A0A5E').text(data.customerName, col1X, boxY + 34);
+    doc
+      .fontSize(9)
+      .font('Helvetica-Bold')
+      .fillColor('#64748B')
+      .text('ISSUED TO / CLIENT:', col1X, boxY + 20);
+    doc
+      .fontSize(14)
+      .font('Helvetica-Bold')
+      .fillColor('#1A0A5E')
+      .text(data.customerName, col1X, boxY + 34);
 
     // Row 2: Property Type
-    doc.fontSize(9).font('Helvetica-Bold').fillColor('#64748B').text('PROPERTY TYPE:', col1X, boxY + 65);
-    doc.fontSize(12).font('Helvetica').fillColor('#0F172A').text(data.propertyType, col1X, boxY + 79);
+    doc
+      .fontSize(9)
+      .font('Helvetica-Bold')
+      .fillColor('#64748B')
+      .text('PROPERTY TYPE:', col1X, boxY + 65);
+    doc
+      .fontSize(12)
+      .font('Helvetica')
+      .fillColor('#0F172A')
+      .text(data.propertyType, col1X, boxY + 79);
 
     // Row 3: Property Address
-    doc.fontSize(9).font('Helvetica-Bold').fillColor('#64748B').text('PROPERTY LOCATION / ADDRESS:', col1X, boxY + 110);
-    doc.fontSize(11).font('Helvetica').fillColor('#0F172A').text(data.propertyAddress, col1X, boxY + 124, {
-      width: 320,
-    });
+    doc
+      .fontSize(9)
+      .font('Helvetica-Bold')
+      .fillColor('#64748B')
+      .text('PROPERTY LOCATION / ADDRESS:', col1X, boxY + 110);
+    doc
+      .fontSize(11)
+      .font('Helvetica')
+      .fillColor('#0F172A')
+      .text(data.propertyAddress, col1X, boxY + 124, {
+        width: 320,
+      });
 
     // Right column: Dates & Standards
-    doc.fontSize(9).font('Helvetica-Bold').fillColor('#64748B').text('DATE OF TREATMENT:', col2X, boxY + 20);
-    doc.fontSize(12).font('Helvetica-Bold').fillColor('#0F172A').text(formattedServiceDate, col2X, boxY + 34);
+    doc
+      .fontSize(9)
+      .font('Helvetica-Bold')
+      .fillColor('#64748B')
+      .text('DATE OF TREATMENT:', col2X, boxY + 20);
+    doc
+      .fontSize(12)
+      .font('Helvetica-Bold')
+      .fillColor('#0F172A')
+      .text(formattedServiceDate, col2X, boxY + 34);
 
-    doc.fontSize(9).font('Helvetica-Bold').fillColor('#64748B').text('DATE OF ISSUANCE:', col2X, boxY + 65);
-    doc.fontSize(12).font('Helvetica').fillColor('#0F172A').text(formattedIssuedDate, col2X, boxY + 79);
+    doc
+      .fontSize(9)
+      .font('Helvetica-Bold')
+      .fillColor('#64748B')
+      .text('DATE OF ISSUANCE:', col2X, boxY + 65);
+    doc
+      .fontSize(12)
+      .font('Helvetica')
+      .fillColor('#0F172A')
+      .text(formattedIssuedDate, col2X, boxY + 79);
 
-    doc.fontSize(9).font('Helvetica-Bold').fillColor('#64748B').text('TREATMENT METHODOLOGY:', col2X, boxY + 110);
+    doc
+      .fontSize(9)
+      .font('Helvetica-Bold')
+      .fillColor('#64748B')
+      .text('TREATMENT METHODOLOGY:', col2X, boxY + 110);
     doc
       .fontSize(10)
       .font('Helvetica')
@@ -171,8 +228,16 @@ export async function generateCertificatePDF(data: CertificatePDFData): Promise<
 
     // Left Signature
     doc.moveTo(100, 480).lineTo(260, 480).lineWidth(1).stroke('#94A3B8');
-    doc.fontSize(9).font('Helvetica-Bold').fillColor('#1A0A5E').text('Lead Fumigation Specialist', 100, 485, { width: 160, align: 'center' });
-    doc.fontSize(8).font('Helvetica').fillColor('#64748B').text('Field Technical Operations', 100, 498, { width: 160, align: 'center' });
+    doc
+      .fontSize(9)
+      .font('Helvetica-Bold')
+      .fillColor('#1A0A5E')
+      .text('Lead Fumigation Specialist', 100, 485, { width: 160, align: 'center' });
+    doc
+      .fontSize(8)
+      .font('Helvetica')
+      .fillColor('#64748B')
+      .text('Field Technical Operations', 100, 498, { width: 160, align: 'center' });
 
     // Official Stamp / Seal in Center
     doc.circle(sealX, sealY, 32).lineWidth(2).stroke('#F5C200');
@@ -194,9 +259,21 @@ export async function generateCertificatePDF(data: CertificatePDFData): Promise<
       .text('OFFICIAL SEAL', sealX - 25, sealY + 7, { width: 50, align: 'center' });
 
     // Right Signature
-    doc.moveTo(width - 260, 480).lineTo(width - 100, 480).lineWidth(1).stroke('#94A3B8');
-    doc.fontSize(9).font('Helvetica-Bold').fillColor('#1A0A5E').text('Quality Assurance Director', width - 260, 485, { width: 160, align: 'center' });
-    doc.fontSize(8).font('Helvetica').fillColor('#64748B').text('247Sparkle Services Ltd.', width - 260, 498, { width: 160, align: 'center' });
+    doc
+      .moveTo(width - 260, 480)
+      .lineTo(width - 100, 480)
+      .lineWidth(1)
+      .stroke('#94A3B8');
+    doc
+      .fontSize(9)
+      .font('Helvetica-Bold')
+      .fillColor('#1A0A5E')
+      .text('Quality Assurance Director', width - 260, 485, { width: 160, align: 'center' });
+    doc
+      .fontSize(8)
+      .font('Helvetica')
+      .fillColor('#64748B')
+      .text('247Sparkle Services Ltd.', width - 260, 498, { width: 160, align: 'center' });
 
     // Bottom verification footer
     const verifyUrl = `https://247sparkle.com/verify?number=${encodeURIComponent(data.certificateNumber)}`;

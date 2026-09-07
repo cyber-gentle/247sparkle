@@ -30,7 +30,12 @@ export async function GET(
   try {
     let targetCustomerId: string | null = null;
 
-    if (sessionRole === 'ADMIN' && routeUserId && routeUserId !== 'me' && routeUserId !== 'current') {
+    if (
+      sessionRole === 'ADMIN' &&
+      routeUserId &&
+      routeUserId !== 'me' &&
+      routeUserId !== 'current'
+    ) {
       // Admin looking up a specific customer
       const targetCustomer = await prisma.customer.findFirst({
         where: {
