@@ -3,7 +3,12 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Phone, Mail, MapPin, MessageCircle, Send, Loader2 } from 'lucide-react';
-import LocationMap, { LocationMapCaption } from '@/components/LocationMap';
+import LocationMap, {
+  LocationMapCaption,
+  SPARKLE_LOCATION_DIRECTIONS_URL,
+  SPARKLE_LOCATION_EMBED_URL,
+  SPARKLE_LOCATION_QUERY,
+} from '@/components/LocationMap';
 
 interface ContactFormData {
   name: string;
@@ -90,7 +95,7 @@ export default function ContactSection() {
                   icon: MapPin,
                   label: 'Location',
                   value: 'Otukpo, Benue State',
-                  href: 'https://maps.google.com/?q=Otukpo,+Benue+State',
+                  href: SPARKLE_LOCATION_DIRECTIONS_URL,
                   color: '#F5C200',
                 },
               ].map((item) => {
@@ -120,17 +125,17 @@ export default function ContactSection() {
               })}
             </div>
 
-            {/* Location map — official Embed API with OSM fallback */}
+            {/* Location map — exact shop pin via Google share-embed */}
             <div className="public-card overflow-hidden">
               <LocationMap
-                query="Otukpo, Benue State"
-                zoom={13}
+                query={SPARKLE_LOCATION_QUERY}
+                embedUrl={SPARKLE_LOCATION_EMBED_URL}
                 title="247Sparkle location — Otukpo, Benue State"
               />
               <div className="flex items-center justify-between gap-3 border-t border-gray-100 px-4 py-3">
                 <LocationMapCaption label="247Sparkle · Otukpo, Benue State" />
                 <a
-                  href="https://maps.google.com/?q=Otukpo,+Benue+State"
+                  href={SPARKLE_LOCATION_DIRECTIONS_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="shrink-0 rounded-lg bg-[#1A0A5E] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[#2D1B8E]"

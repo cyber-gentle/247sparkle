@@ -4,7 +4,10 @@ import { FormEvent, useState } from 'react';
 
 import PublicFooter from '@/components/PublicFooter';
 import PublicNavbar from '@/components/PublicNavbar';
-import LocationMap from '@/components/LocationMap';
+import LocationMap, {
+  SPARKLE_LOCATION_EMBED_URL,
+  SPARKLE_LOCATION_QUERY,
+} from '@/components/LocationMap';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -177,9 +180,9 @@ export default function ContactPage() {
 
             <div className="public-card overflow-hidden">
               <LocationMap
-                query="Otukpo, Benue State"
-                zoom={13}
-                title="Otukpo Map"
+                query={SPARKLE_LOCATION_QUERY}
+                embedUrl={SPARKLE_LOCATION_EMBED_URL}
+                title="247Sparkle location — Otukpo"
                 className="h-72 w-full border-0"
               />
             </div>
