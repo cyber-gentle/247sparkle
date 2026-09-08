@@ -12,6 +12,8 @@ import {
   Power,
   Loader,
   LogOut,
+  Package,
+  CheckCheck,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import AppLogo from '@/components/ui/AppLogo';
@@ -24,14 +26,41 @@ interface PartnerProfile {
   workloadStatus: string;
 }
 
+interface PartnerOrder {
+  id: string;
+  status: string;
+  serviceType: string;
+  totalAmount: number;
+  createdAt: string;
+  canMarkReady: boolean;
+  customer: { name: string; phone: string };
+  rider: { name: string; phone: string } | null;
+  itemCount: number;
+}
+
+const ORDER_STATUS_COLORS: Record<string, string> = {
+  RIDER_ASSIGNED: 'bg-blue-100 text-blue-700',
+  PICKED_UP: 'bg-indigo-100 text-indigo-700',
+  IN_CLEANING: 'bg-purple-100 text-purple-700',
+  OUT_FOR_DELIVERY: 'bg-cyan-100 text-cyan-700',
+  COMPLETED: 'bg-green-100 text-green-700',
+  CANCELLED: 'bg-red-100 text-red-700',
+};
+
 export default function PartnerDashboardPage() {
   const router = useRouter();
   const [partner, setPartner] = useState<PartnerProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isTogglingWorkload, setIsTogglingWorkload] = useState(false);
+  const [activeOrders, setActiveOrders] = useState<PartnerOrder[]>([]);
+  const [orderHistory, setOrderHistory] = useState<PartnerOrder[]>([]);
+  const [revenueThisMonth, setRevenueThisMonth] = useState(0);
+  const [ordersLoading, setOrdersLoading] = useState(true);
+  const [busyOrderId, setBusyOrderId] = useState('');
 
   useEffect(() => {
     fetchProfile();
+    fetchOrders();
   }, []);
 
   async function handleLogout() {
@@ -55,6 +84,46 @@ export default function PartnerDashboardPage() {
       toast.error('Failed to load dashboard');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch('/api/partner/orders', { credentials: 'include' });
+      if (response.status === 401) {
+        router.push('/partner/login');
+        return;
+      }
+      if (!response.ok) throw new Error('Failed to fetch orders');
+      const data = await response.json();
+      setActiveOrders(data.activeOrders ?? []);
+      setOrderHistory(data.orderHistory ?? []);
+      setRevenueThisMonth(data.revenueThisMonth ?? 0);
+    } catch {
+      toast.error('Failed to load incoming orders');
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
+  const markReady = async (orderId: string) => {
+    setBusyOrderId(orderId);
+    try {
+      const response = await fetch(`/api/partner/orders/${orderId}/ready`, {
+        method: 'PUT',
+        credentials: 'include',
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        toast.error(data.error ?? 'Failed to mark order ready');
+        return;
+      }
+      toast.success('Order marked ready for pickup');
+      fetchOrders();
+    } catch {
+      toast.error('Network error');
+    } finally {
+      setBusyOrderId('');
     }
   };
 
@@ -232,15 +301,142 @@ export default function PartnerDashboardPage() {
             <ArrowRight size={20} className="text-gray-400 group-hover:text-[#1A0A5E] transition" />
           </Link>
 
-          <div
-            className={`bg-white rounded-2xl border p-6 shadow-sm ${!isApproved ? 'opacity-50 border-gray-100' : 'border-gray-200'}`}
-          >
-            <p className="font-bold text-[#1A0A5E]">Incoming Orders</p>
-            <p className="text-sm text-gray-500 mt-1">
-              {isApproved ? 'No orders assigned yet' : 'Available after approval'}
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+            <p className="font-bold text-[#1A0A5E]">Revenue This Month</p>
+            <p className="text-2xl font-bold text-gray-900 mt-1">
+              ₦{revenueThisMonth.toLocaleString('en-NG', { maximumFractionDigits: 0 })}
             </p>
+            <p className="text-sm text-gray-500 mt-1">Paid orders routed to your shop</p>
           </div>
         </div>
+
+        {/* Incoming orders */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
+          <div className="p-6 pb-4 border-b border-gray-100">
+            <h2 className="text-lg font-bold text-[#1A0A5E] flex items-center gap-2">
+              <Package size={20} />
+              Incoming Orders
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              {!isApproved
+                ? 'Available after approval'
+                : activeOrders.length > 0
+                  ? `${activeOrders.length} order${activeOrders.length === 1 ? '' : 's'} at your shop`
+                  : 'No orders assigned yet'}
+            </p>
+          </div>
+
+          <div className="p-6">
+            {ordersLoading ? (
+              <div className="flex items-center justify-center py-8 text-gray-400">
+                <Loader className="animate-spin" size={24} />
+              </div>
+            ) : !isApproved ? (
+              <p className="text-sm text-gray-500 text-center py-8">
+                Orders assigned by admins will appear here once your account is approved.
+              </p>
+            ) : activeOrders.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center py-8">
+                No active orders. New pickups routed to your shop will appear here.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {activeOrders.map((order) => (
+                  <div
+                    key={order.id}
+                    className="border border-gray-200 rounded-xl p-4 flex flex-col gap-3"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-gray-900">
+                          {order.customer.name} · {order.itemCount} item
+                          {order.itemCount === 1 ? '' : 's'}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          #{order.id.slice(-8)} · {new Date(order.createdAt).toLocaleString()}
+                        </p>
+                      </div>
+                      <span
+                        className={`text-xs font-bold px-2.5 py-1 rounded-full whitespace-nowrap ${
+                          ORDER_STATUS_COLORS[order.status] ?? 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {order.status.replace(/_/g, ' ')}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-gray-600">
+                      <span>
+                        Customer:{' '}
+                        <a href={`tel:${order.customer.phone}`} className="text-[#1A0A5E] font-medium">
+                          {order.customer.phone || '—'}
+                        </a>
+                      </span>
+                      {order.rider && (
+                        <span>
+                          Rider:{' '}
+                          <a href={`tel:${order.rider.phone}`} className="text-[#1A0A5E] font-medium">
+                            {order.rider.name}
+                          </a>
+                        </span>
+                      )}
+                      <span>₦{order.totalAmount.toLocaleString('en-NG')}</span>
+                    </div>
+
+                    {order.canMarkReady && (
+                      <button
+                        onClick={() => markReady(order.id)}
+                        disabled={busyOrderId === order.id}
+                        className="self-start inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-bold px-4 py-2 rounded-lg transition disabled:opacity-60"
+                      >
+                        {busyOrderId === order.id ? (
+                          <Loader size={16} className="animate-spin" />
+                        ) : (
+                          <CheckCheck size={16} />
+                        )}
+                        Mark Ready for Pickup
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Order history */}
+        {orderHistory.length > 0 && (
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
+            <div className="p-6 pb-4 border-b border-gray-100">
+              <h2 className="text-lg font-bold text-[#1A0A5E]">Order History</h2>
+            </div>
+            <div className="p-6 pt-4 space-y-3">
+              {orderHistory.map((order) => (
+                <div
+                  key={order.id}
+                  className="flex items-center justify-between gap-3 border border-gray-100 rounded-xl px-4 py-3"
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">
+                      #{order.id.slice(-8)} · {order.customer.name}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(order.createdAt).toLocaleDateString()} · ₦
+                      {order.totalAmount.toLocaleString('en-NG')}
+                    </p>
+                  </div>
+                  <span
+                    className={`text-xs font-bold px-2.5 py-1 rounded-full whitespace-nowrap ${
+                      ORDER_STATUS_COLORS[order.status] ?? 'bg-gray-100 text-gray-700'
+                    }`}
+                  >
+                    {order.status.replace(/_/g, ' ')}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );
