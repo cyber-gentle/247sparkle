@@ -179,6 +179,34 @@ export async function assignRiderToPaidOrder({
   });
 }
 
+// Active partner-side statuses: the order is at (or heading to) the shop.
+const PARTNER_ACTIVE_STATUSES = ['PICKED_UP', 'IN_CLEANING'] as const;
+
+/**
+ * Pick the partner an order should auto-route to on pickup: an APPROVED
+ * partner whose workload toggle is AVAILABLE, with the fewest orders
+ * currently at their shop. Ties break deterministically by id so repeated
+ * runs don't flip-flop.
+ *
+ * Returns null when no partner is available — the caller treats that as
+ * "leave it for manual routing", never as an error.
+ */
+async function findAvailablePartner(tx: DatabaseTransaction) {
+  const candidates = await tx.partner.findMany({
+    where: { approvalStatus: 'APPROVED', workloadStatus: 'AVAILABLE' },
+    select: {
+      id: true,
+      _count: { select: { assignedOrders: { where: { status: { in: [...PARTNER_ACTIVE_STATUSES] } } } } },
+    },
+    orderBy: { id: 'asc' },
+  });
+  if (candidates.length === 0) return null;
+
+  return candidates.reduce((best, candidate) =>
+    candidate._count.assignedOrders < best._count.assignedOrders ? candidate : best
+  );
+}
+
 export async function transitionPaidOrder({
   orderId,
   currentStatus,
@@ -216,6 +244,36 @@ export async function transitionPaidOrder({
         changes: JSON.stringify({ from: currentStatus, to: nextStatus }),
       },
     });
+
+    // Pickup is the trigger for partner auto-routing: the rider has the
+    // clothes, so the system immediately routes them to an available shop
+    // instead of waiting for an admin. Failure to find a partner is NOT an
+    // error — the order simply stays PICKED_UP for manual routing.
+    // Guarded on partnerId: null so this is idempotent and can never
+    // overwrite a manual routing decision made concurrently.
+    if (nextStatus === 'PICKED_UP') {
+      const partner = await findAvailablePartner(tx);
+      if (partner) {
+        const routed = await tx.order.updateMany({
+          where: { id: orderId, partnerId: null },
+          data: { partnerId: partner.id },
+        });
+        if (routed.count === 1) {
+          await tx.auditLog.create({
+            data: {
+              action: 'PARTNER_AUTO_ASSIGNED',
+              entityType: 'ORDER',
+              entityId: orderId,
+              userId: actorUserId,
+              changes: JSON.stringify({
+                partnerId: partner.id,
+                strategy: 'fewest-active-orders',
+              }),
+            },
+          });
+        }
+      }
+    }
 
     // COMPLETED is terminal in the state machine, so the guarded updateMany
     // above can only succeed once per order. Crediting here is therefore
