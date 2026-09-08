@@ -3,9 +3,25 @@
 import React from 'react';
 import { MapPin } from 'lucide-react';
 
+/**
+ * 247Sparkle's exact location: the Google Maps "Share → Embed" URL (pins the
+ * saved spot, keyless) plus the coordinates for directions links.
+ */
+export const SPARKLE_LOCATION_EMBED_URL =
+  'https://www.google.com/maps/embed?pb=!4v1788836586194!6m8!1m7!1sHXjp28GY1o0PTNzpzctKzQ!2m2!1d7.208123063691493!2d8.155817636334003!3f198.69125244563975!4f7.922719457124046!5f0.7820865974627469';
+export const SPARKLE_LOCATION_QUERY = 'Otukpo, Benue State';
+export const SPARKLE_LOCATION_DIRECTIONS_URL =
+  'https://www.google.com/maps/search/?api=1&query=7.208123063691493,8.155817636334003';
+
 interface LocationMapProps {
   /** Human-readable place to pin, e.g. "Otukpo, Benue State" */
   query: string;
+  /**
+   * A Google Maps "Share → Embed a map" URL (the ?pb=... form). When given
+   * it is used verbatim — keyless, and pins the exact saved spot — taking
+   * precedence over the query-based embed.
+   */
+  embedUrl?: string;
   /** Google Maps Embed API zoom (official embed supports 0–21 place zoom) */
   zoom?: number;
   /** Iframe height class (Tailwind) */
@@ -16,28 +32,30 @@ interface LocationMapProps {
 /**
  * Embedded location map for public pages.
  *
- * Uses the official Google Maps Embed API (place mode) — the sanctioned
- * iframe URL that never triggers the browser's "content is blocked"
- * X-Frame-Options refusal. The classic keyless
- * `maps.google.com/maps?q=...&output=embed` hack stopped working reliably.
- *
- * When no API key is configured, falls back to OpenStreetMap's embed so a
- * map always renders (keyless, no billing).
+ * Source priority:
+ * 1. `embedUrl` — a Google Maps share-embed URL (?pb=...): keyless, pins the
+ *    exact location, and is officially sanctioned for iframes.
+ * 2. The official Maps Embed API (place mode) using
+ *    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY.
+ * 3. OpenStreetMap embed when neither is available, so a map always renders.
  */
 export default function LocationMap({
   query,
+  embedUrl,
   zoom = 14,
   className = 'h-48 w-full border-0',
   title = '247Sparkle location map',
 }: LocationMapProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-  const src = apiKey
-    ? `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${encodeURIComponent(
-        query
-      )}&zoom=${zoom}`
-    : // OpenStreetMap embed: bbox = minLng,minLat,maxLng,maxLat around Otukpo.
-      'https://www.openstreetmap.org/export/embed.html?bbox=8.0926%2C7.1550%2C8.1726%2C7.2350&layer=mapnik&marker=7.1950%2C8.1326';
+  const src =
+    embedUrl ??
+    (apiKey
+      ? `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${encodeURIComponent(
+          query
+        )}&zoom=${zoom}`
+      : // OpenStreetMap embed: bbox = minLng,minLat,maxLng,maxLat around Otukpo.
+        'https://www.openstreetmap.org/export/embed.html?bbox=8.0926%2C7.1550%2C8.1726%2C7.2350&layer=mapnik&marker=7.1950%2C8.1326');
 
   return (
     <iframe
