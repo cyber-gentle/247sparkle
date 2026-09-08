@@ -157,6 +157,152 @@ describe('Phase 2 order integrity service', () => {
   });
 });
 
+describe('Partner auto-routing on pickup', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  // A transaction whose order.findUnique responds appropriately for a
+  // PICKED_UP transition: the final call returns the updated order.
+  function createPickupTransaction({
+    availablePartners = [{ id: 'partner-1', _count: { assignedOrders: 0 } }],
+    routeCount = 1,
+  }: {
+    availablePartners?: Array<{ id: string; _count: { assignedOrders: number } }>;
+    routeCount?: number;
+  } = {}): TransactionMock & {
+    partner: { findMany: ReturnType<typeof vi.fn> };
+    order: { updateMany: ReturnType<typeof vi.fn>; findUnique: ReturnType<typeof vi.fn> };
+  } {
+    return createTransaction({
+      partner: {
+        findMany: vi.fn().mockResolvedValue(availablePartners),
+      },
+      order: {
+        updateMany: vi
+          .fn()
+          .mockResolvedValueOnce({ count: 1 }) // guarded status transition
+          .mockResolvedValueOnce({ count: routeCount }), // guarded partner routing
+        findUnique: vi
+          .fn()
+          .mockResolvedValue({ id: 'order-1', status: 'PICKED_UP', partnerId: 'partner-1' }),
+      },
+    }) as TransactionMock & {
+      partner: { findMany: ReturnType<typeof vi.fn> };
+    };
+  }
+
+  it('routes a picked-up order to the partner with fewest active orders', async () => {
+    const tx = createPickupTransaction();
+    database.$transaction.mockImplementation(
+      async (callback: (transaction: typeof tx) => unknown) => callback(tx)
+    );
+
+    const result = await transitionPaidOrder({
+      orderId: 'order-1',
+      currentStatus: 'RIDER_ASSIGNED',
+      nextStatus: 'PICKED_UP',
+      actorUserId: 'user-rider',
+    });
+
+    expect(result).toMatchObject({ id: 'order-1', status: 'PICKED_UP' });
+    // Queries APPROVED + AVAILABLE partners only.
+    expect(tx.partner.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { approvalStatus: 'APPROVED', workloadStatus: 'AVAILABLE' },
+      })
+    );
+    // Routing is guarded on partnerId: null.
+    expect(tx.order.updateMany).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ where: { id: 'order-1', partnerId: null } })
+    );
+    expect(tx.auditLog.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ action: 'PARTNER_AUTO_ASSIGNED' }),
+      })
+    );
+  });
+
+  it('picks the partner with fewer active orders when several are available', async () => {
+    const tx = createPickupTransaction({
+      availablePartners: [
+        { id: 'partner-a', _count: { assignedOrders: 3 } },
+        { id: 'partner-b', _count: { assignedOrders: 1 } },
+        { id: 'partner-c', _count: { assignedOrders: 5 } },
+      ],
+    });
+    database.$transaction.mockImplementation(
+      async (callback: (transaction: typeof tx) => unknown) => callback(tx)
+    );
+
+    await transitionPaidOrder({
+      orderId: 'order-1',
+      currentStatus: 'RIDER_ASSIGNED',
+      nextStatus: 'PICKED_UP',
+      actorUserId: 'user-rider',
+    });
+
+    expect(tx.order.updateMany).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ data: { partnerId: 'partner-b' } })
+    );
+  });
+
+  it('leaves the order unrouted when no partner is available', async () => {
+    const tx = createPickupTransaction({ availablePartners: [] });
+    database.$transaction.mockImplementation(
+      async (callback: (transaction: typeof tx) => unknown) => callback(tx)
+    );
+
+    const result = await transitionPaidOrder({
+      orderId: 'order-1',
+      currentStatus: 'RIDER_ASSIGNED',
+      nextStatus: 'PICKED_UP',
+      actorUserId: 'user-rider',
+    });
+
+    expect(result).toMatchObject({ status: 'PICKED_UP' });
+    // No second (routing) updateMany, no auto-assign audit entry.
+    expect(tx.order.updateMany).toHaveBeenCalledTimes(1);
+    expect(tx.auditLog.create).toHaveBeenCalledTimes(1); // status change only
+  });
+
+  it('does not overwrite a manual routing that landed first', async () => {
+    const tx = createPickupTransaction({ routeCount: 0 });
+    database.$transaction.mockImplementation(
+      async (callback: (transaction: typeof tx) => unknown) => callback(tx)
+    );
+
+    await transitionPaidOrder({
+      orderId: 'order-1',
+      currentStatus: 'RIDER_ASSIGNED',
+      nextStatus: 'PICKED_UP',
+      actorUserId: 'user-rider',
+    });
+
+    // Routing attempt lost the race → no PARTNER_AUTO_ASSIGNED audit log.
+    expect(tx.auditLog.create).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not route orders on non-pickup transitions', async () => {
+    const tx = createPickupTransaction();
+    database.$transaction.mockImplementation(
+      async (callback: (transaction: typeof tx) => unknown) => callback(tx)
+    );
+
+    await transitionPaidOrder({
+      orderId: 'order-1',
+      currentStatus: 'IN_CLEANING',
+      nextStatus: 'OUT_FOR_DELIVERY',
+      actorUserId: 'user-rider',
+    });
+
+    expect(tx.partner.findMany).not.toHaveBeenCalled();
+    expect(tx.order.updateMany).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('Rider wallet crediting on order completion', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -192,6 +338,11 @@ describe('Rider wallet crediting on order completion', () => {
       },
       rider: {
         update: vi.fn().mockResolvedValue({ id: 'rider-1' }),
+      },
+      partner: {
+        // PICKED_UP transitions now consult the partner pool; this fixture
+        // tests completion crediting, so no partner gets routed.
+        findMany: vi.fn().mockResolvedValue([]),
       },
     }) as TransactionMock & { rider: { update: ReturnType<typeof vi.fn> } };
   }
