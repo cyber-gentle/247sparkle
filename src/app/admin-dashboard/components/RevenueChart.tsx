@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   AreaChart,
   Area,
@@ -9,23 +9,9 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import { Loader } from 'lucide-react';
 
-const REVENUE_DATA = [
-  { day: 'Apr 10', revenue: 98400, orders: 32 },
-  { day: 'Apr 11', revenue: 112000, orders: 38 },
-  { day: 'Apr 12', revenue: 87500, orders: 29 },
-  { day: 'Apr 13', revenue: 134200, orders: 44 },
-  { day: 'Apr 14', revenue: 156800, orders: 51 },
-  { day: 'Apr 15', revenue: 121000, orders: 40 },
-  { day: 'Apr 16', revenue: 95600, orders: 31 },
-  { day: 'Apr 17', revenue: 142300, orders: 47 },
-  { day: 'Apr 18', revenue: 168900, orders: 55 },
-  { day: 'Apr 19', revenue: 131400, orders: 43 },
-  { day: 'Apr 20', revenue: 147700, orders: 48 },
-  { day: 'Apr 21', revenue: 159200, orders: 52 },
-  { day: 'Apr 22', revenue: 142200, orders: 46 },
-  { day: 'Apr 23', revenue: 184500, orders: 47 },
-];
+type RevenuePoint = { day: string; revenue: number; orders: number };
 
 interface CustomTooltipProps {
   active?: boolean;
@@ -57,6 +43,21 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
 }
 
 export default function RevenueChart() {
+  const [data, setData] = useState<RevenuePoint[] | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/admin/stats')
+      .then((r) => {
+        if (!r.ok) throw new Error('Failed to load stats');
+        return r.json();
+      })
+      .then((d) => setData(d.revenueSeries ?? []))
+      .catch(() => setFailed(true));
+  }, []);
+
+  const hasRevenue = (data ?? []).some((p) => p.revenue > 0 || p.orders > 0);
+
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-5">
       <div className="flex items-start justify-between mb-5">
@@ -76,8 +77,23 @@ export default function RevenueChart() {
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={220}>
-        <AreaChart data={REVENUE_DATA} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+      {!data ? (
+        failed ? (
+          <p className="py-16 text-center text-sm text-gray-400">
+            Revenue data could not be loaded. Refresh the page to retry.
+          </p>
+        ) : (
+          <div className="flex items-center justify-center py-12">
+            <Loader className="animate-spin text-[#1A0A5E]" size={24} />
+          </div>
+        )
+      ) : !hasRevenue ? (
+        <p className="py-16 text-center text-sm text-gray-400">
+          No orders in the last 14 days yet — revenue will appear here as orders come in.
+        </p>
+      ) : (
+        <ResponsiveContainer width="100%" height={220}>
+          <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="gradRevenue" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#1A0A5E" stopOpacity={0.15} />
@@ -133,8 +149,9 @@ export default function RevenueChart() {
             dot={false}
             activeDot={{ r: 4, fill: '#F5C200', strokeWidth: 0 }}
           />
-        </AreaChart>
-      </ResponsiveContainer>
+          </AreaChart>
+        </ResponsiveContainer>
+      )}
     </div>
   );
 }
