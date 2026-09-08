@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Loader, Search, UserPlus, ArrowRightCircle } from 'lucide-react';
+import { Loader, Search, UserPlus, ArrowRightCircle, Store } from 'lucide-react';
 import { toast } from 'sonner';
 
 type Order = {
@@ -23,6 +23,13 @@ type RiderOption = {
   approvalStatus: string;
   availabilityStatus: string;
   user: { fullName: string; email: string };
+};
+
+type PartnerOption = {
+  id: string;
+  businessName: string;
+  approvalStatus: string;
+  workloadStatus: string;
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -54,6 +61,7 @@ const NEXT_STATUSES: Record<string, string[]> = {
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [riders, setRiders] = useState<RiderOption[]>([]);
+  const [partners, setPartners] = useState<PartnerOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -61,10 +69,12 @@ export default function AdminOrdersPage() {
   // Per-order form state, keyed by order id.
   const [riderSelections, setRiderSelections] = useState<Record<string, string>>({});
   const [statusSelections, setStatusSelections] = useState<Record<string, string>>({});
+  const [partnerSelections, setPartnerSelections] = useState<Record<string, string>>({});
 
   useEffect(() => {
     load();
     loadRiders();
+    loadPartners();
   }, []);
 
   async function load() {
@@ -88,6 +98,45 @@ export default function AdminOrdersPage() {
       );
     } catch {
       // Non-fatal: assignment UI simply shows no options until retried.
+    }
+  }
+
+  async function loadPartners() {
+    try {
+      const res = await fetch('/api/admin/partners');
+      const data = await res.json();
+      setPartners(
+        (data.partners ?? []).filter((p: PartnerOption) => p.approvalStatus === 'APPROVED')
+      );
+    } catch {
+      // Non-fatal: routing UI simply shows no options until retried.
+    }
+  }
+
+  async function assignPartner(orderId: string) {
+    const partnerId = partnerSelections[orderId];
+    if (!partnerId) {
+      toast.error('Select a partner first');
+      return;
+    }
+    setBusyId(orderId);
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}/assign-partner`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ partnerId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error ?? 'Routing failed');
+        return;
+      }
+      toast.success('Order routed to partner');
+      load();
+    } catch {
+      toast.error('Network error');
+    } finally {
+      setBusyId('');
     }
   }
 
@@ -248,6 +297,7 @@ export default function AdminOrdersPage() {
                     <th className="px-5 py-3">Payment</th>
                     <th className="px-5 py-3">Amount</th>
                     <th className="px-5 py-3">Rider</th>
+                    <th className="px-5 py-3">Partner</th>
                     <th className="px-5 py-3">Date</th>
                     <th className="px-5 py-3">Actions</th>
                   </tr>
@@ -290,6 +340,9 @@ export default function AdminOrdersPage() {
                       <td className="px-5 py-4 text-slate-600">
                         {order.rider?.user.fullName ?? '—'}
                       </td>
+                      <td className="px-5 py-4 text-slate-600">
+                        {order.partner?.businessName ?? '—'}
+                      </td>
                       <td className="px-5 py-4 text-slate-500">
                         {new Date(order.createdAt).toLocaleDateString()}
                       </td>
@@ -328,6 +381,38 @@ export default function AdminOrdersPage() {
                           </div>
                         ) : NEXT_STATUSES[order.status] && order.rider ? (
                           <div className="flex items-center gap-1.5">
+                            {!order.partner &&
+                              ['PICKED_UP', 'IN_CLEANING'].includes(order.status) && (
+                                <select
+                                  value={partnerSelections[order.id] ?? ''}
+                                  onChange={(e) =>
+                                    setPartnerSelections((prev) => ({
+                                      ...prev,
+                                      [order.id]: e.target.value,
+                                    }))
+                                  }
+                                  title="Route to cleaning partner"
+                                  className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1A0A5E]"
+                                >
+                                  <option value="">Route to partner…</option>
+                                  {partners.map((p) => (
+                                    <option key={p.id} value={p.id}>
+                                      {p.businessName}
+                                      {p.workloadStatus === 'AVAILABLE' ? ' ●' : ' ○'}
+                                    </option>
+                                  ))}
+                                </select>
+                              )}
+                            {!order.partner &&
+                              ['PICKED_UP', 'IN_CLEANING'].includes(order.status) && (
+                                <button
+                                  onClick={() => assignPartner(order.id)}
+                                  title="Route order to selected partner"
+                                  className="rounded-lg bg-[#1A0A5E] p-1.5 text-white hover:bg-[#2a1a7e]"
+                                >
+                                  <Store size={14} />
+                                </button>
+                              )}
                             <select
                               value={
                                 statusSelections[order.id] ?? NEXT_STATUSES[order.status][0]

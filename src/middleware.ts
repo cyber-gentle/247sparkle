@@ -6,6 +6,7 @@ type Role = 'CUSTOMER' | 'RIDER' | 'PARTNER' | 'ADMIN';
 function requiredApiRoles(pathname: string, method: string): readonly Role[] | null {
   if (pathname.startsWith('/api/admin/')) return ['ADMIN'];
   if (pathname.startsWith('/api/customer/')) return ['CUSTOMER'];
+  if (pathname.startsWith('/api/partner/')) return ['PARTNER'];
   if (pathname.startsWith('/api/rider/') || pathname.startsWith('/api/riders/')) return ['RIDER'];
   if (pathname.startsWith('/api/orders/') && pathname.endsWith('/status'))
     return ['RIDER', 'ADMIN'];
