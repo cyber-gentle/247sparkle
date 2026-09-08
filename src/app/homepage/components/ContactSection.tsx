@@ -89,7 +89,7 @@ export default function ContactSection() {
                   icon: MapPin,
                   label: 'Location',
                   value: 'Otukpo, Benue State',
-                  href: '#',
+                  href: 'https://maps.google.com/?q=Otukpo,+Benue+State',
                   color: '#F5C200',
                 },
               ].map((item) => {
@@ -119,12 +119,31 @@ export default function ContactSection() {
               })}
             </div>
 
-            {/* Map placeholder */}
-            <div className="public-card flex h-48 items-center justify-center bg-gray-100">
-              <div className="text-center">
-                <MapPin size={32} className="text-[#F5C200] mx-auto mb-2" />
-                <p className="text-sm text-gray-500 font-medium">Otukpo, Benue State</p>
-                <p className="text-xs text-gray-400">Map integration coming soon</p>
+            {/* Location map — same keyless embed as the /contact page */}
+            <div className="public-card overflow-hidden">
+              <iframe
+                title="247Sparkle location — Otukpo, Benue State"
+                src="https://maps.google.com/maps?q=Otukpo%2C%20Benue%20State&t=&z=13&ie=UTF8&iwloc=&output=embed"
+                className="h-48 w-full border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                allowFullScreen
+              />
+              <div className="flex items-center justify-between gap-3 border-t border-gray-100 px-4 py-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <MapPin size={16} className="text-[#F5C200] shrink-0" />
+                  <p className="text-xs font-semibold text-[#1A0A5E] truncate">
+                    247Sparkle · Otukpo, Benue State
+                  </p>
+                </div>
+                <a
+                  href="https://maps.google.com/?q=Otukpo,+Benue+State"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 rounded-lg bg-[#1A0A5E] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[#2D1B8E]"
+                >
+                  Get Directions
+                </a>
               </div>
             </div>
           </div>
