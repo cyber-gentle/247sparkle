@@ -4,6 +4,7 @@ import { FormEvent, useState } from 'react';
 
 import PublicFooter from '@/components/PublicFooter';
 import PublicNavbar from '@/components/PublicNavbar';
+import LocationMap from '@/components/LocationMap';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -175,11 +176,11 @@ export default function ContactPage() {
             </div>
 
             <div className="public-card overflow-hidden">
-              <iframe
+              <LocationMap
+                query="Otukpo, Benue State"
+                zoom={13}
                 title="Otukpo Map"
-                src="https://maps.google.com/maps?q=Otukpo%2C%20Benue%20State&t=&z=11&ie=UTF8&iwloc=&output=embed"
-                className="h-72 w-full"
-                loading="lazy"
+                className="h-72 w-full border-0"
               />
             </div>
           </div>

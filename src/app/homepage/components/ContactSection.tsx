@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Phone, Mail, MapPin, MessageCircle, Send, Loader2 } from 'lucide-react';
+import LocationMap, { LocationMapCaption } from '@/components/LocationMap';
 
 interface ContactFormData {
   name: string;
@@ -119,23 +120,15 @@ export default function ContactSection() {
               })}
             </div>
 
-            {/* Location map — same keyless embed as the /contact page */}
+            {/* Location map — official Embed API with OSM fallback */}
             <div className="public-card overflow-hidden">
-              <iframe
+              <LocationMap
+                query="Otukpo, Benue State"
+                zoom={13}
                 title="247Sparkle location — Otukpo, Benue State"
-                src="https://maps.google.com/maps?q=Otukpo%2C%20Benue%20State&t=&z=13&ie=UTF8&iwloc=&output=embed"
-                className="h-48 w-full border-0"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                allowFullScreen
               />
               <div className="flex items-center justify-between gap-3 border-t border-gray-100 px-4 py-3">
-                <div className="flex items-center gap-2 min-w-0">
-                  <MapPin size={16} className="text-[#F5C200] shrink-0" />
-                  <p className="text-xs font-semibold text-[#1A0A5E] truncate">
-                    247Sparkle · Otukpo, Benue State
-                  </p>
-                </div>
+                <LocationMapCaption label="247Sparkle · Otukpo, Benue State" />
                 <a
                   href="https://maps.google.com/?q=Otukpo,+Benue+State"
                   target="_blank"
