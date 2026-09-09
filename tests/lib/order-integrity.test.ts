@@ -15,6 +15,11 @@ import {
   transitionPaidOrder,
 } from '../../src/lib/order-integrity';
 
+// transitionPaidOrder now reads the order's serviceType first (to enforce the
+// laundry vs on-site fulfilment tracks), before running the guarded update.
+const SERVICE_TYPE_LAUNDRY = { id: 'order-1', serviceType: 'LAUNDRY' };
+const SERVICE_TYPE_FUMIGATION = { id: 'order-1', serviceType: 'FUMIGATION' };
+
 type TransactionMock = {
   paymentEvent: { findUnique: ReturnType<typeof vi.fn>; create: ReturnType<typeof vi.fn> };
   order: { updateMany: ReturnType<typeof vi.fn>; findUnique: ReturnType<typeof vi.fn> };
@@ -185,6 +190,8 @@ describe('Partner auto-routing on pickup', () => {
           .mockResolvedValueOnce({ count: routeCount }), // guarded partner routing
         findUnique: vi
           .fn()
+          // First call: serviceType lookup (track enforcement).
+          .mockResolvedValueOnce(SERVICE_TYPE_LAUNDRY)
           .mockResolvedValue({ id: 'order-1', status: 'PICKED_UP', partnerId: 'partner-1' }),
       },
     }) as TransactionMock & {
@@ -303,6 +310,114 @@ describe('Partner auto-routing on pickup', () => {
   });
 });
 
+describe('On-site service track (fumigation / cleaning)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  function createOnSiteTransaction({
+    updateCount = 1,
+    riderId = null,
+  }: {
+    updateCount?: number;
+    riderId?: string | null;
+  } = {}): TransactionMock {
+    return createTransaction({
+      order: {
+        updateMany: vi.fn().mockResolvedValue({ count: updateCount }),
+        findUnique: vi.fn().mockImplementation((args) => {
+          // First call: serviceType lookup — an on-site order.
+          if (args?.select?.serviceType) {
+            return Promise.resolve(SERVICE_TYPE_FUMIGATION);
+          }
+          if (args?.select) {
+            return Promise.resolve({ riderId, totalKobo: 125000 });
+          }
+          return Promise.resolve({ id: 'order-1', status: 'IN_PROGRESS' });
+        }),
+      },
+      commission: {
+        upsert: vi.fn(),
+        findUnique: vi.fn().mockResolvedValue(null),
+        create: vi.fn().mockResolvedValue({ id: 'commission-new' }),
+      },
+      rider: {
+        update: vi.fn().mockResolvedValue({ id: 'rider-1' }),
+      },
+    });
+  }
+
+  it('transitions a paid on-site order without requiring a rider', async () => {
+    const tx = createOnSiteTransaction();
+    database.$transaction.mockImplementation(
+      async (callback: (transaction: typeof tx) => unknown) => callback(tx)
+    );
+
+    const result = await transitionPaidOrder({
+      orderId: 'order-1',
+      currentStatus: 'PAID_UNASSIGNED',
+      nextStatus: 'SCHEDULED',
+      actorUserId: 'user-admin',
+    });
+
+    expect(result).toMatchObject({ id: 'order-1', status: 'IN_PROGRESS' });
+    // No rider guard in the where clause, and no partner routing attempt.
+    expect(tx.order.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ id: 'order-1', status: 'PAID_UNASSIGNED', paymentStatus: 'PAID' }),
+        data: { status: 'SCHEDULED' },
+      })
+    );
+    expect(tx.order.updateMany).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects laundry-track statuses for an on-site order', async () => {
+    const tx = createOnSiteTransaction();
+    database.$transaction.mockImplementation(
+      async (callback: (transaction: typeof tx) => unknown) => callback(tx)
+    );
+
+    // RIDER_ASSIGNED → PICKED_UP is a valid state-machine transition, but it
+    // belongs to the laundry track, so the on-site guard must stop it.
+    await expect(
+      transitionPaidOrder({
+        orderId: 'order-1',
+        currentStatus: 'RIDER_ASSIGNED',
+        nextStatus: 'PICKED_UP',
+        actorUserId: 'user-rider',
+      })
+    ).rejects.toThrow('On-site service orders cannot transition');
+
+    expect(tx.order.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('rejects on-site statuses for a laundry order', async () => {
+    const tx = createOnSiteTransaction();
+    // Override the serviceType lookup to report a laundry order.
+    (tx.order.findUnique as ReturnType<typeof vi.fn>).mockImplementation((args: unknown) => {
+      const query = args as { select?: { serviceType?: unknown } } | undefined;
+      if (query?.select?.serviceType) {
+        return Promise.resolve(SERVICE_TYPE_LAUNDRY);
+      }
+      return Promise.resolve({ id: 'order-1', status: 'SCHEDULED' });
+    });
+    database.$transaction.mockImplementation(
+      async (callback: (transaction: typeof tx) => unknown) => callback(tx)
+    );
+
+    await expect(
+      transitionPaidOrder({
+        orderId: 'order-1',
+        currentStatus: 'PAID_UNASSIGNED',
+        nextStatus: 'SCHEDULED',
+        actorUserId: 'user-admin',
+      })
+    ).rejects.toThrow('Laundry orders cannot transition');
+
+    expect(tx.order.updateMany).not.toHaveBeenCalled();
+  });
+});
+
 describe('Rider wallet crediting on order completion', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -321,8 +436,12 @@ describe('Rider wallet crediting on order completion', () => {
       order: {
         updateMany: vi.fn().mockResolvedValue({ count: updateCount }),
         findUnique: vi.fn().mockImplementation((args) => {
-          // First findUnique call: the completion credit lookup (select riderId).
+          // First findUnique call: the serviceType lookup (track enforcement).
+          // Then, for COMPLETED: the completion credit lookup (select riderId).
           // Final call: the returned order.
+          if (args?.select?.serviceType) {
+            return Promise.resolve(SERVICE_TYPE_LAUNDRY);
+          }
           if (args?.select) {
             return Promise.resolve({ riderId, totalKobo: 125000 });
           }
