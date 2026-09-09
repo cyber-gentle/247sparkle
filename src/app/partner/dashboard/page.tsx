@@ -368,14 +368,20 @@ export default function PartnerDashboardPage() {
                     <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-gray-600">
                       <span>
                         Customer:{' '}
-                        <a href={`tel:${order.customer.phone}`} className="text-[#1A0A5E] font-medium">
+                        <a
+                          href={`tel:${order.customer.phone}`}
+                          className="text-[#1A0A5E] font-medium"
+                        >
                           {order.customer.phone || '—'}
                         </a>
                       </span>
                       {order.rider && (
                         <span>
                           Rider:{' '}
-                          <a href={`tel:${order.rider.phone}`} className="text-[#1A0A5E] font-medium">
+                          <a
+                            href={`tel:${order.rider.phone}`}
+                            className="text-[#1A0A5E] font-medium"
+                          >
                             {order.rider.name}
                           </a>
                         </span>

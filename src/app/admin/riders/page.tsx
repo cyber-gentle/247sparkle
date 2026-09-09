@@ -93,7 +93,9 @@ export default function AdminRidersPage() {
         toast.error(data.error ?? 'Action failed');
         return;
       }
-      setWithdrawals((prev) => prev.map((w) => (w.id === id ? { ...w, status: data.withdrawal.status } : w)));
+      setWithdrawals((prev) =>
+        prev.map((w) => (w.id === id ? { ...w, status: data.withdrawal.status } : w))
+      );
       toast.success(
         action === 'MARK_PAID'
           ? 'Withdrawal marked as paid'
@@ -334,7 +336,10 @@ export default function AdminRidersPage() {
                 </thead>
                 <tbody>
                   {withdrawals.map((w) => (
-                    <tr key={w.id} className="border-b border-slate-100 hover:bg-slate-50 transition">
+                    <tr
+                      key={w.id}
+                      className="border-b border-slate-100 hover:bg-slate-50 transition"
+                    >
                       <td className="px-5 py-4">
                         <p className="font-semibold text-slate-800">{w.rider.user.fullName}</p>
                         <p className="text-xs text-slate-500">{w.rider.user.email}</p>

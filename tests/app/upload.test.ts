@@ -84,9 +84,13 @@ describe('POST /api/upload', () => {
   it('returns 400 when content is not a real image (MIME spoofing)', async () => {
     const formData = new FormData();
     // Arbitrary binary declared as a JPEG.
-    const fakeFile = new File([Uint8Array.from([0xde, 0xad, 0xbe, 0xef].concat(Array(20).fill(0x41)))], 'payload.jpg', {
-      type: 'image/jpeg',
-    });
+    const fakeFile = new File(
+      [Uint8Array.from([0xde, 0xad, 0xbe, 0xef].concat(Array(20).fill(0x41)))],
+      'payload.jpg',
+      {
+        type: 'image/jpeg',
+      }
+    );
     formData.append('file', fakeFile);
 
     const res = await POST(uploadRequest(formData));

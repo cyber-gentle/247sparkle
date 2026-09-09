@@ -364,7 +364,11 @@ describe('On-site service track (fumigation / cleaning)', () => {
     // No rider guard in the where clause, and no partner routing attempt.
     expect(tx.order.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: expect.objectContaining({ id: 'order-1', status: 'PAID_UNASSIGNED', paymentStatus: 'PAID' }),
+        where: expect.objectContaining({
+          id: 'order-1',
+          status: 'PAID_UNASSIGNED',
+          paymentStatus: 'PAID',
+        }),
         data: { status: 'SCHEDULED' },
       })
     );
@@ -450,9 +454,9 @@ describe('Rider wallet crediting on order completion', () => {
       },
       commission: {
         upsert: vi.fn(),
-        findUnique: vi.fn().mockResolvedValue(
-          commissionKobo === null ? null : { amountKobo: commissionKobo }
-        ),
+        findUnique: vi
+          .fn()
+          .mockResolvedValue(commissionKobo === null ? null : { amountKobo: commissionKobo }),
         create: vi.fn().mockResolvedValue({ id: 'commission-new' }),
       },
       rider: {

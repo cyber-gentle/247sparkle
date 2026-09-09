@@ -100,9 +100,7 @@ export default function AdminOrdersPage() {
     try {
       const res = await fetch('/api/admin/riders');
       const data = await res.json();
-      setRiders(
-        (data.riders ?? []).filter((r: RiderOption) => r.approvalStatus === 'APPROVED')
-      );
+      setRiders((data.riders ?? []).filter((r: RiderOption) => r.approvalStatus === 'APPROVED'));
     } catch {
       // Non-fatal: assignment UI simply shows no options until retried.
     }
@@ -175,9 +173,9 @@ export default function AdminOrdersPage() {
   }
 
   async function updateStatus(orderId: string) {
-    const status = statusSelections[orderId] ?? NEXT_STATUSES[
-      orders.find((o) => o.id === orderId)?.status ?? ''
-    ]?.[0];
+    const status =
+      statusSelections[orderId] ??
+      NEXT_STATUSES[orders.find((o) => o.id === orderId)?.status ?? '']?.[0];
     if (!status) {
       toast.error('Select a status first');
       return;
@@ -423,9 +421,7 @@ export default function AdminOrdersPage() {
                                 </button>
                               )}
                             <select
-                              value={
-                                statusSelections[order.id] ?? NEXT_STATUSES[order.status][0]
-                              }
+                              value={statusSelections[order.id] ?? NEXT_STATUSES[order.status][0]}
                               onChange={(e) =>
                                 setStatusSelections((prev) => ({
                                   ...prev,

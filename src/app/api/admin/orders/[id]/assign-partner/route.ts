@@ -53,7 +53,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     // Pre-check for clearer errors; the transaction re-guards atomically.
     if (order.partnerId) {
-      return NextResponse.json({ error: 'This order is already routed to a partner' }, { status: 409 });
+      return NextResponse.json(
+        { error: 'This order is already routed to a partner' },
+        { status: 409 }
+      );
     }
     if (order.paymentStatus !== 'PAID' || !order.riderId) {
       return NextResponse.json(
@@ -105,7 +108,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     });
 
     if (!updatedOrder) {
-      return NextResponse.json({ error: 'Order is no longer available for routing' }, { status: 409 });
+      return NextResponse.json(
+        { error: 'Order is no longer available for routing' },
+        { status: 409 }
+      );
     }
 
     return NextResponse.json(

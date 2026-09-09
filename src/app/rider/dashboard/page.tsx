@@ -186,9 +186,7 @@ export default function RiderDashboardPage() {
             <div>
               <p className="text-xs font-semibold uppercase text-gray-500">Availability</p>
               {rider ? (
-                <p
-                  className={`font-bold mt-1 ${isWorking ? 'text-green-600' : 'text-gray-500'}`}
-                >
+                <p className={`font-bold mt-1 ${isWorking ? 'text-green-600' : 'text-gray-500'}`}>
                   {isWorking ? 'On Duty' : 'Off Duty'}
                 </p>
               ) : (
@@ -341,7 +339,10 @@ export default function RiderDashboardPage() {
                   <div className="mb-4 space-y-2">
                     <div className="flex items-center gap-2 text-sm">
                       <Phone size={14} className="text-gray-400" />
-                      <a href={`tel:${job.customer.phone}`} className="text-blue-600 hover:underline">
+                      <a
+                        href={`tel:${job.customer.phone}`}
+                        className="text-blue-600 hover:underline"
+                      >
                         {job.customer.phone}
                       </a>
                     </div>

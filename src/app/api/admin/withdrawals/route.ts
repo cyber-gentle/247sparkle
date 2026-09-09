@@ -35,9 +35,7 @@ export async function GET(request: NextRequest) {
 
     // PENDING first (actionable), then everything else, newest first within groups.
     const rank = { PENDING: 0, APPROVED: 1, PAID: 2, REJECTED: 3 } as Record<string, number>;
-    withdrawals.sort(
-      (a, b) => (rank[a.status] ?? 9) - (rank[b.status] ?? 9)
-    );
+    withdrawals.sort((a, b) => (rank[a.status] ?? 9) - (rank[b.status] ?? 9));
 
     return NextResponse.json({ withdrawals }, { status: 200 });
   } catch (error) {
