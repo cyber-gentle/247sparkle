@@ -3,8 +3,10 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { Download, ExternalLink, ShieldCheck } from 'lucide-react';
 
 type Certificate = {
+  id?: string;
   certificateNumber: string;
   customerName: string;
   propertyAddress: string;
@@ -33,7 +35,7 @@ export default function CustomerCertificatesPage() {
   useEffect(() => {
     async function loadCertificates() {
       try {
-        const response = await fetch('/api/certificates/customer/current', {
+        const response = await fetch('/api/certificates/customer/me', {
           credentials: 'include',
         });
 
@@ -63,18 +65,18 @@ export default function CustomerCertificatesPage() {
           </p>
           <h1 className="mt-2 text-3xl font-extrabold text-[#1A0A5E]">Fumigation Certificates</h1>
           <p className="mt-2 text-sm text-slate-600">
-            Download and verify certificates issued after completed fumigation services.
+            Download and verify official certificates issued after completed fumigation services.
           </p>
           <div className="mt-4 flex gap-3">
             <Link
               href="/verify"
-              className="rounded-xl bg-[#1A0A5E] px-4 py-2 text-sm font-semibold text-white"
+              className="rounded-xl bg-[#1A0A5E] px-4 py-2 text-sm font-semibold text-white hover:bg-[#120843] transition-colors"
             >
               Verify Certificate
             </Link>
             <Link
               href="/customer/dashboard"
-              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
             >
               Dashboard
             </Link>
@@ -85,7 +87,13 @@ export default function CustomerCertificatesPage() {
           {loading ? <p className="text-sm text-slate-600">Loading certificates...</p> : null}
           {error ? <p className="text-sm text-red-600">{error}</p> : null}
           {!loading && !error && certificates.length === 0 ? (
-            <p className="text-sm text-slate-600">No certificates found yet.</p>
+            <div className="py-8 text-center">
+              <ShieldCheck className="mx-auto text-slate-300 mb-2" size={32} />
+              <p className="text-sm font-semibold text-slate-700">No certificates found yet.</p>
+              <p className="text-xs text-slate-500 mt-1">
+                Fumigation certificates are automatically generated upon service completion.
+              </p>
+            </div>
           ) : null}
           {!loading && !error && certificates.length > 0 ? (
             <div className="overflow-x-auto">
@@ -96,25 +104,42 @@ export default function CustomerCertificatesPage() {
                     <th className="py-3 pr-4">Property</th>
                     <th className="py-3 pr-4">Type</th>
                     <th className="py-3 pr-4">Service Date</th>
-                    <th className="py-3">Action</th>
+                    <th className="py-3">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {certificates.map((item) => (
-                    <tr key={item.certificateNumber} className="border-b border-slate-100">
-                      <td className="py-3 pr-4 font-medium text-slate-800">
+                    <tr
+                      key={item.certificateNumber}
+                      className="border-b border-slate-100 hover:bg-slate-50/60"
+                    >
+                      <td className="py-3 pr-4 font-mono font-semibold text-slate-800">
                         {item.certificateNumber}
                       </td>
-                      <td className="py-3 pr-4">{item.propertyAddress}</td>
-                      <td className="py-3 pr-4">{item.propertyType}</td>
-                      <td className="py-3 pr-4">{formatServiceDate(item.serviceDate)}</td>
+                      <td className="py-3 pr-4 text-slate-600">{item.propertyAddress}</td>
+                      <td className="py-3 pr-4 font-medium text-slate-700">{item.propertyType}</td>
+                      <td className="py-3 pr-4 text-slate-500">
+                        {formatServiceDate(item.serviceDate)}
+                      </td>
                       <td className="py-3">
-                        <Link
-                          href={`/verify?number=${encodeURIComponent(item.certificateNumber)}`}
-                          className="text-sm font-semibold text-[#1A0A5E] hover:underline"
-                        >
-                          Verify
-                        </Link>
+                        <div className="flex items-center gap-3">
+                          <Link
+                            href={`/verify?number=${encodeURIComponent(item.certificateNumber)}`}
+                            className="text-xs font-semibold text-[#1A0A5E] hover:underline flex items-center gap-1"
+                          >
+                            Verify <ExternalLink size={11} />
+                          </Link>
+                          <a
+                            href={`/api/certificates/${encodeURIComponent(item.certificateNumber)}/download`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-2.5 py-1 rounded-lg transition-colors"
+                            title="Download PDF"
+                          >
+                            <Download size={12} />
+                            PDF
+                          </a>
+                        </div>
                       </td>
                     </tr>
                   ))}

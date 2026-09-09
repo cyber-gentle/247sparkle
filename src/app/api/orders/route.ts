@@ -119,6 +119,15 @@ export async function POST(request: NextRequest) {
       }
 
       totalKobo = pricing.unitPriceKobo || nairaToKobo(pricing.unitPrice);
+      pricedItems.push({
+        itemName: validatedData.propertyType!,
+        quantity: 1,
+        isWhiteGroup: false,
+        unitPrice: koboToNaira(totalKobo),
+        unitPriceKobo: totalKobo,
+        subtotal: koboToNaira(totalKobo),
+        subtotalKobo: totalKobo,
+      });
     } else {
       // HOME_CLEANING / OFFICE_CLEANING have no pricing rows — they're
       // quotation-based. Refuse instead of creating an unpayable ₦0 order.
@@ -135,6 +144,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Order total could not be determined' }, { status: 400 });
     }
 
+    // Determine pickup and address values based on service type
+    const isFumigation = validatedData.serviceType === 'FUMIGATION';
+    const pickupOption = isFumigation ? 'ON_SITE' : validatedData.pickupOption;
+    const propertyAddress = validatedData.deliveryAddress || validatedData.pickupAddress;
+
     // Create order
     const order = await prisma.order.create({
       data: {
@@ -142,9 +156,9 @@ export async function POST(request: NextRequest) {
         serviceType: validatedData.serviceType,
         status: 'PENDING',
         paymentStatus: 'UNPAID',
-        pickupOption: validatedData.pickupOption,
-        pickupAddress: validatedData.pickupAddress,
-        deliveryAddress: validatedData.deliveryAddress,
+        pickupOption,
+        pickupAddress: isFumigation ? propertyAddress : validatedData.pickupAddress,
+        deliveryAddress: isFumigation ? propertyAddress : validatedData.deliveryAddress,
         scheduledDate: validatedData.scheduledDate
           ? new Date(validatedData.scheduledDate)
           : undefined,

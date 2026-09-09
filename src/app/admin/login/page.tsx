@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Lock, Mail, AlertCircle, ArrowLeft, LayoutDashboard } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast, Toaster } from 'sonner';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -49,6 +49,7 @@ export default function AdminLoginPage() {
 
       toast.success('Welcome back, Admin!');
       router.push('/admin/dashboard');
+      router.refresh();
     } catch (error: any) {
       const msg = error.message || 'An error occurred';
       setSubmitError(msg);
@@ -60,6 +61,7 @@ export default function AdminLoginPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-[#1A0A5E] to-slate-900 flex items-center justify-center px-4">
+      <Toaster position="top-center" richColors />
       <div className="w-full max-w-md">
         <Link
           href="/"
@@ -77,7 +79,7 @@ export default function AdminLoginPage() {
             <p className="text-sm text-gray-500 mt-1">247Sparkle Platform Management</p>
           </div>
 
-          <form method="post" onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">
                 Email Address

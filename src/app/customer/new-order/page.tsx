@@ -5,8 +5,20 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { AlertCircle, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import {
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  Check,
+  Sparkles,
+  ShieldCheck,
+  Calendar,
+  Clock,
+  MapPin,
+  Package,
+} from 'lucide-react';
 import { toast } from 'sonner';
+import AddressAutocomplete from '@/components/AddressAutocomplete';
 
 // Zod schemas for each step
 const step1Schema = z.object({
@@ -15,40 +27,34 @@ const step1Schema = z.object({
   }),
 });
 
-const step2Schema = z.object({
-  items: z
-    .array(
-      z.object({
-        id: z.string(),
-        quantity: z.number().min(1, 'Quantity must be at least 1'),
-      })
-    )
-    .min(1, 'Please select at least one item'),
-});
-
-const step3Schema = z.object({
+const laundryPickupSchema = z.object({
   pickupOption: z.enum(['HOME_PICKUP', 'PARTNER_DROPOFF'], {
     message: 'Please select a pickup option',
   }),
 });
 
-const step4Schema = z.object({
-  address: z.string().min(5, 'Address is required'),
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
+const laundryDeliverySchema = z.object({
+  address: z.string().min(5, 'Address must be at least 5 characters'),
   desiredDeliveryDate: z.string().min(1, 'Delivery date is required'),
 });
 
+const fumigationDetailsSchema = z.object({
+  address: z.string().min(5, 'Property address must be at least 5 characters'),
+  serviceDate: z.string().min(1, 'Service date is required'),
+  serviceTime: z.string().min(1, 'Service time slot is required'),
+});
+
 type Step1Data = z.infer<typeof step1Schema>;
-type Step2Data = z.infer<typeof step2Schema>;
-type Step3Data = z.infer<typeof step3Schema>;
-type Step4Data = z.infer<typeof step4Schema>;
+type LaundryPickupData = z.infer<typeof laundryPickupSchema>;
+type LaundryDeliveryData = z.infer<typeof laundryDeliverySchema>;
+type FumigationDetailsData = z.infer<typeof fumigationDetailsSchema>;
 
 interface PricingItem {
   id: string;
   itemName: string;
   serviceType: string;
   unitPrice: number;
+  description?: string | null;
 }
 
 export default function CustomerNewOrderPage() {
@@ -57,12 +63,16 @@ export default function CustomerNewOrderPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [pricingData, setPricingData] = useState<PricingItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<Map<string, number>>(new Map());
+  const [selectedPropertyType, setSelectedPropertyType] = useState<string>('');
+
   const [orderSummary, setOrderSummary] = useState({
     serviceType: '',
-    items: [] as any[],
+    propertyType: '',
+    items: [] as { id: string; itemName: string; quantity: number; unitPrice: number }[],
     pickupOption: '',
     address: '',
     deliveryDate: '',
+    scheduledTime: '09:00',
     totalPrice: 0,
   });
 
@@ -74,7 +84,7 @@ export default function CustomerNewOrderPage() {
         if (!response.ok) throw new Error('Failed to fetch pricing');
         const data = await response.json();
         setPricingData(data.pricing ?? []);
-      } catch (error) {
+      } catch {
         toast.error('Failed to load pricing data');
       }
     };
@@ -87,29 +97,33 @@ export default function CustomerNewOrderPage() {
   });
 
   const onStep1Submit = (data: Step1Data) => {
-    // Home cleaning is quotation-based (no fixed pricing), so it goes through
-    // the contact form instead of checkout — the orders API rejects it too.
     if (data.serviceType === 'HOME_CLEANING') {
       toast.info('Home cleaning is priced per request — please request a quotation.');
       router.push('/contact');
       return;
     }
+
     setOrderSummary((prev) => ({
       ...prev,
       serviceType: data.serviceType,
+      propertyType: '',
+      items: [],
+      totalPrice: 0,
     }));
-    if (data.serviceType === 'LAUNDRY') {
-      setCurrentStep(2);
-    } else {
-      setCurrentStep(3);
-    }
+
+    setCurrentStep(2);
   };
 
-  // Step 2: Item Selection (only for laundry)
-  const onStep2Submit = () => {
+  // Step 2 Laundry: Item Selection
+  const onLaundryItemsSubmit = () => {
     const selectedItemsArray = Array.from(selectedItems.entries()).map(([id, qty]) => {
       const item = pricingData.find((p) => p.id === id);
-      return { id, itemName: item?.itemName || id, quantity: qty, unitPrice: item?.unitPrice || 0 };
+      return {
+        id,
+        itemName: item?.itemName || id,
+        quantity: qty,
+        unitPrice: item?.unitPrice || 0,
+      };
     });
     const total = selectedItemsArray.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
 
@@ -121,12 +135,32 @@ export default function CustomerNewOrderPage() {
     setCurrentStep(3);
   };
 
-  // Step 3: Pickup Option
-  const step3Form = useForm<Step3Data>({
-    resolver: zodResolver(step3Schema),
+  // Step 2 Fumigation: Property Selection
+  const onFumigationPropertySubmit = () => {
+    if (!selectedPropertyType) {
+      toast.error('Please select a property type for fumigation');
+      return;
+    }
+    const pricingItem = pricingData.find(
+      (p) => p.serviceType === 'FUMIGATION' && p.itemName === selectedPropertyType
+    );
+    const price = pricingItem?.unitPrice || 0;
+
+    setOrderSummary((prev) => ({
+      ...prev,
+      propertyType: selectedPropertyType,
+      pickupOption: 'ON_SITE',
+      totalPrice: price,
+    }));
+    setCurrentStep(3);
+  };
+
+  // Step 3 Laundry: Pickup Option
+  const laundryPickupForm = useForm<LaundryPickupData>({
+    resolver: zodResolver(laundryPickupSchema),
   });
 
-  const onStep3Submit = (data: Step3Data) => {
+  const onLaundryPickupSubmit = (data: LaundryPickupData) => {
     setOrderSummary((prev) => ({
       ...prev,
       pickupOption: data.pickupOption,
@@ -134,12 +168,12 @@ export default function CustomerNewOrderPage() {
     setCurrentStep(4);
   };
 
-  // Step 4: Delivery Details
-  const step4Form = useForm<Step4Data>({
-    resolver: zodResolver(step4Schema),
+  // Step 4 Laundry: Delivery Details
+  const laundryDeliveryForm = useForm<LaundryDeliveryData>({
+    resolver: zodResolver(laundryDeliverySchema),
   });
 
-  const onStep4Submit = (data: Step4Data) => {
+  const onLaundryDeliverySubmit = (data: LaundryDeliveryData) => {
     setOrderSummary((prev) => ({
       ...prev,
       address: data.address,
@@ -148,21 +182,52 @@ export default function CustomerNewOrderPage() {
     setCurrentStep(5);
   };
 
-  // Step 5: Confirm and Submit Order
+  // Step 3 Fumigation: Property Address & Schedule Details
+  const fumigationDetailsForm = useForm<FumigationDetailsData>({
+    resolver: zodResolver(fumigationDetailsSchema),
+    defaultValues: {
+      serviceTime: '09:00',
+    },
+  });
+
+  const onFumigationDetailsSubmit = (data: FumigationDetailsData) => {
+    setOrderSummary((prev) => ({
+      ...prev,
+      address: data.address,
+      deliveryDate: data.serviceDate,
+      scheduledTime: data.serviceTime,
+      pickupOption: 'ON_SITE',
+    }));
+    setCurrentStep(4);
+  };
+
+  // Final Order Submission
   const submitOrder = async () => {
     setIsLoading(true);
     try {
-      const payload = {
-        serviceType: orderSummary.serviceType,
-        items: orderSummary.items.map((item) => ({
-          itemName: item.itemName,
-          quantity: item.quantity,
-          isWhiteGroup: false,
-        })),
-        pickupOption: orderSummary.pickupOption,
-        deliveryAddress: orderSummary.address,
-        scheduledDate: orderSummary.deliveryDate,
-      };
+      const isFumigation = orderSummary.serviceType === 'FUMIGATION';
+
+      const payload = isFumigation
+        ? {
+            serviceType: 'FUMIGATION',
+            propertyType: orderSummary.propertyType,
+            pickupOption: 'ON_SITE',
+            deliveryAddress: orderSummary.address,
+            pickupAddress: orderSummary.address,
+            scheduledDate: orderSummary.deliveryDate,
+            scheduledTime: orderSummary.scheduledTime,
+          }
+        : {
+            serviceType: 'LAUNDRY',
+            items: orderSummary.items.map((item) => ({
+              itemName: item.itemName,
+              quantity: item.quantity,
+              isWhiteGroup: false,
+            })),
+            pickupOption: orderSummary.pickupOption,
+            deliveryAddress: orderSummary.address,
+            scheduledDate: orderSummary.deliveryDate,
+          };
 
       const response = await fetch('/api/orders', {
         method: 'POST',
@@ -190,25 +255,56 @@ export default function CustomerNewOrderPage() {
     }
   };
 
+  const isFumigation = orderSummary.serviceType === 'FUMIGATION';
+  const totalSteps = isFumigation ? 4 : 5;
+
+  const stepLabels = isFumigation
+    ? ['Service', 'Property', 'Schedule', 'Review']
+    : ['Service', 'Items', 'Pickup', 'Delivery', 'Review'];
+
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
+    <main className="min-h-screen bg-slate-50 py-10 px-4">
       <div className="max-w-2xl mx-auto">
-        {/* Progress Bar */}
-        <div className="mb-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-[#CC0000] text-xs font-bold uppercase tracking-wider mb-2">
+            <Sparkles size={14} /> Quick & Seamless Booking
+          </div>
+          <h1 className="text-3xl font-extrabold text-[#1A0A5E]">Create a New Order</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Choose your service and schedule professional care in minutes.
+          </p>
+        </div>
+
+        {/* Dynamic Progress Bar */}
+        <div className="mb-8 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between">
-            {[1, 2, 3, 4, 5].map((step) => (
-              <div key={step} className="flex items-center">
-                <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-full font-semibold ${
-                    step <= currentStep ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'
-                  }`}
-                >
-                  {step < currentStep ? <Check size={20} /> : step}
-                </div>
-                {step < 5 && (
+            {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => (
+              <div key={step} className="flex-1 flex items-center">
+                <div className="flex flex-col items-center flex-1">
                   <div
-                    className={`h-1 flex-1 mx-2 ${
-                      step < currentStep ? 'bg-blue-600' : 'bg-gray-300'
+                    className={`flex h-9 w-9 items-center justify-center rounded-xl font-bold text-sm transition-colors ${
+                      step < currentStep
+                        ? 'bg-emerald-600 text-white'
+                        : step === currentStep
+                          ? 'bg-[#1A0A5E] text-white shadow-md'
+                          : 'bg-slate-100 text-slate-400'
+                    }`}
+                  >
+                    {step < currentStep ? <Check size={18} /> : step}
+                  </div>
+                  <span
+                    className={`text-[11px] font-semibold mt-1.5 ${
+                      step === currentStep ? 'text-[#1A0A5E]' : 'text-slate-400'
+                    }`}
+                  >
+                    {stepLabels[step - 1]}
+                  </span>
+                </div>
+                {step < totalSteps && (
+                  <div
+                    className={`h-0.5 flex-1 mb-5 transition-colors ${
+                      step < currentStep ? 'bg-emerald-600' : 'bg-slate-200'
                     }`}
                   />
                 )}
@@ -217,235 +313,563 @@ export default function CustomerNewOrderPage() {
           </div>
         </div>
 
-        {/* Step 1: Service Selection */}
+        {/* STEP 1: Service Selection */}
         {currentStep === 1 && (
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-2xl font-bold mb-6">Select Service Type</h2>
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+            <h2 className="text-xl font-bold text-[#1A0A5E] mb-2">Step 1: Select Service Type</h2>
+            <p className="text-sm text-slate-500 mb-6">
+              Select the service you require. Cleaning services require custom quotation.
+            </p>
+
             <form onSubmit={step1Form.handleSubmit(onStep1Submit)} className="space-y-4">
-              {['LAUNDRY', 'HOME_CLEANING', 'FUMIGATION'].map((type) => (
-                <label
-                  key={type}
-                  className="flex items-center p-4 border-2 rounded-lg cursor-pointer hover:bg-blue-50"
-                >
-                  <input
-                    {...step1Form.register('serviceType')}
-                    type="radio"
-                    value={type}
-                    className="w-4 h-4"
-                  />
-                  <span className="ml-4 font-semibold text-gray-700">
-                    {type === 'LAUNDRY' && 'Laundry Service'}
-                    {type === 'HOME_CLEANING' && 'Home Cleaning'}
-                    {type === 'FUMIGATION' && 'Fumigation'}
+              <label className="flex items-start p-4 border-2 rounded-xl cursor-pointer hover:border-[#1A0A5E] hover:bg-slate-50 transition-all group">
+                <input
+                  {...step1Form.register('serviceType')}
+                  type="radio"
+                  value="LAUNDRY"
+                  className="w-4 h-4 mt-1 text-[#1A0A5E] focus:ring-[#1A0A5E]"
+                />
+                <div className="ml-4">
+                  <span className="font-bold text-slate-800 group-hover:text-[#1A0A5E] flex items-center gap-2">
+                    <Package size={16} className="text-[#CC0000]" /> Laundry & Dry Cleaning
                   </span>
-                </label>
-              ))}
+                  <p className="text-xs text-slate-500 mt-1">
+                    Wash, iron, dry-cleaning with convenient home pickup and door-to-door delivery.
+                  </p>
+                </div>
+              </label>
+
+              <label className="flex items-start p-4 border-2 rounded-xl cursor-pointer hover:border-[#1A0A5E] hover:bg-slate-50 transition-all group">
+                <input
+                  {...step1Form.register('serviceType')}
+                  type="radio"
+                  value="FUMIGATION"
+                  className="w-4 h-4 mt-1 text-[#1A0A5E] focus:ring-[#1A0A5E]"
+                />
+                <div className="ml-4">
+                  <span className="font-bold text-slate-800 group-hover:text-[#1A0A5E] flex items-center gap-2">
+                    <ShieldCheck size={16} className="text-emerald-600" /> Fumigation & Pest Control
+                  </span>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Certified on-site pest eradication with an official verifiable fumigation
+                    certificate.
+                  </p>
+                </div>
+              </label>
+
+              <label className="flex items-start p-4 border-2 rounded-xl cursor-pointer hover:border-slate-300 hover:bg-slate-50 transition-all group opacity-85">
+                <input
+                  {...step1Form.register('serviceType')}
+                  type="radio"
+                  value="HOME_CLEANING"
+                  className="w-4 h-4 mt-1 text-[#1A0A5E] focus:ring-[#1A0A5E]"
+                />
+                <div className="ml-4">
+                  <span className="font-bold text-slate-700 flex items-center gap-2">
+                    <Sparkles size={16} className="text-[#F5C200]" /> Home / Office Cleaning
+                  </span>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Deep cleaning tailored to your space. (Priced on request via quotation form).
+                  </p>
+                </div>
+              </label>
+
               {step1Form.formState.errors.serviceType && (
-                <div className="flex items-center gap-2 text-red-600">
-                  <AlertCircle size={18} />
+                <div className="flex items-center gap-2 text-red-600 text-sm mt-2">
+                  <AlertCircle size={16} />
                   {step1Form.formState.errors.serviceType.message}
                 </div>
               )}
+
               <button
                 type="submit"
-                className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700"
+                className="w-full mt-4 bg-[#1A0A5E] text-white py-3 rounded-xl font-bold hover:bg-[#120843] transition-colors flex items-center justify-center gap-2"
               >
-                Next
+                Continue <ChevronRight size={18} />
               </button>
             </form>
           </div>
         )}
 
-        {/* Step 2: Item Selection (Laundry only) */}
-        {currentStep === 2 && (
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-2xl font-bold mb-6">Select Items</h2>
-            <div className="space-y-4 mb-6">
+        {/* STEP 2 (LAUNDRY): Item Selection */}
+        {currentStep === 2 && !isFumigation && (
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+            <h2 className="text-xl font-bold text-[#1A0A5E] mb-2">Step 2: Select Laundry Items</h2>
+            <p className="text-sm text-slate-500 mb-6">
+              Select the clothes and items you would like cleaned.
+            </p>
+
+            <div className="space-y-3 mb-6 max-h-96 overflow-y-auto pr-1">
               {pricingData
                 .filter((item) => item.serviceType === 'LAUNDRY')
-                .map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between p-4 border rounded-lg"
-                  >
-                    <div>
-                      <h3 className="font-semibold">{item.itemName}</h3>
-                      <p className="text-gray-600">₦{item.unitPrice.toLocaleString()} per item</p>
+                .map((item) => {
+                  const qty = selectedItems.get(item.id) || 0;
+                  return (
+                    <div
+                      key={item.id}
+                      className={`flex items-center justify-between p-4 border rounded-xl transition-all ${
+                        qty > 0
+                          ? 'border-[#1A0A5E] bg-blue-50/40'
+                          : 'border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
+                      <div>
+                        <h3 className="font-bold text-slate-800 text-sm">{item.itemName}</h3>
+                        <p className="text-xs font-semibold text-[#CC0000]">
+                          ₦{item.unitPrice.toLocaleString()} each
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newMap = new Map(selectedItems);
+                            if (qty > 1) {
+                              newMap.set(item.id, qty - 1);
+                            } else {
+                              newMap.delete(item.id);
+                            }
+                            setSelectedItems(newMap);
+                          }}
+                          className="w-8 h-8 rounded-lg border border-slate-300 text-slate-700 font-bold flex items-center justify-center hover:bg-slate-100"
+                        >
+                          -
+                        </button>
+                        <span className="w-8 text-center font-bold text-sm text-slate-800">
+                          {qty}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newMap = new Map(selectedItems);
+                            newMap.set(item.id, qty + 1);
+                            setSelectedItems(newMap);
+                          }}
+                          className="w-8 h-8 rounded-lg bg-[#1A0A5E] text-white font-bold flex items-center justify-center hover:bg-[#120843]"
+                        >
+                          +
+                        </button>
+                      </div>
                     </div>
-                    <input
-                      type="number"
-                      min="0"
-                      value={selectedItems.get(item.id) || 0}
-                      onChange={(e) => {
-                        const qty = parseInt(e.target.value) || 0;
-                        const newItems = new Map(selectedItems);
-                        if (qty > 0) newItems.set(item.id, qty);
-                        else newItems.delete(item.id);
-                        setSelectedItems(newItems);
-                      }}
-                      className="w-16 p-2 border rounded text-center"
-                    />
-                  </div>
-                ))}
+                  );
+                })}
             </div>
+
             <div className="flex gap-4">
               <button
+                type="button"
                 onClick={() => setCurrentStep(1)}
-                className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-400"
+                className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-bold hover:bg-slate-200 transition-colors flex items-center justify-center gap-1"
               >
-                <ChevronLeft className="inline mr-2" size={18} /> Back
+                <ChevronLeft size={18} /> Back
               </button>
               <button
-                onClick={onStep2Submit}
+                type="button"
+                onClick={onLaundryItemsSubmit}
                 disabled={selectedItems.size === 0}
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400"
+                className="flex-1 bg-[#1A0A5E] text-white py-3 rounded-xl font-bold hover:bg-[#120843] disabled:opacity-50 transition-colors flex items-center justify-center gap-1"
               >
-                Next <ChevronRight className="inline ml-2" size={18} />
+                Next Step <ChevronRight size={18} />
               </button>
             </div>
           </div>
         )}
 
-        {/* Step 3: Pickup Option */}
-        {currentStep === 3 && (
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-2xl font-bold mb-6">Pickup Option</h2>
-            <form onSubmit={step3Form.handleSubmit(onStep3Submit)} className="space-y-4">
+        {/* STEP 2 (FUMIGATION): Property Type Selection */}
+        {currentStep === 2 && isFumigation && (
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+            <h2 className="text-xl font-bold text-[#1A0A5E] mb-2">Step 2: Choose Property Type</h2>
+            <p className="text-sm text-slate-500 mb-6">
+              Select the size and layout of the property to be fumigated.
+            </p>
+
+            <div className="space-y-3 mb-6">
+              {pricingData
+                .filter((item) => item.serviceType === 'FUMIGATION')
+                .map((item) => {
+                  const isSelected = selectedPropertyType === item.itemName;
+                  return (
+                    <div
+                      key={item.id}
+                      onClick={() => setSelectedPropertyType(item.itemName)}
+                      className={`p-4 border-2 rounded-xl cursor-pointer transition-all flex items-center justify-between ${
+                        isSelected
+                          ? 'border-[#1A0A5E] bg-purple-50/50 shadow-sm'
+                          : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                            isSelected
+                              ? 'border-[#1A0A5E] bg-[#1A0A5E]'
+                              : 'border-slate-300 bg-white'
+                          }`}
+                        >
+                          {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-slate-800 text-sm md:text-base">
+                            {item.itemName}
+                          </h3>
+                          <p className="text-xs text-slate-500">
+                            {item.description || 'Full indoor and perimeter pest extermination'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-extrabold text-[#1A0A5E] text-base">
+                          ₦{item.unitPrice.toLocaleString()}
+                        </span>
+                        <span className="block text-[10px] uppercase tracking-wider text-emerald-700 font-bold">
+                          Cert. Included
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={() => setCurrentStep(1)}
+                className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-bold hover:bg-slate-200 transition-colors flex items-center justify-center gap-1"
+              >
+                <ChevronLeft size={18} /> Back
+              </button>
+              <button
+                type="button"
+                onClick={onFumigationPropertySubmit}
+                disabled={!selectedPropertyType}
+                className="flex-1 bg-[#1A0A5E] text-white py-3 rounded-xl font-bold hover:bg-[#120843] disabled:opacity-50 transition-colors flex items-center justify-center gap-1"
+              >
+                Next Step <ChevronRight size={18} />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3 (LAUNDRY): Pickup Option */}
+        {currentStep === 3 && !isFumigation && (
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+            <h2 className="text-xl font-bold text-[#1A0A5E] mb-2">Step 3: Choose Pickup Option</h2>
+            <p className="text-sm text-slate-500 mb-6">
+              How would you like us to receive your laundry?
+            </p>
+
+            <form
+              onSubmit={laundryPickupForm.handleSubmit(onLaundryPickupSubmit)}
+              className="space-y-4"
+            >
               {['HOME_PICKUP', 'PARTNER_DROPOFF'].map((option) => (
                 <label
                   key={option}
-                  className="flex items-center p-4 border-2 rounded-lg cursor-pointer hover:bg-blue-50"
+                  className="flex items-start p-4 border-2 rounded-xl cursor-pointer hover:border-[#1A0A5E] hover:bg-slate-50 transition-all group"
                 >
                   <input
-                    {...step3Form.register('pickupOption')}
+                    {...laundryPickupForm.register('pickupOption')}
                     type="radio"
                     value={option}
-                    className="w-4 h-4"
+                    className="w-4 h-4 mt-1 text-[#1A0A5E] focus:ring-[#1A0A5E]"
                   />
-                  <span className="ml-4 font-semibold text-gray-700">
-                    {option === 'HOME_PICKUP' && 'We Pick Up from Your Home'}
-                    {option === 'PARTNER_DROPOFF' && "I'll Drop Off at Partner Location"}
-                  </span>
+                  <div className="ml-4">
+                    <span className="font-bold text-slate-800 group-hover:text-[#1A0A5E]">
+                      {option === 'HOME_PICKUP'
+                        ? 'Home Pickup (A dispatch rider picks up from your doorstep)'
+                        : 'Partner Drop-off (You drop off at any verified partner location)'}
+                    </span>
+                  </div>
                 </label>
               ))}
-              <div className="flex gap-4">
+
+              {laundryPickupForm.formState.errors.pickupOption && (
+                <div className="flex items-center gap-2 text-red-600 text-sm mt-2">
+                  <AlertCircle size={16} />
+                  {laundryPickupForm.formState.errors.pickupOption.message}
+                </div>
+              )}
+
+              <div className="flex gap-4 mt-6">
                 <button
                   type="button"
-                  onClick={() => setCurrentStep(orderSummary.serviceType === 'LAUNDRY' ? 2 : 1)}
-                  className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-semibold"
+                  onClick={() => setCurrentStep(2)}
+                  className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-bold hover:bg-slate-200 transition-colors flex items-center justify-center gap-1"
                 >
-                  <ChevronLeft className="inline mr-2" size={18} /> Back
+                  <ChevronLeft size={18} /> Back
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700"
+                  className="flex-1 bg-[#1A0A5E] text-white py-3 rounded-xl font-bold hover:bg-[#120843] transition-colors flex items-center justify-center gap-1"
                 >
-                  Next <ChevronRight className="inline ml-2" size={18} />
+                  Next Step <ChevronRight size={18} />
                 </button>
               </div>
             </form>
           </div>
         )}
 
-        {/* Step 4: Delivery Details */}
-        {currentStep === 4 && (
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-2xl font-bold mb-6">Delivery Details</h2>
-            <form onSubmit={step4Form.handleSubmit(onStep4Submit)} className="space-y-4">
+        {/* STEP 3 (FUMIGATION): Schedule & Property Address */}
+        {currentStep === 3 && isFumigation && (
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+            <h2 className="text-xl font-bold text-[#1A0A5E] mb-2">Step 3: Schedule & Location</h2>
+            <p className="text-sm text-slate-500 mb-4">
+              Enter the exact address where the fumigation service will be performed.
+            </p>
+
+            {/* Info notice about certificate & on-site service */}
+            <div className="mb-6 p-4 rounded-xl bg-blue-50 border border-blue-200 flex items-start gap-3">
+              <ShieldCheck className="text-blue-700 shrink-0 mt-0.5" size={20} />
+              <p className="text-xs text-blue-900 leading-relaxed">
+                <strong>On-Site Service Guarantee:</strong> Our certified fumigation team will visit
+                your premises on the scheduled date. An official{' '}
+                <strong>247Sparkle Fumigation Certificate</strong> will be issued to your account
+                and publicly verifiable upon service completion.
+              </p>
+            </div>
+
+            <form
+              onSubmit={fumigationDetailsForm.handleSubmit(onFumigationDetailsSubmit)}
+              className="space-y-4"
+            >
               <div>
-                <label className="block text-sm font-semibold mb-2">Delivery Address</label>
-                <textarea
-                  {...step4Form.register('address')}
-                  placeholder="Enter your delivery address"
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                  rows={3}
+                <AddressAutocomplete
+                  id="fumigation-address"
+                  label="Property Address"
+                  value={fumigationDetailsForm.watch('address') || ''}
+                  onChange={(val) =>
+                    fumigationDetailsForm.setValue('address', val, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    })
+                  }
+                  placeholder="e.g. 12 Ochacho Avenue, Flat 3B, Otukpo, Benue State"
+                  error={fumigationDetailsForm.formState.errors.address?.message}
+                  required
                 />
-                {step4Form.formState.errors.address && (
-                  <p className="text-red-600 text-sm mt-1">
-                    {step4Form.formState.errors.address.message}
-                  </p>
-                )}
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 flex items-center gap-1">
+                    <Calendar size={14} className="text-[#1A0A5E]" /> Preferred Service Date
+                  </label>
+                  <input
+                    {...fumigationDetailsForm.register('serviceDate')}
+                    type="date"
+                    min={new Date().toISOString().split('T')[0]}
+                    className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1A0A5E] focus:outline-none text-sm"
+                  />
+                  {fumigationDetailsForm.formState.errors.serviceDate && (
+                    <p className="text-red-600 text-xs mt-1">
+                      {fumigationDetailsForm.formState.errors.serviceDate.message}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 flex items-center gap-1">
+                    <Clock size={14} className="text-[#1A0A5E]" /> Preferred Time Window
+                  </label>
+                  <select
+                    {...fumigationDetailsForm.register('serviceTime')}
+                    className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1A0A5E] focus:outline-none text-sm bg-white"
+                  >
+                    <option value="09:00">Morning (09:00 AM – 12:00 PM)</option>
+                    <option value="13:00">Afternoon (01:00 PM – 04:00 PM)</option>
+                    <option value="16:00">Late Afternoon (04:00 PM – 06:00 PM)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex gap-4 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep(2)}
+                  className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-bold hover:bg-slate-200 transition-colors flex items-center justify-center gap-1"
+                >
+                  <ChevronLeft size={18} /> Back
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-[#1A0A5E] text-white py-3 rounded-xl font-bold hover:bg-[#120843] transition-colors flex items-center justify-center gap-1"
+                >
+                  Review Order <ChevronRight size={18} />
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* STEP 4 (LAUNDRY): Delivery Details */}
+        {currentStep === 4 && !isFumigation && (
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+            <h2 className="text-xl font-bold text-[#1A0A5E] mb-2">Step 4: Delivery Details</h2>
+            <p className="text-sm text-slate-500 mb-6">
+              Where should we deliver your clean, fresh garments?
+            </p>
+
+            <form
+              onSubmit={laundryDeliveryForm.handleSubmit(onLaundryDeliverySubmit)}
+              className="space-y-4"
+            >
               <div>
-                <label className="block text-sm font-semibold mb-2">Desired Delivery Date</label>
+                <AddressAutocomplete
+                  id="delivery-address"
+                  label="Delivery Address"
+                  value={laundryDeliveryForm.watch('address') || ''}
+                  onChange={(val) =>
+                    laundryDeliveryForm.setValue('address', val, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    })
+                  }
+                  placeholder="Enter your delivery address in Otukpo"
+                  error={laundryDeliveryForm.formState.errors.address?.message}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 flex items-center gap-1">
+                  <Calendar size={14} className="text-[#1A0A5E]" /> Desired Delivery Date
+                </label>
                 <input
-                  {...step4Form.register('desiredDeliveryDate')}
+                  {...laundryDeliveryForm.register('desiredDeliveryDate')}
                   type="date"
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1A0A5E] focus:outline-none text-sm"
                 />
-                {step4Form.formState.errors.desiredDeliveryDate && (
-                  <p className="text-red-600 text-sm mt-1">
-                    {step4Form.formState.errors.desiredDeliveryDate.message}
+                {laundryDeliveryForm.formState.errors.desiredDeliveryDate && (
+                  <p className="text-red-600 text-xs mt-1">
+                    {laundryDeliveryForm.formState.errors.desiredDeliveryDate.message}
                   </p>
                 )}
               </div>
-              <div className="flex gap-4">
+
+              <div className="flex gap-4 mt-6">
                 <button
                   type="button"
                   onClick={() => setCurrentStep(3)}
-                  className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-semibold"
+                  className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-bold hover:bg-slate-200 transition-colors flex items-center justify-center gap-1"
                 >
-                  <ChevronLeft className="inline mr-2" size={18} /> Back
+                  <ChevronLeft size={18} /> Back
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700"
+                  className="flex-1 bg-[#1A0A5E] text-white py-3 rounded-xl font-bold hover:bg-[#120843] transition-colors flex items-center justify-center gap-1"
                 >
-                  Review Order <ChevronRight className="inline ml-2" size={18} />
+                  Review Order <ChevronRight size={18} />
                 </button>
               </div>
             </form>
           </div>
         )}
 
-        {/* Step 5: Order Summary & Confirmation */}
-        {currentStep === 5 && (
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-2xl font-bold mb-6">Order Summary</h2>
+        {/* STEP 4 (FUMIGATION) or STEP 5 (LAUNDRY): Review & Pay */}
+        {((isFumigation && currentStep === 4) || (!isFumigation && currentStep === 5)) && (
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+            <h2 className="text-xl font-bold text-[#1A0A5E] mb-2">Order Review & Confirmation</h2>
+            <p className="text-sm text-slate-500 mb-6">
+              Review your service details before proceeding to secure payment via Paystack.
+            </p>
+
             <div className="space-y-4 mb-6">
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600">Service Type</p>
-                <p className="font-semibold text-lg">{orderSummary.serviceType}</p>
+              <div className="p-4 bg-slate-50 rounded-xl flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Service Type
+                  </p>
+                  <p className="font-extrabold text-[#1A0A5E] text-base mt-0.5">
+                    {isFumigation ? 'Fumigation & Pest Control' : 'Laundry & Dry Cleaning'}
+                  </p>
+                </div>
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700">
+                  {isFumigation ? 'On-Site Service' : orderSummary.pickupOption}
+                </span>
               </div>
-              {orderSummary.items.length > 0 && (
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-2">Items</p>
-                  {orderSummary.items.map((item) => (
-                    <p key={item.id} className="text-gray-700">
-                      {item.itemName} × {item.quantity} = ₦
-                      {(item.unitPrice * item.quantity).toLocaleString()}
-                    </p>
-                  ))}
+
+              {isFumigation ? (
+                <div className="p-4 bg-slate-50 rounded-xl space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Property Type:</span>
+                    <span className="font-bold text-slate-800">{orderSummary.propertyType}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Scheduled Date:</span>
+                    <span className="font-bold text-slate-800">{orderSummary.deliveryDate}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Scheduled Time:</span>
+                    <span className="font-bold text-slate-800">{orderSummary.scheduledTime}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Certificate:</span>
+                    <span className="font-bold text-emerald-600 flex items-center gap-1">
+                      <ShieldCheck size={14} /> Official Verified Certificate
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 bg-slate-50 rounded-xl">
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                    Selected Items ({orderSummary.items.length})
+                  </p>
+                  <div className="space-y-1.5">
+                    {orderSummary.items.map((item) => (
+                      <div key={item.id} className="flex justify-between text-sm text-slate-700">
+                        <span>
+                          {item.itemName} × {item.quantity}
+                        </span>
+                        <span className="font-semibold">
+                          ₦{(item.unitPrice * item.quantity).toLocaleString()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600">Pickup Option</p>
-                <p className="font-semibold">{orderSummary.pickupOption}</p>
+
+              <div className="p-4 bg-slate-50 rounded-xl">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
+                  {isFumigation ? 'Property Location' : 'Delivery Address'}
+                </p>
+                <p className="text-sm font-semibold text-slate-800 flex items-start gap-1.5">
+                  <MapPin size={16} className="text-[#CC0000] shrink-0 mt-0.5" />
+                  {orderSummary.address}
+                </p>
               </div>
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600">Address</p>
-                <p className="font-semibold">{orderSummary.address}</p>
-              </div>
-              <div className="p-4 bg-blue-50 border-2 border-blue-500 rounded-lg">
-                <p className="text-sm text-gray-600">Total Price</p>
-                <p className="text-2xl font-bold text-blue-600">
+
+              <div className="p-5 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-[#1A0A5E] rounded-xl flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                    Total Amount Due
+                  </p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Includes all taxes and service charges
+                  </p>
+                </div>
+                <p className="text-2xl font-black text-[#1A0A5E]">
                   ₦{orderSummary.totalPrice.toLocaleString()}
                 </p>
               </div>
             </div>
+
             <div className="flex gap-4">
               <button
-                onClick={() => setCurrentStep(4)}
-                className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-semibold"
+                type="button"
+                onClick={() => setCurrentStep(isFumigation ? 3 : 4)}
+                className="flex-1 bg-slate-100 text-slate-700 py-3.5 rounded-xl font-bold hover:bg-slate-200 transition-colors flex items-center justify-center gap-1"
               >
-                <ChevronLeft className="inline mr-2" size={18} /> Back
+                <ChevronLeft size={18} /> Back
               </button>
               <button
+                type="button"
                 onClick={submitOrder}
                 disabled={isLoading}
-                className="flex-1 bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-400"
+                className="flex-1 bg-[#1A0A5E] text-white py-3.5 rounded-xl font-bold hover:bg-[#120843] disabled:opacity-50 transition-colors shadow-lg shadow-indigo-950/20 flex items-center justify-center gap-2"
               >
-                {isLoading ? 'Processing...' : 'Proceed to Payment'}
+                {isLoading ? 'Initializing Paystack...' : 'Proceed to Payment'}
               </button>
             </div>
           </div>

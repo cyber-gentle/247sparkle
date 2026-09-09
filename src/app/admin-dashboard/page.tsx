@@ -14,6 +14,13 @@ import { LayoutDashboard } from 'lucide-react';
 export default function AdminDashboardPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
+  const todayFormatted = new Intl.DateTimeFormat('en-GB', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date());
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Toaster position="bottom-right" richColors />
@@ -46,9 +53,7 @@ export default function AdminDashboardPage() {
               <h1 className="text-2xl lg:text-3xl font-extrabold text-[#1A0A5E]">
                 Platform Overview
               </h1>
-              <p className="text-sm text-gray-500 mt-1">
-                Thursday, 23 April 2026 — Otukpo, Benue State
-              </p>
+              <p className="text-sm text-gray-500 mt-1">{todayFormatted} — Otukpo, Benue State</p>
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5 text-xs text-gray-400 bg-white border border-gray-200 rounded-xl px-3 py-2">

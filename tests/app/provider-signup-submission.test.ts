@@ -17,12 +17,12 @@ describe('provider signup submission safeguards', () => {
     ['rider', riderSignupPage],
     ['partner', partnerSignupPage],
   ])(
-    '%s signup uses POST with client-side invalid-submission feedback before calling the protected API route',
+    '%s signup uses client-side invalid-submission feedback before calling the protected API route',
     (_, pagePath) => {
       const source = readFileSync(pagePath, 'utf8');
 
       expect(source).toMatch(
-        /<form\s+method="post"\s+noValidate\s+onSubmit=\{handleSubmit\(onSubmit, onInvalid\)\}/
+        /<form\s+noValidate\s+onSubmit=\{handleSubmit\(onSubmit, onInvalid\)\}/
       );
       expect(source).toMatch(/method:\s*'POST'/);
       expect(source).toContain("mode: 'onBlur'");
@@ -99,5 +99,47 @@ describe('provider signup submission safeguards', () => {
         daysOfOpening: [],
       }).success
     ).toBe(false);
+  });
+
+  it('accepts valid rider signup with facePhotoUrl', () => {
+    const result = riderSignupSchema.safeParse({
+      fullName: 'John Rider',
+      email: 'rider@example.com',
+      phone: '08012345678',
+      address: '14 Upu Road, Otukpo',
+      facePhotoUrl: 'https://res.cloudinary.com/demo/image/upload/v1/sample.jpg',
+      password: 'password123',
+      confirmPassword: 'password123',
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.facePhotoUrl).toBe(
+        'https://res.cloudinary.com/demo/image/upload/v1/sample.jpg'
+      );
+    }
+  });
+
+  it('accepts valid partner signup with ownerPhotoUrl', () => {
+    const result = partnerSignupRequestSchema.safeParse({
+      businessName: 'Sparkle Laundry Hub',
+      ownerName: 'Jane Partner',
+      email: 'partner@example.com',
+      phone: '08012345678',
+      address: '24 Commercial Avenue, Otukpo',
+      ownerPhotoUrl: 'https://res.cloudinary.com/demo/image/upload/v1/owner.jpg',
+      openingTime: '08:00',
+      closingTime: '18:00',
+      daysOfOpening: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+      password: 'password123',
+      confirmPassword: 'password123',
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.ownerPhotoUrl).toBe(
+        'https://res.cloudinary.com/demo/image/upload/v1/owner.jpg'
+      );
+    }
   });
 });

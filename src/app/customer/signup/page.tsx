@@ -196,12 +196,7 @@ export default function CustomerSignupPage() {
               <span className="public-pill w-fit">Secure access</span>
             </div>
 
-            <form
-              method="post"
-              noValidate
-              className="space-y-4"
-              onSubmit={handleSubmit(onSubmit, onInvalid)}
-            >
+            <form noValidate className="space-y-4" onSubmit={handleSubmit(onSubmit, onInvalid)}>
               <label className="block">
                 <span className="mb-1.5 block text-sm font-bold text-slate-700">Full Name</span>
                 <span className="relative block">
