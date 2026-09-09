@@ -36,8 +36,10 @@ const STATUS_COLORS: Record<string, string> = {
   PENDING: 'bg-amber-100 text-amber-700',
   PAID_UNASSIGNED: 'bg-amber-100 text-amber-700',
   RIDER_ASSIGNED: 'bg-blue-100 text-blue-700',
+  SCHEDULED: 'bg-blue-100 text-blue-700',
   PICKED_UP: 'bg-indigo-100 text-indigo-700',
   IN_CLEANING: 'bg-purple-100 text-purple-700',
+  IN_PROGRESS: 'bg-purple-100 text-purple-700',
   OUT_FOR_DELIVERY: 'bg-cyan-100 text-cyan-700',
   COMPLETED: 'bg-green-100 text-green-700',
   CANCELLED: 'bg-red-100 text-red-700',
@@ -49,12 +51,17 @@ const PAYMENT_COLORS: Record<string, string> = {
   FAILED: 'bg-red-100 text-red-700',
 };
 
-// Valid manual progression targets per current status (mirrors the order
-// state machine in src/lib/order-state.ts, excluding CANCELLED).
+// Valid manual progression targets per current status. Mirrors the order state
+// machine in src/lib/order-state.ts (excluding CANCELLED); the laundry track
+// needs a rider while the on-site track (fumigation/cleaning) is riderless —
+// the API enforces the pairing, this map just drives the dropdown.
 const NEXT_STATUSES: Record<string, string[]> = {
+  PAID_UNASSIGNED: ['SCHEDULED'],
   RIDER_ASSIGNED: ['PICKED_UP'],
   PICKED_UP: ['IN_CLEANING'],
   IN_CLEANING: ['OUT_FOR_DELIVERY'],
+  SCHEDULED: ['IN_PROGRESS'],
+  IN_PROGRESS: ['COMPLETED'],
   OUT_FOR_DELIVERY: ['COMPLETED'],
 };
 
@@ -351,7 +358,8 @@ export default function AdminOrdersPage() {
                           <Loader size={16} className="animate-spin text-slate-400" />
                         ) : order.paymentStatus === 'PAID' &&
                           order.status === 'PAID_UNASSIGNED' &&
-                          !order.rider ? (
+                          !order.rider &&
+                          order.serviceType === 'LAUNDRY' ? (
                           <div className="flex items-center gap-1.5">
                             <select
                               value={riderSelections[order.id] ?? ''}
@@ -379,7 +387,8 @@ export default function AdminOrdersPage() {
                               <UserPlus size={14} />
                             </button>
                           </div>
-                        ) : NEXT_STATUSES[order.status] && order.rider ? (
+                        ) : NEXT_STATUSES[order.status] &&
+                          (order.rider || order.serviceType !== 'LAUNDRY') ? (
                           <div className="flex items-center gap-1.5">
                             {!order.partner &&
                               ['PICKED_UP', 'IN_CLEANING'].includes(order.status) && (

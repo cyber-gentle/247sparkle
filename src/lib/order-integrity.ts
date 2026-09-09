@@ -2,7 +2,12 @@ import crypto from 'crypto';
 import { Prisma } from '@prisma/client';
 import prisma from '@/lib/db';
 import { calculatePercentageKobo, koboToNaira } from '@/lib/money';
-import { assertOrderTransition, type OrderStatus } from '@/lib/order-state';
+import {
+  assertOrderTransition,
+  LAUNDRY_FULFILMENT_STATUSES,
+  ON_SITE_STATUSES,
+  type OrderStatus,
+} from '@/lib/order-state';
 
 type DatabaseTransaction = Prisma.TransactionClient;
 
@@ -221,12 +226,31 @@ export async function transitionPaidOrder({
   assertOrderTransition(currentStatus, nextStatus);
 
   return prisma.$transaction(async (tx: DatabaseTransaction) => {
+    // The rider requirement applies to laundry fulfilment only: on-site
+    // services (fumigation, cleaning) are completed by a visiting team and
+    // never have a rider. Guard the service-type/status pairing here too, so
+    // a laundry order can never skip into the on-site track (or vice versa)
+    // regardless of what the caller validated.
+    const order = await tx.order.findUnique({
+      where: { id: orderId },
+      select: { serviceType: true },
+    });
+    const isLaundry = order?.serviceType === 'LAUNDRY';
+
+    if (isLaundry && (ON_SITE_STATUSES as readonly string[]).includes(nextStatus)) {
+      throw new Error(`Laundry orders cannot transition to ${nextStatus}`);
+    }
+    if (!isLaundry && (LAUNDRY_FULFILMENT_STATUSES as readonly string[]).includes(nextStatus)) {
+      throw new Error(`On-site service orders cannot transition to ${nextStatus}`);
+    }
+
     const transition = await tx.order.updateMany({
       where: {
         id: orderId,
         status: currentStatus,
         paymentStatus: 'PAID',
-        riderId: { not: null },
+        // Laundry fulfilment requires a rider; on-site orders have none.
+        ...(isLaundry ? { riderId: { not: null } } : {}),
       },
       data: { status: nextStatus },
     });
