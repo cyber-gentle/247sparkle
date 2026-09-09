@@ -72,7 +72,9 @@ describe('GET /api/riders/jobs (rider dashboard payload)', () => {
               deliveryAddress: '45 GRA, Otukpo',
               scheduledDate: null,
               createdAt: NOW,
-              customer: { user: { fullName: 'Ada Okonkwo', phone: '09012345678', email: 'ada@test' } },
+              customer: {
+                user: { fullName: 'Ada Okonkwo', phone: '09012345678', email: 'ada@test' },
+              },
               items: [{ id: 'i1' }, { id: 'i2' }],
             },
           ]
@@ -86,7 +88,9 @@ describe('GET /api/riders/jobs (rider dashboard payload)', () => {
               deliveryAddress: '45 GRA, Otukpo',
               scheduledDate: null,
               createdAt: NOW,
-              customer: { user: { fullName: 'Tunde Afolayan', phone: '08034567890', email: 'tunde@test' } },
+              customer: {
+                user: { fullName: 'Tunde Afolayan', phone: '08034567890', email: 'tunde@test' },
+              },
               items: [{ id: 'i3' }],
             },
           ]

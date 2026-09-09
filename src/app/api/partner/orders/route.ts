@@ -53,9 +53,7 @@ export async function GET(request: NextRequest) {
         name: o.customer?.user.fullName ?? 'Unknown',
         phone: o.customer?.user.phone ?? '',
       },
-      rider: o.rider
-        ? { name: o.rider.user.fullName, phone: o.rider.user.phone }
-        : null,
+      rider: o.rider ? { name: o.rider.user.fullName, phone: o.rider.user.phone } : null,
       itemCount: o.items.length,
       items: o.items.map((item) => ({
         itemName: item.itemName,

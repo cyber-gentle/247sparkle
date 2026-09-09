@@ -183,7 +183,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     return NextResponse.json(
-      { message: 'Withdrawal rejected and amount refunded to the rider wallet', withdrawal: result },
+      {
+        message: 'Withdrawal rejected and amount refunded to the rider wallet',
+        withdrawal: result,
+      },
       { status: 200 }
     );
   } catch (error: any) {

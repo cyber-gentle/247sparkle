@@ -201,7 +201,9 @@ async function findAvailablePartner(tx: DatabaseTransaction) {
     where: { approvalStatus: 'APPROVED', workloadStatus: 'AVAILABLE' },
     select: {
       id: true,
-      _count: { select: { assignedOrders: { where: { status: { in: [...PARTNER_ACTIVE_STATUSES] } } } } },
+      _count: {
+        select: { assignedOrders: { where: { status: { in: [...PARTNER_ACTIVE_STATUSES] } } } },
+      },
     },
     orderBy: { id: 'asc' },
   });
@@ -319,8 +321,7 @@ export async function transitionPaidOrder({
           select: { amountKobo: true },
         });
         const commissionKobo =
-          commission?.amountKobo ??
-          calculatePercentageKobo(completedOrder?.totalKobo ?? 0, 20);
+          commission?.amountKobo ?? calculatePercentageKobo(completedOrder?.totalKobo ?? 0, 20);
 
         if (!commission) {
           await tx.commission.create({

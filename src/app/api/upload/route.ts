@@ -33,10 +33,7 @@ function hasValidImageMagicBytes(buffer: Buffer): boolean {
   )
     return true;
   // WebP: "RIFF" .... "WEBP"
-  if (
-    buffer.toString('ascii', 0, 4) === 'RIFF' &&
-    buffer.toString('ascii', 8, 12) === 'WEBP'
-  )
+  if (buffer.toString('ascii', 0, 4) === 'RIFF' && buffer.toString('ascii', 8, 12) === 'WEBP')
     return true;
   return false;
 }

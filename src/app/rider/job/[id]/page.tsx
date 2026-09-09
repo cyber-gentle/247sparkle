@@ -153,8 +153,16 @@ export default function RiderJobPage({ params: paramPromise }: RiderJobPageProps
   // sequence after accepting a job: pick up from the customer, confirm arrival
   // at the partner shop (IN_CLEANING), then deliver back (OUT_FOR_DELIVERY →
   // COMPLETED). The API rejects any status outside this progression.
-  const statusProgression = ['RIDER_ASSIGNED', 'PICKED_UP', 'IN_CLEANING', 'OUT_FOR_DELIVERY', 'COMPLETED'] as const;
-  const currentStatusIndex = statusProgression.indexOf(order.status as (typeof statusProgression)[number]);
+  const statusProgression = [
+    'RIDER_ASSIGNED',
+    'PICKED_UP',
+    'IN_CLEANING',
+    'OUT_FOR_DELIVERY',
+    'COMPLETED',
+  ] as const;
+  const currentStatusIndex = statusProgression.indexOf(
+    order.status as (typeof statusProgression)[number]
+  );
 
   return (
     <main className="min-h-screen bg-gray-50 py-8 px-4">

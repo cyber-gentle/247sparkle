@@ -7,9 +7,7 @@ const toastLib = vi.hoisted(() => ({ toast: { success: vi.fn(), error: vi.fn() }
 vi.mock('sonner', () => ({ toast: toastLib.toast }));
 
 import ContactSection from '@/app/homepage/components/ContactSection';
-import LocationMap, {
-  SPARKLE_LOCATION_EMBED_URL,
-} from '@/components/LocationMap';
+import LocationMap, { SPARKLE_LOCATION_EMBED_URL } from '@/components/LocationMap';
 
 describe('ContactSection map', () => {
   it('embeds the exact shop-location map with a directions link', () => {

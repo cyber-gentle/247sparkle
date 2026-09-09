@@ -75,9 +75,10 @@ describe('Admin withdrawal processing API', () => {
           }),
         },
         commission: {
-          findMany: vi
-            .fn()
-            .mockResolvedValue([{ id: 'c-1', amountKobo: 15000 }, { id: 'c-2', amountKobo: 10000 }]),
+          findMany: vi.fn().mockResolvedValue([
+            { id: 'c-1', amountKobo: 15000 },
+            { id: 'c-2', amountKobo: 10000 },
+          ]),
           updateMany: vi.fn().mockResolvedValue({ count: 2 }),
         },
         auditLog: {
@@ -118,9 +119,10 @@ describe('Admin withdrawal processing API', () => {
     it('leaves a partial commission pending when the withdrawal does not cover it', async () => {
       const tx = mockTransaction({
         commission: {
-          findMany: vi
-            .fn()
-            .mockResolvedValue([{ id: 'c-1', amountKobo: 15000 }, { id: 'c-2', amountKobo: 20000 }]),
+          findMany: vi.fn().mockResolvedValue([
+            { id: 'c-1', amountKobo: 15000 },
+            { id: 'c-2', amountKobo: 20000 },
+          ]),
           updateMany: vi.fn().mockResolvedValue({ count: 1 }),
         },
       });

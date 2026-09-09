@@ -72,11 +72,7 @@ export default function ServiceBreakdownChart() {
       ) : (
         <>
           <ResponsiveContainer width="100%" height={180}>
-            <BarChart
-              data={data}
-              margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
-              barSize={32}
-            >
+            <BarChart data={data} margin={{ top: 0, right: 0, left: -20, bottom: 0 }} barSize={32}>
               <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
               <XAxis
                 dataKey="service"
