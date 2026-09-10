@@ -95,6 +95,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             fullName: order.rider.user.fullName,
             phone: order.rider.user.phone,
             availabilityStatus: order.rider.availabilityStatus,
+            // Live location for the customer's order-tracking map (null until
+            // the rider's device reports a position).
+            latitude: order.rider.currentLatitude,
+            longitude: order.rider.currentLongitude,
+            lastLocationUpdate: order.rider.lastLocationUpdate,
           }
         : null,
       partner: order.partner
