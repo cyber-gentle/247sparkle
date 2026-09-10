@@ -109,13 +109,11 @@ describe('Admin assign-partner', () => {
     transactionWith({
       order: {
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
-        findUnique: vi
-          .fn()
-          .mockResolvedValue({
-            id: 'order-1',
-            status: 'PICKED_UP',
-            partner: { id: 'partner-1', businessName: 'Sparkle Wash', workloadStatus: 'AVAILABLE' },
-          }),
+        findUnique: vi.fn().mockResolvedValue({
+          id: 'order-1',
+          status: 'PICKED_UP',
+          partner: { id: 'partner-1', businessName: 'Sparkle Wash', workloadStatus: 'AVAILABLE' },
+        }),
       },
       auditLog: { create: vi.fn().mockResolvedValue({}) },
     });
