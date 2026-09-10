@@ -1,26 +1,42 @@
-# 247Sparkle MVP - Implementation Status
+# 247Sparkle MVP — Implementation Status
 
-**Last Updated**: June 2026  
-**Overall Status**: ~95% Complete
+**Last Updated**: September 2026
+**Overall Status**: Pre-production release candidate
 
 ---
 
 ## ✅ Completed
 
 ### Database & ORM
-- Prisma schema with all 14 models (SQLite for dev, PostgreSQL-ready for production)
-- Seed script with default admin user and pricing data
-- `enums.ts` with all string constants (SQLite-compatible)
+
+- Prisma schema with **16 models** on **Supabase PostgreSQL**
+- Server-only Row Level Security (RLS) on all application tables
+- Committed migration history with safe `migrate deploy` workflow
+- Seed script with environment-aware safety (blocks demo data in production)
+- String-based enums with convention constraints (no Prisma `enum` keyword)
+
+**Models (16):**
+
+```
+User, PasswordResetToken, Customer, SavedAddress, Rider, Partner,
+Order, OrderItem, Pricing, Commission, WithdrawalRequest,
+Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
+```
 
 ### Authentication System
+
 - JWT token generation and verification (`src/lib/auth.ts`)
 - Password hashing with bcryptjs
 - Auth middleware with role-based header injection (`src/middleware.ts`)
 - Customer, Rider, Partner, Admin signup/login API routes
+- Logout endpoint (`POST /api/auth/logout`) — clears `auth_token` cookie
+- HTTP-only cookies with 7-day expiry
+- Role-based access control (CUSTOMER, RIDER, PARTNER, ADMIN)
 
-### API Routes (35+ endpoints)
+### API Routes (54 endpoints)
 
-#### Auth (`/api/auth/`)
+#### Auth — `/api/auth/` (7 routes)
+
 - `POST /api/auth/customer/signup`
 - `POST /api/auth/customer/login`
 - `POST /api/auth/rider/signup`
@@ -29,169 +45,283 @@
 - `POST /api/auth/partner/login`
 - `POST /api/auth/admin/login`
 
-#### Orders (`/api/orders/`)
-- `POST /api/orders` — create order + Paystack init
+#### Orders — `/api/orders/` (3 routes)
+
+- `POST /api/orders` — create order with server-side price lookup
 - `GET /api/orders` — customer's own orders
 - `GET /api/orders/[id]` — single order detail (role-gated)
 - `POST /api/orders/[id]/status` — update order status
 
-#### Riders (`/api/riders/`)
-- `GET /api/riders/jobs` — available jobs for rider
-- `POST /api/riders/jobs/[id]/accept` — accept a job
-- `POST /api/riders/location` — update rider GPS location
-- `GET /api/riders/location` — get rider location
+#### Riders — `/api/riders/` (3 routes)
 
-#### Rider Profile (`/api/rider/`)
+- `GET /api/riders/jobs` — available jobs for rider
+- `POST /api/riders/jobs/[id]/accept` — accept a job (atomic single claim)
+- `POST /api/riders/location` — update/get rider GPS location
+
+#### Rider Profile — `/api/rider/` (5 routes)
+
 - `GET/PUT /api/rider/profile`
 - `GET/POST /api/rider/withdrawals`
 - `GET /api/rider/earnings`
 - `PUT /api/rider/availability`
 - `PUT /api/rider/password`
 
-#### Customer Profile (`/api/customer/`)
+#### Customer Profile — `/api/customer/` (4 routes)
+
 - `GET/PUT /api/customer/profile`
 - `GET/POST /api/customer/addresses`
 - `DELETE /api/customer/addresses/[id]`
 - `PUT /api/customer/password`
 
-#### Partner Profile (`/api/partner/`)
+#### Partner — `/api/partner/` (4 routes)
+
 - `GET/PUT /api/partner/profile`
 - `PUT /api/partner/password`
+- `GET /api/partner/orders` — orders assigned to the partner
+- `POST /api/partner/orders/[id]/ready` — mark order ready for pickup
 
-#### Admin (`/api/admin/`)
-- `GET /api/admin/riders`
-- `PUT /api/admin/riders/[id]` — approve/reject/suspend
-- `GET /api/admin/partners`
-- `PUT /api/admin/partners/[id]` — approve/reject/suspend
-- `GET /api/admin/orders`
+#### Admin — `/api/admin/` (11 routes)
 
-#### Other
+- `GET /api/admin/riders` — list all riders
+- `PUT /api/admin/riders/[id]` — approve/reject/suspend rider
+- `GET /api/admin/partners` — list partners
+- `PUT /api/admin/partners/[id]` — approve/reject/suspend partner
+- `GET /api/admin/orders` — admin order view with all details
+- `PUT /api/admin/orders/[id]/assign` — assign rider to order
+- `PUT /api/admin/orders/[id]/assign-partner` — route order to partner
+- `GET /api/admin/customers` — aggregated customer list
+- `GET /api/admin/stats` — dashboard KPI stats
+- `GET /api/admin/withdrawals` — list withdrawal requests
+- `PUT /api/admin/withdrawals/[id]` — process withdrawal (approve/reject/mark paid)
+
+#### Payment — `/api/payment/` (2 routes)
+
+- `POST /api/payment/verify/[reference]` — Paystack payment verification
+- `POST /api/payment/webhook` — Paystack signed webhook handler
+
+#### Certificates — `/api/certificates/` (5 routes)
+
+- `POST /api/certificates` — admin issue certificate
+- `GET /api/certificates/[id]/download` — download certificate PDF
+- `GET /api/certificates/customer` — customer's own certificates
+- `GET /api/certificates/customer/[userId]` — certificates by user ID
+- `GET /api/certificates/verify/[number]` — public certificate lookup
+
+#### Other (10 routes)
+
 - `GET /api/pricing` — public pricing list
 - `PUT /api/pricing` — admin update pricing
-- `GET /api/certificates/verify/[number]` — public certificate lookup (uses DB)
-- `GET /api/certificates/customer/[userId]` — customer's own certificates
 - `POST /api/quotations` — public quotation request
 - `GET /api/quotations` — admin list quotations
 - `PUT /api/quotations/[id]` — admin update quotation status
-- `POST /api/payment/verify/[reference]` — Authenticated Paystack payment verification
+- `GET /api/banks` — Paystack bank list proxy
+- `GET /api/banks/resolve` — Paystack account resolve proxy
+- `POST /api/contact` — public contact form
+- `POST /api/upload` — secure image upload with magic-byte validation
+- `POST /api/auth/logout` — clear session
 
-### Frontend Pages (40+ pages)
+#### Operations (2 routes)
 
-#### Public
-- `/` — Homepage
-- `/services` — Services listing
-- `/how-it-works` — How it works
+- `GET /api/health` — liveness probe (no database dependency)
+- `GET /api/readiness` — readiness probe (database check)
+
+### Frontend Pages (37 pages)
+
+#### Public (8)
+
+- `/` — Root landing
+- `/homepage` — Full homepage with hero, services, testimonials
+- `/services` — Services listing with pricing
+- `/how-it-works` — How it works guide
 - `/contact` — Contact & quotation form
-- `/become-a-partner` — Partner application
-- `/verify` — Certificate verification (connected to DB API)
+- `/become-a-partner` — Partner/rider application
+- `/verify` — Public certificate verification
+- `/customer-dashboard` — Public dashboard landing
 
-#### Customer Portal
+#### Customer Portal (8)
+
 - `/customer/signup`, `/customer/login`
-- `/customer/dashboard`
-- `/customer/new-order` — multi-step order form
-- `/customer/orders` — order history
-- `/customer/orders/[id]` — order detail
-- `/customer/certificates`
-- `/customer/profile`
+- `/customer/dashboard` — summary cards, recent orders, quick actions
+- `/customer/new-order` — multi-step order form (6 steps)
+- `/customer/orders` — order history with filters
+- `/customer/orders/[id]` — order detail with status timeline
+- `/customer/certificates` — fumigation certificates
+- `/customer/profile` — edit profile, saved addresses, change password
 
-#### Rider Portal
+#### Rider Portal (6)
+
 - `/rider/signup`, `/rider/login`
-- `/rider/dashboard`
-- `/rider/job/[id]`
-- `/rider/earnings`
-- `/rider/profile`
+- `/rider/dashboard` — available jobs, availability toggle, earnings summary
+- `/rider/job/[id]` — active job with status progression buttons
+- `/rider/earnings` — commission breakdown, wallet balance, withdrawal request
+- `/rider/profile` — edit profile, bank details
 
-#### Partner Portal
+#### Partner Portal (4)
+
 - `/partner/signup`, `/partner/login`
-- `/partner/dashboard`
-- `/partner/profile`
+- `/partner/dashboard` — workload toggle, incoming orders, revenue summary
+- `/partner/profile` — edit business details, operating hours, bank details
 
-#### Admin Portal
+#### Admin Portal (10)
+
 - `/admin/login`
-- `/admin/dashboard`
-- `/admin/riders`
-- `/admin/partners`
-- `/admin/orders`
-- `/admin/finance`
-- `/admin/quotations`
-- `/admin/pricing`
-- `/admin/certificates`
-- `/admin/customers`
+- `/admin/dashboard` — live stat cards, alerts panel
+- `/admin/orders` — full order table with assign rider/partner, status management
+- `/admin/riders` — rider management with approval, withdrawal processing
+- `/admin/partners` — partner management with approval
+- `/admin/customers` — customer list with order history
+- `/admin/finance` — revenue, commissions, transactions
+- `/admin/pricing` — edit laundry and fumigation pricing
+- `/admin/quotations` — quotation request management
+- `/admin/certificates` — issue and manage fumigation certificates
+
+#### Admin Dashboard (1)
+
+- `/admin-dashboard` — analytics with revenue chart, service breakdown chart
 
 ### Security
+
 - JWT HTTP-only cookies (7-day expiry)
 - Role-based access control (CUSTOMER, RIDER, PARTNER, ADMIN)
 - Zod input validation on all API routes
 - Middleware injects `x-user-id`, `x-user-email`, `x-user-role` headers
+- Server-only RLS on all Supabase tables
+- Image upload with magic-byte validation and file-type enforcement
+- Rate limiting on sensitive endpoints
+- Structured logging with PII/secret redaction
+- Spoofed identity header removal in middleware
+
+### Financial Integrity
+
+- Server-side price lookup (clients cannot set prices)
+- Kobo-safe integer arithmetic for all monetary values
+- Paystack webhook signature verification
+- Idempotent payment event processing (concurrent duplicate settlement → one event)
+- Atomic rider job claim (prevents double-assignment)
+- Commission rate standardized at 20%
+- Withdrawal approval workflow with wallet balance guards
+
+### Operations
+
+- Liveness probe (`/api/health`) and readiness probe (`/api/readiness`)
+- Structured JSON logging in production (via instrumentation)
+- PII and secret redaction in all log output
+- `Cache-Control: no-store` on probe responses
+- Netlify deployment configuration (`netlify.toml` with `@netlify/plugin-nextjs`)
+
+### Test Coverage (36 test files)
+
+#### Unit Tests (31 files)
+
+| Group | Count | Examples |
+| --- | --- | --- |
+| Route/page tests (`tests/app/`) | 17 | admin-order-assign, paystack-webhook, rider-jobs, upload, certificates |
+| Library tests (`tests/lib/`) | 10 | money, order-integrity, order-state, auth, rate-limit, logger |
+| Component tests (`tests/components/`) | 3 | app-logo, contact-section, provider-application-shell |
+| Prisma tests (`tests/prisma/`) | 1 | seed-policy |
+
+#### Integration Tests (5 files)
+
+| Test | Behavior exercised |
+| --- | --- |
+| `fulfilment-routes` | Rider approval gate, atomic single claim, duplicate claim conflict, status transitions |
+| `operations` | Health/readiness probes against real PostgreSQL |
+| `order-integrity` | Server-side pricing, kobo-safe totals, payment-event idempotency |
+| `order-routes` | Session enforcement, price lookup, payment reference persistence |
+| `session-and-middleware` | Bcrypt login, HttpOnly cookie, token verification, role matrix |
 
 ---
 
 ## ⚠️ Known Issues / Gaps
 
-### Database Not Seeded
-- ✅ `prisma/dev.db` has been created and the database is fully seeded with default admin and pricing data.
-- The `/verify` page and all authenticated flows are fully functional.
+### Real-Time Updates
 
-### Mock Data Still Present
-- ✅ `src/lib/mock-data.ts`, `src/lib/mock-certificates.ts`, `src/lib/mock-pricing.ts` have been confirmed unused and successfully deleted.
+- No Socket.io integration yet. Order status changes require page refresh.
+- Rider location tracking is API-based (no live push to customer).
 
-### Admin Rider/Partner Approval Uses `PUT` (not `POST`)
-- `MVP_BUILD_SUMMARY.md` and `TESTING.md` document `POST /api/admin/riders/[id]` but the actual implementation uses `PUT /api/admin/riders/[id]`
+### Maps Integration
 
-### `admin/riders/[id]` Uses Sync `params`
-- `src/app/api/admin/riders/[id]/route.ts` and `admin/partners/[id]/route.ts` use `params.id` directly (not `await params`) — may cause a warning in Next.js 15 (async params)
+- Addresses are not geocoded. No Google Maps API for pickup location selection or live rider tracking.
 
-### Commission Rate Inconsistency
-- ✅ Commission rate standardized to 20% across codebase and documentation.
+### File Uploads
 
-### No Admin Customers Endpoint
-- `GET /api/admin/customers` is not implemented (admin customers page exists at `/admin/customers` but has no backing API)
+- Image upload endpoint exists with magic-byte validation, but full Cloudinary integration is not wired. Uploads are handled locally.
 
-### No Logout Endpoint
-- ✅ Added `POST /api/auth/logout` — clears the `auth_token` cookie
+### Payment Provider Validation
 
-### No Admin Finance/Stats API
-- `/admin/finance` and `/admin/dashboard` pages exist but there is no `/api/admin/stats` or `/api/admin/finance` endpoint — these pages likely use mock/static data
+- Paystack integration is code-complete (init, verify, signed webhook, idempotency).
+- Real test-mode validation is **paused** until the owner supplies test-only credentials through the approved secret channel.
+
+### Certificate PDF Generation
+
+- Certificate creation and verification are functional.
+- PDF download endpoint exists. Full branded PDF generation (pdfkit/puppeteer) may need refinement.
+
+### Notifications
+
+- No email/SMS notifications for order status updates (needs Twilio/SendGrid).
+
+### Mobile App
+
+- React Native clients are pending (future phase).
 
 ---
 
 ## 🔜 Next Steps (Priority Order)
 
-1. **Initialize database**: `npm run db:push && npm run db:seed`
-2. **Fix async params** in `admin/riders/[id]` and `admin/partners/[id]` route handlers ✅ Done
-3. **Add logout API**: `POST /api/auth/logout` ✅ Done
-4. **Add admin customers API**: `GET /api/admin/customers` ✅ Done (aggregated from orders)
-5. **Add admin stats/finance API**: for dashboard KPIs ✅ Done (finance page)
-6. **Standardize commission rate**: confirm 15% or 20% across seed, docs, and UI ✅ Done (Standardized to 20%)
-7. **Delete unused mock files** after confirming no page imports them ✅ Done
-8. **Real-time updates**: Socket.io for live order/job notifications
-9. **File uploads**: Cloudinary for rider/partner photos
-10. **PDF certificates**: Generate fumigation certificates as downloadable PDFs
-11. **Email/SMS notifications**: Order status updates
-12. **Rate limiting**: On auth endpoints
-13. **Production deployment**: Configure PostgreSQL + Vercel/AWS
+1. **Paystack test-mode validation** — owner supplies `sk_test_` / `pk_test_` credentials for checkout, verification, webhook, and failure-path testing
+2. **Supabase test-environment rehearsal** — hosted cloud rehearsal with isolated test project
+3. **Backup and restore validation** — Supabase backup/restore procedure tested with non-production restore target
+4. **Dependency audit** — production dependency audit on a separately tested upgrade branch
+5. **Socket.io integration** — real-time order/job notifications
+6. **Google Maps API** — geocoded addresses, rider tracking on map
+7. **Cloudinary integration** — cloud-hosted image uploads for rider/partner photos
+8. **Email/SMS notifications** — order status updates via Twilio/SendGrid
+9. **PDF certificate refinement** — branded fumigation certificate generation
+10. **Rate limiting hardening** — review and tune rate limits across all auth and payment endpoints
 
 ---
 
 ## 🗄️ Database
 
-- **Dev**: SQLite at `prisma/dev.db` (auto-created by `db:push`)
-- **Production**: Switch `schema.prisma` provider to `postgresql` and update `DATABASE_URL`
-- **Seed data**: 1 admin user, 10 laundry pricing items, 6 fumigation pricing items
+- **Provider**: Supabase PostgreSQL (server-only RLS enabled)
+- **Runtime**: Transaction pooler on port `6543` with `pgbouncer=true`
+- **Migrations**: Direct connection on port `5432` via `DIRECT_URL`
+- **Local integration**: Guarded `sparkle247_test` PostgreSQL database
+- **Seed data**: Admin user + default pricing (demo data blocked in production)
 
 ### Default Credentials (after seed)
+
 | Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@247sparkle.com | <set via SEED_ADMIN_PASSWORD (or printed once by the seed)> |
+| --- | --- | --- |
+| Admin | admin@247sparkle.com | Set via `SEED_ADMIN_PASSWORD` (or printed once by the seed) |
 
 ---
 
 ## 📊 Metrics
 
 | Category | Count |
-|----------|-------|
-| API Endpoints | 35+ |
-| Database Models | 14 |
-| Frontend Pages | 40+ |
-| Auth Routes | 7 |
-| Admin Routes | 5 |
+| --- | --- |
+| API Route Files | 54 |
+| Database Models | 16 |
+| Frontend Pages | 37 |
+| Test Files | 36 (31 unit + 5 integration) |
+| Auth Routes | 7 + logout |
+| Admin Routes | 11 |
+| Operations Probes | 2 |
+
+---
+
+## 📖 Related Documentation
+
+| File | Purpose |
+| --- | --- |
+| `README.md` | Project overview, quick start, environment setup, release gates |
+| `DATABASE_SETUP.md` | Database connection model, migration procedure, seed policy |
+| `SUPABASE_SETUP.md` | Supabase-specific setup, RLS posture, financial test gate |
+| `ENVIRONMENT_REFERENCE.md` | Environment variable names and purpose reference |
+| `LOCAL_INTEGRATION_TESTING.md` | Local PostgreSQL integration test setup and commands |
+| `TESTING.md` | Test layers, commands, manual smoke test matrix, Paystack checklist |
+| `OPERATIONS_RUNBOOK.md` | Health probes, structured logging, alert procedures, backup gate |
+| `SETUP.md` | Full development-to-production handoff guide |
+| `prompt.md` | Original developer brief and requirements specification |

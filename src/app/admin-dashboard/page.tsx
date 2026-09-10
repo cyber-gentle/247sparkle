@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { Toaster } from 'sonner';
+import { Toaster, toast } from 'sonner';
 import AdminSidebar from './components/AdminSidebar';
 import AdminTopbar from './components/AdminTopbar';
 import AdminKPIBento from './components/AdminKPIBento';
@@ -9,10 +9,13 @@ import ServiceBreakdownChart from './components/ServiceBreakdownChart';
 import AdminOrdersFeed from './components/AdminOrdersFeed';
 import AlertsPanel from './components/AlertsPanel';
 import RiderStatusGrid from './components/RiderStatusGrid';
-import { LayoutDashboard } from 'lucide-react';
+import { LayoutDashboard, Download } from 'lucide-react';
+
+type RevenuePoint = { day: string; revenue: number; orders: number };
 
 export default function AdminDashboardPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const todayFormatted = new Intl.DateTimeFormat('en-GB', {
     weekday: 'long',
@@ -20,6 +23,37 @@ export default function AdminDashboardPage() {
     month: 'long',
     year: 'numeric',
   }).format(new Date());
+
+  async function exportReport() {
+    setIsExporting(true);
+    try {
+      const res = await fetch('/api/admin/stats');
+      if (!res.ok) throw new Error('Failed to load stats');
+      const data = await res.json();
+      const series: RevenuePoint[] = data.revenueSeries ?? [];
+
+      // Minimal CSV: header + one row per day of the 14-day window.
+      const escapeCsv = (value: string) => `"${value.replace(/"/g, '""')}"`;
+      const rows = [
+        ['Day', 'Revenue (NGN)', 'Orders'].join(','),
+        ...series.map((p) => [escapeCsv(p.day), p.revenue, p.orders].join(',')),
+      ];
+      const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `247sparkle-revenue-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      toast.success('Revenue report downloaded');
+    } catch {
+      toast.error('Export failed — could not load stats');
+    } finally {
+      setIsExporting(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -57,11 +91,16 @@ export default function AdminDashboardPage() {
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5 text-xs text-gray-400 bg-white border border-gray-200 rounded-xl px-3 py-2">
-                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                Live data — updated just now
+                <div className="w-2 h-2 rounded-full bg-green-400" />
+                Data as of page load
               </div>
-              <button className="bg-[#F5C200] text-[#1A0A5E] font-bold text-xs px-4 py-2 rounded-xl hover:bg-[#E6B000] active:scale-95 transition-all">
-                Export Report
+              <button
+                onClick={exportReport}
+                disabled={isExporting}
+                className="bg-[#F5C200] text-[#1A0A5E] font-bold text-xs px-4 py-2 rounded-xl hover:bg-[#E6B000] active:scale-95 transition-all flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                <Download size={12} />
+                {isExporting ? 'Exporting…' : 'Export Report'}
               </button>
             </div>
           </div>

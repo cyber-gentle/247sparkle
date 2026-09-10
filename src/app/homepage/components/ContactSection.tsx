@@ -3,6 +3,12 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Phone, Mail, MapPin, MessageCircle, Send, Loader2 } from 'lucide-react';
+import LocationMap, {
+  LocationMapCaption,
+  SPARKLE_LOCATION_DIRECTIONS_URL,
+  SPARKLE_LOCATION_EMBED_URL,
+  SPARKLE_LOCATION_QUERY,
+} from '@/components/LocationMap';
 
 interface ContactFormData {
   name: string;
@@ -89,7 +95,7 @@ export default function ContactSection() {
                   icon: MapPin,
                   label: 'Location',
                   value: 'Otukpo, Benue State',
-                  href: '#',
+                  href: SPARKLE_LOCATION_DIRECTIONS_URL,
                   color: '#F5C200',
                 },
               ].map((item) => {
@@ -119,12 +125,23 @@ export default function ContactSection() {
               })}
             </div>
 
-            {/* Map placeholder */}
-            <div className="public-card flex h-48 items-center justify-center bg-gray-100">
-              <div className="text-center">
-                <MapPin size={32} className="text-[#F5C200] mx-auto mb-2" />
-                <p className="text-sm text-gray-500 font-medium">Otukpo, Benue State</p>
-                <p className="text-xs text-gray-400">Map integration coming soon</p>
+            {/* Location map — exact shop pin via Google share-embed */}
+            <div className="public-card overflow-hidden">
+              <LocationMap
+                query={SPARKLE_LOCATION_QUERY}
+                embedUrl={SPARKLE_LOCATION_EMBED_URL}
+                title="247Sparkle location — Otukpo, Benue State"
+              />
+              <div className="flex items-center justify-between gap-3 border-t border-gray-100 px-4 py-3">
+                <LocationMapCaption label="247Sparkle · Otukpo, Benue State" />
+                <a
+                  href={SPARKLE_LOCATION_DIRECTIONS_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 rounded-lg bg-[#1A0A5E] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[#2D1B8E]"
+                >
+                  Get Directions
+                </a>
               </div>
             </div>
           </div>
