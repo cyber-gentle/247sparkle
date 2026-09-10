@@ -50,6 +50,37 @@ export default function RiderJobPage({ params: paramPromise }: RiderJobPageProps
     paramPromise.then(setParams);
   }, [paramPromise]);
 
+  // Feed the rider's GPS position while a job page is open, so the customer's
+  // tracking map follows the rider between pickup and delivery. The brief
+  // specifies a 10s socket cadence; polling the existing REST endpoint keeps
+  // this deployable without a socket server. Errors are silent: a
+  // location-permission denial must never block the actual job workflow.
+  useEffect(() => {
+    if (!order || order.status === 'COMPLETED' || order.status === 'CANCELLED') return;
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+
+    const postPosition = (position: GeolocationPosition) => {
+      fetch('/api/riders/location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        }),
+      }).catch(() => {
+        /* keep watching even if a single update fails */
+      });
+    };
+
+    const watchId = navigator.geolocation.watchPosition(postPosition, () => {}, {
+      enableHighAccuracy: false,
+      maximumAge: 10_000,
+      timeout: 20_000,
+    });
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [order?.status, order?.id]);
+
   useEffect(() => {
     if (!params?.id) return;
 

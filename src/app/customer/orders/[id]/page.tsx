@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import AppLogo from '@/components/ui/AppLogo';
+import LocationMap, { LocationMapCaption } from '@/components/LocationMap';
 
 interface OrderDetails {
   id: string;
@@ -43,6 +44,9 @@ interface OrderDetails {
     id: string;
     phone?: string;
     fullName?: string;
+    latitude?: number | null;
+    longitude?: number | null;
+    lastLocationUpdate?: string | null;
   };
   certificate?: {
     certificateNumber: string;
@@ -62,6 +66,28 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
       fetchOrderDetails(p.id);
     });
   }, [params]);
+
+  // Poll while the order is actively moving (rider en route in either
+  // direction): the rider's GPS updates land on the same payload, so a
+  // refresh keeps both the status timeline and the tracking map live without
+  // a socket server. Terminal and pre-payment states stop the polling.
+  const isActive =
+    order?.status === 'RIDER_ASSIGNED' ||
+    order?.status === 'PICKED_UP' ||
+    order?.status === 'IN_CLEANING' ||
+    order?.status === 'OUT_FOR_DELIVERY' ||
+    order?.status === 'SCHEDULED' ||
+    order?.status === 'IN_PROGRESS';
+
+  useEffect(() => {
+    if (!orderId || !isActive) return;
+
+    const interval = setInterval(() => {
+      fetchOrderDetails(orderId);
+    }, 15_000);
+
+    return () => clearInterval(interval);
+  }, [orderId, isActive]);
 
   const fetchOrderDetails = async (id: string) => {
     try {
@@ -262,6 +288,50 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
           </div>
         </div>
 
+        {/* Live Tracking (laundry pickup/delivery) */}
+        {order.serviceType === 'LAUNDRY' &&
+          order.rider &&
+          order.rider.latitude != null &&
+          order.rider.longitude != null && (
+            <div className="bg-white rounded-2xl border border-gray-200 p-8 mb-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Truck size={20} className="text-[#1A0A5E]" />
+                  <h3 className="text-lg font-bold text-[#1A0A5E]">Live Rider Tracking</h3>
+                </div>
+                {isActive && (
+                  <span className="flex items-center gap-1.5 text-xs font-semibold text-green-700 bg-green-50 px-2.5 py-1 rounded-full">
+                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    Live
+                  </span>
+                )}
+              </div>
+              <LocationMap
+                query={`${order.rider.latitude},${order.rider.longitude}`}
+                zoom={15}
+                className="h-64 w-full border-0 rounded-xl"
+                title="Rider current location"
+              />
+              <div className="mt-3 flex items-center justify-between gap-4">
+                <LocationMapCaption
+                  label={`Rider position${
+                    order.rider.lastLocationUpdate
+                      ? ` · updated ${new Date(order.rider.lastLocationUpdate).toLocaleTimeString()}`
+                      : ''
+                  }`}
+                />
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${order.rider.latitude},${order.rider.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-semibold text-[#1A0A5E] hover:underline flex items-center gap-1 shrink-0"
+                >
+                  <MapPin size={14} /> Open in Google Maps
+                </a>
+              </div>
+            </div>
+          )}
+
         {/* Order Items */}
         {order.items && order.items.length > 0 && (
           <div className="bg-white rounded-2xl border border-gray-200 p-8 mb-6 shadow-sm">
@@ -378,6 +448,11 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
                   <p className="text-sm text-gray-600">
                     <Phone size={12} className="inline mr-1" />
                     {order.rider.phone}
+                  </p>
+                )}
+                {order.serviceType === 'LAUNDRY' && isActive && order.rider.latitude == null && (
+                  <p className="text-xs text-gray-400 mt-1">
+                    Live location appears here once your rider is on the move
                   </p>
                 )}
               </div>
