@@ -6,6 +6,7 @@ type Role = 'CUSTOMER' | 'RIDER' | 'PARTNER' | 'ADMIN';
 function requiredApiRoles(pathname: string, method: string): readonly Role[] | null {
   if (pathname.startsWith('/api/admin/')) return ['ADMIN'];
   if (pathname.startsWith('/api/customer/')) return ['CUSTOMER'];
+  if (pathname.startsWith('/api/partner/')) return ['PARTNER'];
   if (pathname.startsWith('/api/rider/') || pathname.startsWith('/api/riders/')) return ['RIDER'];
   if (pathname.startsWith('/api/orders/') && pathname.endsWith('/status'))
     return ['RIDER', 'ADMIN'];
@@ -46,6 +47,8 @@ const publicRoutes = [
   '/partner/login',
   '/partner/signup',
   '/admin/login',
+  '/forgot-password',
+  '/reset-password',
 ];
 
 // Always allow the logout endpoint — it clears the cookie regardless of token state.
@@ -80,6 +83,21 @@ const isPublicPath = (pathname: string) => {
   return publicRoutes.some(checkRoute) || publicApiRoutes.some(checkRoute);
 };
 
+// Browser routes that require a session. Anything else that is not public is
+// left to Next.js routing so unknown URLs render the 404 page instead of being
+// bounced to a login screen.
+const protectedPagePrefixes = ['/customer/', '/rider/', '/partner/', '/admin/'];
+const protectedPagePaths = ['/admin-dashboard'];
+
+const isProtectedPage = (pathname: string) =>
+  protectedPagePaths.includes(pathname) ||
+  protectedPagePrefixes.some((prefix) => pathname.startsWith(prefix));
+
+// A non-public request is only forced through auth when it targets an API route
+// or a portal page; unknown browser paths fall through to the 404 handler.
+const requiresSession = (pathname: string, isApiRoute: boolean) =>
+  !isPublicPath(pathname) && (isApiRoute || isProtectedPage(pathname));
+
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const token = request.cookies.get('auth_token')?.value;
@@ -108,11 +126,11 @@ export async function middleware(request: NextRequest) {
   // routes that's an auth failure; for public paths (including /api/auth login
   // endpoints) we treat the caller as anonymous — otherwise an expired cookie
   // would lock users out of logging back in.
-  if (token && !payload && !isPublicPath(pathname)) {
+  if (token && !payload && requiresSession(pathname, isApiRoute)) {
     return unauthorized();
   }
 
-  if (!payload && !isPublicPath(pathname)) {
+  if (!payload && requiresSession(pathname, isApiRoute)) {
     return unauthorized();
   }
 

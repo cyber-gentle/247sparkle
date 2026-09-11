@@ -4,10 +4,25 @@ import prisma from '@/lib/db';
 import { requireRole } from '@/lib/api-auth';
 import { RATE_LIMIT_POLICIES, rateLimitRequest } from '@/lib/api-rate-limit';
 import { transitionPaidOrder } from '@/lib/order-integrity';
-import { canTransitionOrder, type OrderStatus } from '@/lib/order-state';
+import { notifyOrderStatusChange } from '@/lib/order-notifications';
+import {
+  canTransitionOrder,
+  LAUNDRY_FULFILMENT_STATUSES,
+  ON_SITE_STATUSES,
+  type OrderStatus,
+} from '@/lib/order-state';
 
+// SCHEDULED / IN_PROGRESS are the on-site track (fumigation, cleaning);
+// PICKED_UP → OUT_FOR_DELIVERY is the laundry track. COMPLETED is shared.
 const updateStatusSchema = z.object({
-  status: z.enum(['PICKED_UP', 'IN_CLEANING', 'OUT_FOR_DELIVERY', 'COMPLETED']),
+  status: z.enum([
+    'PICKED_UP',
+    'IN_CLEANING',
+    'OUT_FOR_DELIVERY',
+    'SCHEDULED',
+    'IN_PROGRESS',
+    'COMPLETED',
+  ]),
 });
 
 /**
@@ -47,8 +62,28 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       if (order.rider?.userId !== userId) {
         return NextResponse.json({ error: 'Forbidden - not your order' }, { status: 403 });
       }
+      // Scheduling on-site services is an admin decision; riders only
+      // progress laundry pickup/delivery steps.
+      if ((ON_SITE_STATUSES as readonly string[]).includes(status)) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
     } else if (userRole !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // The two fulfilment tracks are mutually exclusive per service type.
+    const isLaundry = order.serviceType === 'LAUNDRY';
+    if (isLaundry && (ON_SITE_STATUSES as readonly string[]).includes(status)) {
+      return NextResponse.json(
+        { error: 'Laundry orders follow the pickup and delivery track' },
+        { status: 400 }
+      );
+    }
+    if (!isLaundry && (LAUNDRY_FULFILMENT_STATUSES as readonly string[]).includes(status)) {
+      return NextResponse.json(
+        { error: 'On-site service orders follow the schedule and visit track' },
+        { status: 400 }
+      );
     }
 
     if (!canTransitionOrder(order.status, status)) {
@@ -71,6 +106,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         { status: 409 }
       );
     }
+
+    // Best-effort: the transition is already committed, so a notification
+    // failure must never turn a successful update into an error response.
+    await notifyOrderStatusChange(id, status as OrderStatus);
 
     return NextResponse.json(
       {

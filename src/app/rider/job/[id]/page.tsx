@@ -6,6 +6,7 @@ import Link from 'next/link';
 import {
   ArrowLeft,
   MapPin,
+  Navigation,
   Phone,
   Mail,
   CheckCircle,
@@ -48,6 +49,37 @@ export default function RiderJobPage({ params: paramPromise }: RiderJobPageProps
   useEffect(() => {
     paramPromise.then(setParams);
   }, [paramPromise]);
+
+  // Feed the rider's GPS position while a job page is open, so the customer's
+  // tracking map follows the rider between pickup and delivery. The brief
+  // specifies a 10s socket cadence; polling the existing REST endpoint keeps
+  // this deployable without a socket server. Errors are silent: a
+  // location-permission denial must never block the actual job workflow.
+  useEffect(() => {
+    if (!order || order.status === 'COMPLETED' || order.status === 'CANCELLED') return;
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+
+    const postPosition = (position: GeolocationPosition) => {
+      fetch('/api/riders/location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        }),
+      }).catch(() => {
+        /* keep watching even if a single update fails */
+      });
+    };
+
+    const watchId = navigator.geolocation.watchPosition(postPosition, () => {}, {
+      enableHighAccuracy: false,
+      maximumAge: 10_000,
+      timeout: 20_000,
+    });
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [order?.status, order?.id]);
 
   useEffect(() => {
     if (!params?.id) return;
@@ -105,10 +137,12 @@ export default function RiderJobPage({ params: paramPromise }: RiderJobPageProps
     switch (status?.toUpperCase()) {
       case 'RIDER_ASSIGNED':
         return 'bg-blue-100 text-blue-800';
-      case 'IN_TRANSIT':
+      case 'PICKED_UP':
         return 'bg-yellow-100 text-yellow-800';
-      case 'ARRIVED':
+      case 'IN_CLEANING':
         return 'bg-purple-100 text-purple-800';
+      case 'OUT_FOR_DELIVERY':
+        return 'bg-cyan-100 text-cyan-800';
       case 'COMPLETED':
         return 'bg-green-100 text-green-800';
       default:
@@ -146,8 +180,20 @@ export default function RiderJobPage({ params: paramPromise }: RiderJobPageProps
     );
   }
 
-  const statusProgression = ['RIDER_ASSIGNED', 'IN_TRANSIT', 'ARRIVED', 'COMPLETED'];
-  const currentStatusIndex = statusProgression.indexOf(order.status);
+  // Mirrors the backend state machine (src/lib/order-state.ts). The rider's
+  // sequence after accepting a job: pick up from the customer, confirm arrival
+  // at the partner shop (IN_CLEANING), then deliver back (OUT_FOR_DELIVERY →
+  // COMPLETED). The API rejects any status outside this progression.
+  const statusProgression = [
+    'RIDER_ASSIGNED',
+    'PICKED_UP',
+    'IN_CLEANING',
+    'OUT_FOR_DELIVERY',
+    'COMPLETED',
+  ] as const;
+  const currentStatusIndex = statusProgression.indexOf(
+    order.status as (typeof statusProgression)[number]
+  );
 
   return (
     <main className="min-h-screen bg-gray-50 py-8 px-4">
@@ -237,6 +283,16 @@ export default function RiderJobPage({ params: paramPromise }: RiderJobPageProps
                   <p className="text-sm font-semibold text-gray-700">Pickup Location</p>
                 </div>
                 <p className="text-gray-600 ml-6">{order.pickupAddress}</p>
+                {order.pickupAddress && (
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.pickupAddress)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-6 mt-1 inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
+                  >
+                    <Navigation size={14} /> Open in Google Maps
+                  </a>
+                )}
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-2">
@@ -244,6 +300,16 @@ export default function RiderJobPage({ params: paramPromise }: RiderJobPageProps
                   <p className="text-sm font-semibold text-gray-700">Delivery Location</p>
                 </div>
                 <p className="text-gray-600 ml-6">{order.deliveryAddress}</p>
+                {order.deliveryAddress && (
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.deliveryAddress)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-6 mt-1 inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
+                  >
+                    <Navigation size={14} /> Open in Google Maps
+                  </a>
+                )}
               </div>
             </div>
           </div>

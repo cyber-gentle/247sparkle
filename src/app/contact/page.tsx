@@ -4,6 +4,10 @@ import { FormEvent, useState } from 'react';
 
 import PublicFooter from '@/components/PublicFooter';
 import PublicNavbar from '@/components/PublicNavbar';
+import LocationMap, {
+  SPARKLE_LOCATION_EMBED_URL,
+  SPARKLE_LOCATION_QUERY,
+} from '@/components/LocationMap';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -175,11 +179,11 @@ export default function ContactPage() {
             </div>
 
             <div className="public-card overflow-hidden">
-              <iframe
-                title="Otukpo Map"
-                src="https://maps.google.com/maps?q=Otukpo%2C%20Benue%20State&t=&z=11&ie=UTF8&iwloc=&output=embed"
-                className="h-72 w-full"
-                loading="lazy"
+              <LocationMap
+                query={SPARKLE_LOCATION_QUERY}
+                embedUrl={SPARKLE_LOCATION_EMBED_URL}
+                title="247Sparkle location — Otukpo"
+                className="h-72 w-full border-0"
               />
             </div>
           </div>

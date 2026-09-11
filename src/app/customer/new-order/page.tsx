@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
+import { isWhiteGroupItem, laundryPickupSchema } from '@/lib/laundry-order';
 
 // Zod schemas for each step
 const step1Schema = z.object({
@@ -27,15 +28,10 @@ const step1Schema = z.object({
   }),
 });
 
-const laundryPickupSchema = z.object({
-  pickupOption: z.enum(['HOME_PICKUP', 'PARTNER_DROPOFF'], {
-    message: 'Please select a pickup option',
-  }),
-});
-
 const laundryDeliverySchema = z.object({
-  address: z.string().min(5, 'Address must be at least 5 characters'),
-  desiredDeliveryDate: z.string().min(1, 'Delivery date is required'),
+  address: z.string().min(5, 'Delivery address must be at least 5 characters'),
+  // Required for PARTNER_DROPOFF only (checked in the submit handler).
+  desiredDeliveryDate: z.string().optional(),
 });
 
 const fumigationDetailsSchema = z.object({
@@ -70,6 +66,9 @@ export default function CustomerNewOrderPage() {
     propertyType: '',
     items: [] as { id: string; itemName: string; quantity: number; unitPrice: number }[],
     pickupOption: '',
+    pickupAddress: '',
+    pickupDate: '',
+    pickupTime: '',
     address: '',
     deliveryDate: '',
     scheduledTime: '09:00',
@@ -164,7 +163,14 @@ export default function CustomerNewOrderPage() {
     setOrderSummary((prev) => ({
       ...prev,
       pickupOption: data.pickupOption,
+      pickupAddress: data.pickupOption === 'HOME_PICKUP' ? data.pickupAddress || '' : '',
+      pickupDate: data.pickupOption === 'HOME_PICKUP' ? data.pickupDate || '' : '',
+      pickupTime: data.pickupOption === 'HOME_PICKUP' ? data.pickupTime || '' : '',
     }));
+    // Delivery defaults to the pickup address (editable in the next step).
+    laundryDeliveryForm.reset({
+      address: data.pickupOption === 'HOME_PICKUP' ? data.pickupAddress || '' : '',
+    });
     setCurrentStep(4);
   };
 
@@ -174,10 +180,19 @@ export default function CustomerNewOrderPage() {
   });
 
   const onLaundryDeliverySubmit = (data: LaundryDeliveryData) => {
+    // For partner drop-off the only date the customer schedules is when they
+    // want the items back, so it stays required on that path. Home pickup
+    // already captured its own date/time in the previous step.
+    if (orderSummary.pickupOption === 'PARTNER_DROPOFF' && !data.desiredDeliveryDate) {
+      laundryDeliveryForm.setError('desiredDeliveryDate', {
+        message: 'Preferred delivery date is required',
+      });
+      return;
+    }
     setOrderSummary((prev) => ({
       ...prev,
       address: data.address,
-      deliveryDate: data.desiredDeliveryDate,
+      deliveryDate: data.desiredDeliveryDate || '',
     }));
     setCurrentStep(5);
   };
@@ -222,11 +237,22 @@ export default function CustomerNewOrderPage() {
             items: orderSummary.items.map((item) => ({
               itemName: item.itemName,
               quantity: item.quantity,
-              isWhiteGroup: false,
+              isWhiteGroup: isWhiteGroupItem(item.itemName),
             })),
             pickupOption: orderSummary.pickupOption,
+            // Riders collect from the customer only on home pickup.
+            pickupAddress:
+              orderSummary.pickupOption === 'HOME_PICKUP' ? orderSummary.pickupAddress : undefined,
             deliveryAddress: orderSummary.address,
-            scheduledDate: orderSummary.deliveryDate,
+            // The order is scheduled around when it enters our custody:
+            // pickup date/time for home pickup, preferred return date for
+            // partner drop-off.
+            scheduledDate:
+              orderSummary.pickupOption === 'HOME_PICKUP'
+                ? orderSummary.pickupDate
+                : orderSummary.deliveryDate,
+            scheduledTime:
+              orderSummary.pickupOption === 'HOME_PICKUP' ? orderSummary.pickupTime : undefined,
           };
 
       const response = await fetch('/api/orders', {
@@ -590,6 +616,64 @@ export default function CustomerNewOrderPage() {
                 </div>
               )}
 
+              {laundryPickupForm.watch('pickupOption') === 'HOME_PICKUP' && (
+                <div className="space-y-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                  <div>
+                    <AddressAutocomplete
+                      id="pickup-address"
+                      label="Pickup Address"
+                      value={laundryPickupForm.watch('pickupAddress') || ''}
+                      onChange={(val) =>
+                        laundryPickupForm.setValue('pickupAddress', val, {
+                          shouldValidate: true,
+                          shouldDirty: true,
+                        })
+                      }
+                      placeholder="Where should the rider collect your laundry?"
+                      error={laundryPickupForm.formState.errors.pickupAddress?.message}
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 flex items-center gap-1">
+                        <Calendar size={14} className="text-[#1A0A5E]" /> Pickup Date
+                      </label>
+                      <input
+                        {...laundryPickupForm.register('pickupDate')}
+                        type="date"
+                        min={new Date().toISOString().split('T')[0]}
+                        className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1A0A5E] focus:outline-none text-sm"
+                      />
+                      {laundryPickupForm.formState.errors.pickupDate && (
+                        <p className="text-red-600 text-xs mt-1">
+                          {laundryPickupForm.formState.errors.pickupDate.message}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 flex items-center gap-1">
+                        <Clock size={14} className="text-[#1A0A5E]" /> Pickup Time Window
+                      </label>
+                      <select
+                        {...laundryPickupForm.register('pickupTime')}
+                        className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1A0A5E] focus:outline-none text-sm bg-white"
+                      >
+                        <option value="">Select a time window</option>
+                        <option value="09:00">Morning (09:00 AM – 12:00 PM)</option>
+                        <option value="13:00">Afternoon (01:00 PM – 04:00 PM)</option>
+                        <option value="16:00">Late Afternoon (04:00 PM – 06:00 PM)</option>
+                      </select>
+                      {laundryPickupForm.formState.errors.pickupTime && (
+                        <p className="text-red-600 text-xs mt-1">
+                          {laundryPickupForm.formState.errors.pickupTime.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="flex gap-4 mt-6">
                 <button
                   type="button"
@@ -707,6 +791,7 @@ export default function CustomerNewOrderPage() {
             <h2 className="text-xl font-bold text-[#1A0A5E] mb-2">Step 4: Delivery Details</h2>
             <p className="text-sm text-slate-500 mb-6">
               Where should we deliver your clean, fresh garments?
+              {orderSummary.pickupOption === 'HOME_PICKUP' && ' Your pickup address is prefilled.'}
             </p>
 
             <form
@@ -732,7 +817,10 @@ export default function CustomerNewOrderPage() {
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 flex items-center gap-1">
-                  <Calendar size={14} className="text-[#1A0A5E]" /> Desired Delivery Date
+                  <Calendar size={14} className="text-[#1A0A5E]" />
+                  {orderSummary.pickupOption === 'PARTNER_DROPOFF'
+                    ? 'Preferred Delivery Date'
+                    : 'Preferred Delivery Date (optional)'}
                 </label>
                 <input
                   {...laundryDeliveryForm.register('desiredDeliveryDate')}
@@ -811,15 +899,38 @@ export default function CustomerNewOrderPage() {
                   </div>
                 </div>
               ) : (
-                <div className="p-4 bg-slate-50 rounded-xl">
-                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                    Selected Items ({orderSummary.items.length})
-                  </p>
-                  <div className="space-y-1.5">
+                <div className="p-4 bg-slate-50 rounded-xl space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Pickup:</span>
+                    <span className="font-bold text-slate-800 text-right">
+                      {orderSummary.pickupOption === 'HOME_PICKUP'
+                        ? `Home pickup${orderSummary.pickupDate ? ` — ${orderSummary.pickupDate}` : ''}${orderSummary.pickupTime ? ` (${orderSummary.pickupTime})` : ''}`
+                        : 'Partner drop-off'}
+                    </span>
+                  </div>
+                  {orderSummary.deliveryDate && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">Preferred return by:</span>
+                      <span className="font-bold text-slate-800">{orderSummary.deliveryDate}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Selected Items:</span>
+                    <span className="font-bold text-slate-800">
+                      {orderSummary.items.length} item type
+                      {orderSummary.items.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <div className="space-y-1.5 pt-1">
                     {orderSummary.items.map((item) => (
                       <div key={item.id} className="flex justify-between text-sm text-slate-700">
                         <span>
                           {item.itemName} × {item.quantity}
+                          {isWhiteGroupItem(item.itemName) && (
+                            <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
+                              White
+                            </span>
+                          )}
                         </span>
                         <span className="font-semibold">
                           ₦{(item.unitPrice * item.quantity).toLocaleString()}
@@ -838,6 +949,12 @@ export default function CustomerNewOrderPage() {
                   <MapPin size={16} className="text-[#CC0000] shrink-0 mt-0.5" />
                   {orderSummary.address}
                 </p>
+                {!isFumigation && orderSummary.pickupOption === 'HOME_PICKUP' && (
+                  <p className="text-xs font-semibold text-slate-600 flex items-start gap-1.5 mt-2">
+                    <MapPin size={14} className="text-[#1A0A5E] shrink-0 mt-0.5" />
+                    Pickup at: {orderSummary.pickupAddress}
+                  </p>
+                )}
               </div>
 
               <div className="p-5 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-[#1A0A5E] rounded-xl flex items-center justify-between">
