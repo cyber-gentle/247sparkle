@@ -5,7 +5,7 @@ import prisma from '@/lib/db';
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(1),
-  newPassword: z.string().min(6),
+  newPassword: z.string().min(8, 'New password must be at least 8 characters'),
 });
 
 export async function PUT(request: NextRequest) {

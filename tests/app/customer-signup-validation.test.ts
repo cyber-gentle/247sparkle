@@ -29,6 +29,44 @@ describe('customer signup validation safeguards', () => {
     }
   });
 
+  it('requires passwords of at least 8 characters', () => {
+    const base = {
+      fullName: 'Adaeze Okonkwo',
+      email: 'customer@example.com',
+      phone: '08012345678',
+    };
+
+    const tooShort = customerSignupSchema.safeParse({
+      ...base,
+      password: 'pass123',
+      confirmPassword: 'pass123',
+    });
+
+    expect(tooShort.success).toBe(false);
+    if (!tooShort.success) {
+      expect(tooShort.error.issues.map((issue) => issue.message)).toContain(
+        'Password must be at least 8 characters'
+      );
+    }
+
+    expect(
+      customerSignupSchema.safeParse({
+        ...base,
+        password: 'pass1234',
+        confirmPassword: 'pass1234',
+      }).success
+    ).toBe(true);
+  });
+
+  it('renders both password inputs through the shared PasswordField component', () => {
+    const source = readFileSync(customerSignupPage, 'utf8');
+
+    expect(source).toContain("from '@/components/ui/PasswordField'");
+    expect(source).toContain("{...register('password')}");
+    expect(source).toContain('matchValue={passwordValue}');
+    expect(source).not.toContain('type="password"');
+  });
+
   it('uses client-side invalid-submission feedback before calling the API', () => {
     const source = readFileSync(customerSignupPage, 'utf8');
 

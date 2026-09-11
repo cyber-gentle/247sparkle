@@ -9,12 +9,20 @@ import { toast } from 'sonner';
 import ProviderApplicationShell from '@/components/ProviderApplicationShell';
 import ImageUploadField from '@/components/ImageUploadField';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
+import PasswordField, { PASSWORD_MIN_LENGTH } from '@/components/ui/PasswordField';
 import { riderSignupSchema, type RiderSignupFormData } from '@/lib/provider-signup-validation';
 
 const fieldClass = (hasError: boolean) =>
   `w-full rounded-lg border bg-white px-3 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#1A0A5E] focus:ring-4 focus:ring-[#1A0A5E]/10 ${
     hasError ? 'border-red-500' : 'border-slate-300'
   }`;
+
+// Same shape/focus treatment as `fieldClass`, minus the border colour and the
+// horizontal padding, which PasswordField owns (lock icon + eye toggle).
+const passwordInputClass =
+  'w-full rounded-lg bg-white py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#1A0A5E] focus:ring-4 focus:ring-[#1A0A5E]/10';
+
+const passwordLabelClass = 'mb-1.5 block text-sm font-semibold text-slate-700';
 
 const riderSteps = [
   {
@@ -48,6 +56,8 @@ export default function RiderSignupPage() {
     reValidateMode: 'onChange',
     shouldFocusError: true,
   });
+
+  const passwordValue = watch('password') || '';
 
   const onSubmit = async (data: RiderSignupFormData) => {
     setIsLoading(true);
@@ -199,50 +209,30 @@ export default function RiderSignupPage() {
         <fieldset className="border-t border-slate-200 pt-6">
           <legend className="text-sm font-bold text-slate-900">Create sign-in details</legend>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <div>
-              <label
-                htmlFor="password"
-                className="mb-1.5 block text-sm font-semibold text-slate-700"
-              >
-                Password
-              </label>
-              <input
-                {...register('password')}
-                id="password"
-                type="password"
-                aria-invalid={!!errors.password}
-                aria-describedby={errors.password ? 'password-error' : undefined}
-                placeholder="At least 6 characters"
-                className={fieldClass(!!errors.password)}
-              />
-              {errors.password && (
-                <p id="password-error" className="mt-1.5 text-xs font-medium text-red-600">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-            <div>
-              <label
-                htmlFor="confirmPassword"
-                className="mb-1.5 block text-sm font-semibold text-slate-700"
-              >
-                Confirm password
-              </label>
-              <input
-                {...register('confirmPassword')}
-                id="confirmPassword"
-                type="password"
-                aria-invalid={!!errors.confirmPassword}
-                aria-describedby={errors.confirmPassword ? 'confirmPassword-error' : undefined}
-                placeholder="Repeat your password"
-                className={fieldClass(!!errors.confirmPassword)}
-              />
-              {errors.confirmPassword && (
-                <p id="confirmPassword-error" className="mt-1.5 text-xs font-medium text-red-600">
-                  {errors.confirmPassword.message}
-                </p>
-              )}
-            </div>
+            <PasswordField
+              {...register('password')}
+              id="password"
+              label="Password"
+              minLength={PASSWORD_MIN_LENGTH}
+              placeholder={`At least ${PASSWORD_MIN_LENGTH} characters`}
+              autoComplete="new-password"
+              showRequirement
+              error={errors.password?.message}
+              inputClassName={passwordInputClass}
+              labelClassName={passwordLabelClass}
+            />
+            <PasswordField
+              {...register('confirmPassword')}
+              id="confirmPassword"
+              label="Confirm password"
+              minLength={PASSWORD_MIN_LENGTH}
+              placeholder="Repeat your password"
+              autoComplete="new-password"
+              matchValue={passwordValue}
+              error={errors.confirmPassword?.message}
+              inputClassName={passwordInputClass}
+              labelClassName={passwordLabelClass}
+            />
           </div>
         </fieldset>
 
