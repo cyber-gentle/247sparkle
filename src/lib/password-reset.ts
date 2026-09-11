@@ -46,8 +46,7 @@ export async function createPasswordResetToken(userId: string): Promise<{
 }
 
 export type ConsumeResetTokenResult =
-  | { ok: true; userId: string }
-  | { ok: false; reason: 'INVALID' | 'EXPIRED' | 'USED' };
+  { ok: true; userId: string } | { ok: false; reason: 'INVALID' | 'EXPIRED' | 'USED' };
 
 /**
  * Atomically consumes a token. The conditional update means two concurrent

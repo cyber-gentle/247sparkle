@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Lock, Mail, AlertCircle, ArrowLeft, LayoutDashboard } from 'lucide-react';
+import { Lock, Mail, AlertCircle, LayoutDashboard, ShieldCheck } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
+import PortalAuthShell from '@/components/auth/PortalAuthShell';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -60,97 +61,104 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-[#1A0A5E] to-slate-900 flex items-center justify-center px-4">
+    <PortalAuthShell
+      portal="Admin Console"
+      icon={LayoutDashboard}
+      title="Platform Management"
+      description="Sign in to oversee orders, riders, partners, and customers across the 247Sparkle platform."
+      cardTitle="Admin Login"
+      cardDescription="Restricted access — authorised staff only"
+      notice={{
+        title: 'Internal accounts only',
+        text: 'Admin accounts are managed internally. Contact support if you need access.',
+      }}
+    >
       <Toaster position="top-center" richColors />
-      <div className="w-full max-w-md">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-white/60 hover:text-white mb-8 transition"
-        >
-          <ArrowLeft size={16} /> Back to Home
-        </Link>
-
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <div className="text-center mb-8">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#1A0A5E] text-white mx-auto mb-4">
-              <LayoutDashboard size={32} />
-            </div>
-            <h1 className="text-2xl font-extrabold text-[#1A0A5E]">Admin Console</h1>
-            <p className="text-sm text-gray-500 mt-1">247Sparkle Platform Management</p>
-          </div>
-
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                  size={18}
-                />
-                <input
-                  {...register('email')}
-                  type="email"
-                  placeholder="admin@247sparkle.com"
-                  className={`w-full pl-10 pr-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-[#1A0A5E] focus:border-transparent ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
-                />
-              </div>
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                  <AlertCircle size={14} /> {errors.email.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Password</label>
-              <div className="relative">
-                <Lock
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                  size={18}
-                />
-                <input
-                  {...register('password')}
-                  type="password"
-                  placeholder="••••••••"
-                  className={`w-full pl-10 pr-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-[#1A0A5E] focus:border-transparent ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
-                />
-              </div>
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                  <AlertCircle size={14} /> {errors.password.message}
-                </p>
-              )}
-            </div>
-
-            {submitError && (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800 flex items-center gap-2">
-                <AlertCircle size={18} /> {submitError}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-[#1A0A5E] hover:bg-[#120843] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2"
-            >
-              {isLoading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />{' '}
-                  Signing in...
-                </>
-              ) : (
-                'Sign In to Admin Console'
-              )}
-            </button>
-          </form>
-
-          <p className="text-xs text-center text-gray-400 mt-6">
-            Admin accounts are managed internally. Contact support if you need access.
-          </p>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <div>
+          <label htmlFor="email" className="mb-1.5 block text-sm font-bold text-slate-700">
+            Email Address
+          </label>
+          <span className="relative block">
+            <Mail
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+              size={18}
+            />
+            <input
+              {...register('email')}
+              type="email"
+              id="email"
+              placeholder="admin@247sparkle.com"
+              className={`public-field-with-icon ${errors.email ? 'border-red-500' : ''}`}
+            />
+          </span>
+          {errors.email && (
+            <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+              <AlertCircle size={14} /> {errors.email.message}
+            </p>
+          )}
         </div>
-      </div>
-    </main>
+
+        <div>
+          <label htmlFor="password" className="mb-1.5 block text-sm font-bold text-slate-700">
+            Password
+          </label>
+          <span className="relative block">
+            <Lock
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+              size={18}
+            />
+            <input
+              {...register('password')}
+              type="password"
+              id="password"
+              placeholder="••••••••"
+              className={`public-field-with-icon ${errors.password ? 'border-red-500' : ''}`}
+            />
+          </span>
+          {errors.password && (
+            <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+              <AlertCircle size={14} /> {errors.password.message}
+            </p>
+          )}
+          <div className="mt-2 text-right">
+            <Link
+              href="/forgot-password"
+              className="text-sm font-semibold text-slate-500 hover:text-[#CC0000] hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
+        </div>
+
+        {submitError && (
+          <div
+            role="alert"
+            className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800 flex items-center gap-2"
+          >
+            <AlertCircle size={18} />
+            {submitError}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="w-full rounded-xl bg-[#1A0A5E] px-5 py-3.5 text-sm font-bold text-white transition hover:bg-[#120843] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isLoading ? (
+            <>
+              <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-b-2 border-white" />
+              Signing in...
+            </>
+          ) : (
+            <>
+              <ShieldCheck size={18} className="mr-2 inline align-[-3px]" />
+              Sign In to Admin Console
+            </>
+          )}
+        </button>
+      </form>
+    </PortalAuthShell>
   );
 }
