@@ -102,9 +102,18 @@ const NAV_GROUPS = [
 interface AdminSidebarProps {
   collapsed: boolean;
   onToggle: () => void;
+  /** True while the mobile off-canvas drawer is showing. */
+  mobileOpen?: boolean;
+  /** Closes the mobile drawer when a nav item is tapped. */
+  onNavigate?: () => void;
 }
 
-export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
+export default function AdminSidebar({
+  collapsed,
+  onToggle,
+  mobileOpen = false,
+  onNavigate,
+}: AdminSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -116,9 +125,9 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
 
   return (
     <aside
-      className={`fixed left-0 top-0 bottom-0 z-40 flex flex-col bg-[#0F0630] transition-all duration-300 ease-in-out ${
-        collapsed ? 'w-16' : 'w-64'
-      }`}
+      className={`fixed left-0 top-0 bottom-0 z-40 flex flex-col bg-[#0F0630] transition-all duration-300 ease-in-out w-64 ${
+        collapsed ? 'lg:w-16' : 'lg:w-64'
+      } ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
     >
       {/* Logo */}
       <div
@@ -155,6 +164,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
                   <li key={item.id}>
                     <Link
                       href={item.href}
+                      onClick={onNavigate}
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 relative ${
                         isActive
                           ? 'bg-[#F5C200] text-[#1A0A5E]'
@@ -219,7 +229,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
       {/* Collapse Toggle */}
       <button
         onClick={onToggle}
-        className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-[#F5C200] text-[#1A0A5E] flex items-center justify-center shadow-md hover:bg-[#E6B000] transition-colors z-50"
+        className="hidden lg:flex absolute -right-3 top-20 w-6 h-6 rounded-full bg-[#F5C200] text-[#1A0A5E] items-center justify-center shadow-md hover:bg-[#E6B000] transition-colors z-50"
         aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
         {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
