@@ -47,6 +47,8 @@ const publicRoutes = [
   '/partner/login',
   '/partner/signup',
   '/admin/login',
+  '/forgot-password',
+  '/reset-password',
 ];
 
 // Always allow the logout endpoint — it clears the cookie regardless of token state.
