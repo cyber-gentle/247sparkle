@@ -1,8 +1,0 @@
-
-> sparkle247@0.1.0 type-check
-> tsc --noEmit
-
-src/lib/password-reset.ts(36,12): error TS2339: Property 'passwordResetToken' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
-src/lib/password-reset.ts(40,12): error TS2339: Property 'passwordResetToken' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
-src/lib/password-reset.ts(60,31): error TS2339: Property 'passwordResetToken' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
-src/lib/password-reset.ts(66,32): error TS2339: Property 'passwordResetToken' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.

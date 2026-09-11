@@ -8,6 +8,7 @@
     "npm": ">=10.9.2 <11"
   },
   "scripts": {
+    "postinstall": "prisma generate",
     "dev": "next dev -p 4028",
     "build": "prisma generate && cross-env NODE_ENV=production next build",
     "start": "next start -p 4028",

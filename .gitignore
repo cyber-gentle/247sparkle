@@ -24,6 +24,9 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Local verification / audit run artefacts (never commit; they break format:check)
+.verify-*
+
 # OS-specific files
 .DS_Store
 Thumbs.db
