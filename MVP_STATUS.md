@@ -217,15 +217,27 @@ Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
 - PII and secret redaction in all log output
 - `Cache-Control: no-store` on probe responses
 - Netlify deployment configuration (`netlify.toml` with `@netlify/plugin-nextjs`)
+- `postinstall` runs `prisma generate`, so a fresh clone type-checks and tests cleanly
 
-### Test Coverage (37 test files)
+### Notifications
 
-#### Unit Tests (32 files)
+- Transactional email via Resend (`src/lib/email.ts`), optional by design — the
+  platform stays fully functional when no provider key is set
+- Password-reset emails with single-use, time-limited links
+- Customer order-status emails (`src/lib/order-notifications.ts`) on rider
+  assignment, pickup, cleaning, scheduling, in-progress, out-for-delivery, and
+  completion, each deep-linking to the customer's order page
+- Best-effort delivery: notification failures are logged, never surfaced as
+  request errors, and never roll back a committed order transition
+
+### Test Coverage (38 test files)
+
+#### Unit Tests (33 files)
 
 | Group | Count | Examples |
 | --- | --- | --- |
 | Route/page tests (`tests/app/`) | 18 | admin-order-assign, paystack-webhook, rider-jobs, upload, certificates |
-| Library tests (`tests/lib/`) | 10 | money, order-integrity, order-state, auth, rate-limit, logger |
+| Library tests (`tests/lib/`) | 11 | money, order-integrity, order-state, auth, rate-limit, logger, order-notifications |
 | Component tests (`tests/components/`) | 3 | app-logo, contact-section, provider-application-shell |
 | Prisma tests (`tests/prisma/`) | 1 | seed-policy |
 
@@ -264,9 +276,13 @@ Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
 ### Email Delivery
 
 - Resend integration is code-complete (`src/lib/email.ts`, active when
-  `RESEND_API_KEY` is set) and powers password-reset emails. A verified sender
-  domain has not yet been supplied, so delivery is unvalidated.
-- Order-status notifications (email/SMS beyond password reset) are not implemented.
+  `RESEND_API_KEY` is set) and powers password-reset and order-status emails.
+  A verified sender domain has not yet been supplied, so delivery is unvalidated.
+- Order-status email notifications are implemented (`src/lib/order-notifications.ts`)
+  and fire on rider assignment and every customer-facing status transition.
+  Delivery is best-effort: a notification failure never rolls back a committed
+  order transition.
+- SMS notifications (Twilio) are not implemented.
 
 ### Mobile App
 
@@ -276,16 +292,18 @@ Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
 
 ## 🔜 Next Steps (Priority Order)
 
-1. **Land the in-progress auth UI refactor** — uncommitted `PortalAuthShell` redesign across the portal login/signup pages
-2. **Paystack test-mode validation** — owner supplies `sk_test_` / `pk_test_` credentials for checkout, verification, webhook, and failure-path testing
+All remaining items are **external-credential or infrastructure gates**, not code
+work. The application itself is feature-complete for MVP.
+
+1. **Paystack test-mode validation** — owner supplies `sk_test_` / `pk_test_` credentials for checkout, verification, webhook, and failure-path testing
+2. **Resend sender verification** — verify the `247sparkle.com` domain so password-reset and order-status emails deliver reliably
 3. **Supabase test-environment rehearsal** — hosted cloud rehearsal with isolated test project
 4. **Backup and restore validation** — Supabase backup/restore procedure tested with non-production restore target
-5. **Dependency audit** — production dependency audit on a separately tested upgrade branch; remove the temporary `.verify-*` log files
-6. **Rate limiting hardening** — review and tune rate limits across all auth and payment endpoints
-7. **Google Maps key activation** — enable Places/Maps with billing for full autocomplete and live tracking
-8. **Resend sender verification** — verify `247sparkle.com` domain so reset emails deliver reliably
-9. **Order-status notifications** — email (Resend) and/or SMS (Twilio) on status changes
-10. **Socket.io integration** — real-time order/job updates to replace polling (post-MVP)
+5. **Google Maps key activation** — enable Places/Maps with billing for full autocomplete and live tracking
+6. **Dependency audit** — production dependency audit on a separately tested upgrade branch
+7. **Rate limiting hardening** — review and tune rate limits across all auth and payment endpoints
+8. **SMS notifications** — Twilio for urgent order alerts (post-MVP)
+9. **Socket.io integration** — real-time order/job updates to replace polling (post-MVP)
 
 ---
 
@@ -312,7 +330,8 @@ Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
 | API Route Files | 56 |
 | Database Models | 16 |
 | Frontend Pages | 39 |
-| Test Files | 37 (32 unit + 5 integration) |
+| Test Files | 38 (33 unit + 5 integration) |
+| Unit Tests (assertions) | 159 passing |
 | Auth Routes | 9 (+ logout) |
 | Admin Routes | 11 |
 | Operations Probes | 2 |
