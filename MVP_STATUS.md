@@ -1,7 +1,12 @@
 # 247Sparkle MVP — Implementation Status
 
 **Last Updated**: September 2026
-**Overall Status**: Pre-production release candidate
+**Overall Status**: Pre-production release candidate — feature-complete for MVP
+
+All MVP functionality is implemented and the five quality gates
+(`format:check`, `lint`, `type-check`, `test`, `build`) pass on the current
+commit. Remaining work is owner-supplied credentials and infrastructure
+rehearsals, not feature development — see [Remaining Work](#-remaining-work).
 
 ---
 
@@ -284,26 +289,85 @@ Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
   order transition.
 - SMS notifications (Twilio) are not implemented.
 
+### Code Quality Debt
+
+Lint passes with **0 errors**, but **114 warnings** remain. These are
+pre-existing, non-blocking, and tracked rather than suppressed:
+
+| Rule | Count | Nature |
+| --- | --- | --- |
+| `@typescript-eslint/no-explicit-any` | 76 | Mostly `catch (error: any)` blocks and third-party payload shapes |
+| `@typescript-eslint/no-unused-vars` | 26 | Unused imports and unused caught-error bindings |
+| `react-hooks/exhaustive-deps` | 10 | Intentionally narrowed effect dependency arrays on fetch-on-mount pages |
+| `jsx-a11y/alt-text` | 2 | `AppImage` wrapper forwards `alt` dynamically; the rule cannot see through it |
+
+None affect runtime behavior. Clearing them is a mechanical follow-up best done
+on its own branch so the diff stays reviewable.
+
+### Unverified Locally
+
+- **Integration suite** (`npm run test:integration`, 5 files) has **not** been
+  run in the current environment because it requires a local PostgreSQL
+  `sparkle247_test` database that is not provisioned here. The suite is
+  committed and CI-ready; see `LOCAL_INTEGRATION_TESTING.md` for one-time setup.
+- **Production build warnings**: the build emits known `jose` Edge-runtime
+  warnings about compression APIs. Expected; record any change to that profile.
+
 ### Mobile App
 
 - React Native clients are pending (future phase).
 
 ---
 
-## 🔜 Next Steps (Priority Order)
+## 🔜 Remaining Work
 
-All remaining items are **external-credential or infrastructure gates**, not code
-work. The application itself is feature-complete for MVP.
+The application is **feature-complete for MVP**. Nothing below is a missing
+feature — the work splits into owner-supplied credentials, infrastructure
+rehearsals, and optional cleanup.
 
-1. **Paystack test-mode validation** — owner supplies `sk_test_` / `pk_test_` credentials for checkout, verification, webhook, and failure-path testing
-2. **Resend sender verification** — verify the `247sparkle.com` domain so password-reset and order-status emails deliver reliably
-3. **Supabase test-environment rehearsal** — hosted cloud rehearsal with isolated test project
-4. **Backup and restore validation** — Supabase backup/restore procedure tested with non-production restore target
-5. **Google Maps key activation** — enable Places/Maps with billing for full autocomplete and live tracking
-6. **Dependency audit** — production dependency audit on a separately tested upgrade branch
-7. **Rate limiting hardening** — review and tune rate limits across all auth and payment endpoints
-8. **SMS notifications** — Twilio for urgent order alerts (post-MVP)
-9. **Socket.io integration** — real-time order/job updates to replace polling (post-MVP)
+### A. Owner-supplied credentials (blocking launch)
+
+Each item is blocked on a secret only the site owner can provide, delivered
+through the approved secret channel. No code changes are required to consume them.
+
+| # | Item | Unblocks | Env var(s) |
+| --- | --- | --- | --- |
+| 1 | **Paystack test-mode keys** | Checkout, verification, signed webhook, replay and failure-path validation per `TESTING.md` | `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY` |
+| 2 | **Resend domain verification** | Real delivery of password-reset and order-status emails from a verified `247sparkle.com` sender | `RESEND_API_KEY`, `EMAIL_FROM` |
+| 3 | **Google Maps API key + billing** | Places autocomplete and live rider tracking (currently falls back to offline Otukpo landmarks) | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` |
+
+### B. Infrastructure rehearsals (blocking launch)
+
+| # | Item | Completion condition |
+| --- | --- | --- |
+| 4 | **Supabase test-environment rehearsal** | Isolated cloud project with least-privilege Prisma role, migrations applied, RLS posture and pooled/direct connections verified |
+| 5 | **Backup and restore validation** | A restore rehearsal has actually **succeeded** into a non-production target, with a documented restore owner, retention decision and test cadence |
+| 6 | **Local integration suite run** | Provision `sparkle247_test`, then `npm run test:integration:reset && npm run test:integration` passes |
+| 7 | **Production monitoring** | `/api/health` and `/api/readiness` monitored, structured JSON logs visible in the Netlify host |
+
+### C. Hardening and cleanup (non-blocking)
+
+| # | Item | Notes |
+| --- | --- | --- |
+| 8 | **Dependency audit** | Address production `npm audit` findings on a separately tested upgrade branch |
+| 9 | **Lint warning cleanup** | Clear the 114 tracked warnings above; mechanical, best on its own branch |
+| 10 | **Rate limiting review** | Tune the existing limits across auth and payment endpoints under realistic load |
+
+### D. Post-MVP enhancements (explicitly out of scope)
+
+| # | Item | Notes |
+| --- | --- | --- |
+| 11 | **SMS notifications** | Twilio for urgent order alerts; email already covers the status lifecycle |
+| 12 | **Socket.io real-time** | Replace the current 10s polling; requires a socket server, which Netlify does not host |
+| 13 | **Customer reviews and ratings** | Not in the original MVP brief |
+| 14 | **React Native mobile clients** | Future phase |
+
+### Definition of launch-ready
+
+The platform is ready to publish once **A (1–3)** and **B (4–7)** are complete
+and the release commit passes all five gates: `format:check`, `lint`,
+`type-check`, `test`, and `build`. Section C is recommended before launch but
+not blocking; section D is deliberately deferred.
 
 ---
 
