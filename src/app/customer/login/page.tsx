@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Lock, Mail, AlertCircle, ArrowLeft, Sparkles } from 'lucide-react';
+import { Lock, Mail, AlertCircle, Sparkles, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+import PortalAuthShell from '@/components/auth/PortalAuthShell';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -15,6 +16,11 @@ const loginSchema = z.object({
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
+
+const FEATURES = [
+  { icon: CheckCircle2, text: 'One tap repeat for your usual services' },
+  { icon: Sparkles, text: 'Live order and delivery tracking' },
+];
 
 export default function CustomerLoginPage() {
   const router = useRouter();
@@ -63,106 +69,99 @@ export default function CustomerLoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-8">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-900 mb-8"
-        >
-          <ArrowLeft size={16} />
-          Back to Home
-        </Link>
-
-        <div className="text-center mb-8">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-400 text-blue-900 mx-auto mb-4">
-            <Sparkles size={24} />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900">247Sparkle</h1>
-          <p className="text-gray-600 mt-2">Customer Portal Login</p>
+    <PortalAuthShell
+      portal="Customer Portal"
+      icon={Sparkles}
+      title="Welcome Back!"
+      description="Login to book services, follow live updates on your orders, and keep your service history in one place."
+      cardTitle="Customer Login"
+      cardDescription="Enter your credentials to continue"
+      features={FEATURES}
+      switchHref="/customer/signup"
+      switchLabel="New here? Create an account →"
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <div>
+          <label htmlFor="email" className="mb-1.5 block text-sm font-bold text-slate-700">
+            Email Address
+          </label>
+          <span className="relative block">
+            <Mail
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+              size={18}
+            />
+            <input
+              {...register('email')}
+              type="email"
+              id="email"
+              placeholder="you@example.com"
+              className={`public-field-with-icon ${errors.email ? 'border-red-500' : ''}`}
+            />
+          </span>
+          {errors.email && (
+            <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+              <AlertCircle size={14} /> {errors.email.message}
+            </p>
+          )}
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Email */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email Address
-            </label>
-            <div className="relative mt-1">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-              <input
-                {...register('email')}
-                type="email"
-                id="email"
-                placeholder="you@example.com"
-                className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.email ? 'border-red-500' : ''
-                }`}
-              />
-            </div>
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                <AlertCircle size={14} /> {errors.email.message}
-              </p>
-            )}
-          </div>
-
-          {/* Password */}
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <div className="relative mt-1">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-              <input
-                {...register('password')}
-                type="password"
-                id="password"
-                placeholder="••••••••"
-                className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.password ? 'border-red-500' : ''
-                }`}
-              />
-            </div>
-            {errors.password && (
-              <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
-            )}
-          </div>
-
-          {submitError && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800 flex items-center gap-2">
-              <AlertCircle size={18} />
-              {submitError}
-            </div>
+        <div>
+          <label htmlFor="password" className="mb-1.5 block text-sm font-bold text-slate-700">
+            Password
+          </label>
+          <span className="relative block">
+            <Lock
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+              size={18}
+            />
+            <input
+              {...register('password')}
+              type="password"
+              id="password"
+              placeholder="••••••••"
+              className={`public-field-with-icon ${errors.password ? 'border-red-500' : ''}`}
+            />
+          </span>
+          {errors.password && (
+            <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+              <AlertCircle size={14} /> {errors.password.message}
+            </p>
           )}
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-2 rounded-lg transition duration-200 disabled:cursor-not-allowed"
-          >
-            {isLoading ? 'Logging in...' : 'Login'}
-          </button>
-        </form>
-
-        {/* Links */}
-        <div className="mt-6 space-y-3 text-center text-sm">
-          <p className="text-gray-600">
-            Don&apos;t have an account?{' '}
+          <div className="mt-2 text-right">
             <Link
-              href="/customer/signup"
-              className="text-blue-600 hover:text-blue-700 font-semibold"
+              href="/forgot-password"
+              className="text-sm font-semibold text-slate-500 hover:text-[#CC0000] hover:underline"
             >
-              Sign Up
-            </Link>
-          </p>
-          <p>
-            <Link href="#" className="text-gray-600 hover:text-gray-900">
               Forgot password?
             </Link>
-          </p>
+          </div>
         </div>
+
+        {submitError && (
+          <div
+            role="alert"
+            className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800 flex items-center gap-2"
+          >
+            <AlertCircle size={18} />
+            {submitError}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="btn-primary w-full justify-center py-3.5 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isLoading ? 'Logging in...' : 'Login to Dashboard'}
+        </button>
+      </form>
+
+      <div className="mt-6 flex flex-col gap-2 border-t border-slate-200 pt-5 text-sm sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-slate-500">Don&apos;t have an account?</p>
+        <Link href="/customer/signup" className="font-bold text-[#CC0000] hover:underline">
+          Create a customer account
+        </Link>
       </div>
-    </main>
+    </PortalAuthShell>
   );
 }
