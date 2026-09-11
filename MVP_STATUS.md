@@ -30,12 +30,17 @@ Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
 - Auth middleware with role-based header injection (`src/middleware.ts`)
 - Customer, Rider, Partner, Admin signup/login API routes
 - Logout endpoint (`POST /api/auth/logout`) — clears `auth_token` cookie
+- Password reset flow: `POST /api/auth/forgot-password` + `POST /api/auth/reset-password`
+  (single-use SHA-256-hashed tokens, 30-minute expiry, atomic consumption,
+  no user-enumeration; email delivered via Resend when `RESEND_API_KEY` is set)
+- Public `/forgot-password` and `/reset-password` pages; "Forgot password?"
+  link on all four portal login pages
 - HTTP-only cookies with 7-day expiry
 - Role-based access control (CUSTOMER, RIDER, PARTNER, ADMIN)
 
-### API Routes (54 endpoints)
+### API Routes (56 endpoints)
 
-#### Auth — `/api/auth/` (7 routes)
+#### Auth — `/api/auth/` (9 routes)
 
 - `POST /api/auth/customer/signup`
 - `POST /api/auth/customer/login`
@@ -44,6 +49,8 @@ Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
 - `POST /api/auth/partner/signup`
 - `POST /api/auth/partner/login`
 - `POST /api/auth/admin/login`
+- `POST /api/auth/forgot-password` — cross-role reset link email
+- `POST /api/auth/reset-password` — consume token, set new password
 
 #### Orders — `/api/orders/` (3 routes)
 
@@ -125,9 +132,9 @@ Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
 - `GET /api/health` — liveness probe (no database dependency)
 - `GET /api/readiness` — readiness probe (database check)
 
-### Frontend Pages (37 pages)
+### Frontend Pages (39 pages)
 
-#### Public (8)
+#### Public (10)
 
 - `/` — Root landing
 - `/homepage` — Full homepage with hero, services, testimonials
@@ -136,6 +143,8 @@ Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
 - `/contact` — Contact & quotation form
 - `/become-a-partner` — Partner/rider application
 - `/verify` — Public certificate verification
+- `/forgot-password` — Cross-portal password reset request
+- `/reset-password` — Set new password from emailed token
 - `/customer-dashboard` — Public dashboard landing
 
 #### Customer Portal (8)
@@ -209,13 +218,13 @@ Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
 - `Cache-Control: no-store` on probe responses
 - Netlify deployment configuration (`netlify.toml` with `@netlify/plugin-nextjs`)
 
-### Test Coverage (36 test files)
+### Test Coverage (37 test files)
 
-#### Unit Tests (31 files)
+#### Unit Tests (32 files)
 
 | Group | Count | Examples |
 | --- | --- | --- |
-| Route/page tests (`tests/app/`) | 17 | admin-order-assign, paystack-webhook, rider-jobs, upload, certificates |
+| Route/page tests (`tests/app/`) | 18 | admin-order-assign, paystack-webhook, rider-jobs, upload, certificates |
 | Library tests (`tests/lib/`) | 10 | money, order-integrity, order-state, auth, rate-limit, logger |
 | Component tests (`tests/components/`) | 3 | app-logo, contact-section, provider-application-shell |
 | Prisma tests (`tests/prisma/`) | 1 | seed-policy |
@@ -236,30 +245,28 @@ Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
 
 ### Real-Time Updates
 
-- No Socket.io integration yet. Order status changes require page refresh.
-- Rider location tracking is API-based (no live push to customer).
+- No Socket.io server. Customer order tracking and rider job pages poll the
+  existing REST APIs every 10s, which keeps the app deployable on Netlify
+  without a socket server. Socket.io remains a post-MVP enhancement.
 
 ### Maps Integration
 
-- Addresses are not geocoded. No Google Maps API for pickup location selection or live rider tracking.
-
-### File Uploads
-
-- Image upload endpoint exists with magic-byte validation, but full Cloudinary integration is not wired. Uploads are handled locally.
+- `AddressAutocomplete` (Google Places, gated on `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`,
+  with an Otukpo-landmarks offline fallback) and `LocationMap` (rider tracking)
+  components are implemented. A live API key has not yet been supplied or
+  billing-validated.
 
 ### Payment Provider Validation
 
 - Paystack integration is code-complete (init, verify, signed webhook, idempotency).
 - Real test-mode validation is **paused** until the owner supplies test-only credentials through the approved secret channel.
 
-### Certificate PDF Generation
+### Email Delivery
 
-- Certificate creation and verification are functional.
-- PDF download endpoint exists. Full branded PDF generation (pdfkit/puppeteer) may need refinement.
-
-### Notifications
-
-- No email/SMS notifications for order status updates (needs Twilio/SendGrid).
+- Resend integration is code-complete (`src/lib/email.ts`, active when
+  `RESEND_API_KEY` is set) and powers password-reset emails. A verified sender
+  domain has not yet been supplied, so delivery is unvalidated.
+- Order-status notifications (email/SMS beyond password reset) are not implemented.
 
 ### Mobile App
 
@@ -269,16 +276,16 @@ Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
 
 ## 🔜 Next Steps (Priority Order)
 
-1. **Paystack test-mode validation** — owner supplies `sk_test_` / `pk_test_` credentials for checkout, verification, webhook, and failure-path testing
-2. **Supabase test-environment rehearsal** — hosted cloud rehearsal with isolated test project
-3. **Backup and restore validation** — Supabase backup/restore procedure tested with non-production restore target
-4. **Dependency audit** — production dependency audit on a separately tested upgrade branch
-5. **Socket.io integration** — real-time order/job notifications
-6. **Google Maps API** — geocoded addresses, rider tracking on map
-7. **Cloudinary integration** — cloud-hosted image uploads for rider/partner photos
-8. **Email/SMS notifications** — order status updates via Twilio/SendGrid
-9. **PDF certificate refinement** — branded fumigation certificate generation
-10. **Rate limiting hardening** — review and tune rate limits across all auth and payment endpoints
+1. **Land the in-progress auth UI refactor** — uncommitted `PortalAuthShell` redesign across the portal login/signup pages
+2. **Paystack test-mode validation** — owner supplies `sk_test_` / `pk_test_` credentials for checkout, verification, webhook, and failure-path testing
+3. **Supabase test-environment rehearsal** — hosted cloud rehearsal with isolated test project
+4. **Backup and restore validation** — Supabase backup/restore procedure tested with non-production restore target
+5. **Dependency audit** — production dependency audit on a separately tested upgrade branch; remove the temporary `.verify-*` log files
+6. **Rate limiting hardening** — review and tune rate limits across all auth and payment endpoints
+7. **Google Maps key activation** — enable Places/Maps with billing for full autocomplete and live tracking
+8. **Resend sender verification** — verify `247sparkle.com` domain so reset emails deliver reliably
+9. **Order-status notifications** — email (Resend) and/or SMS (Twilio) on status changes
+10. **Socket.io integration** — real-time order/job updates to replace polling (post-MVP)
 
 ---
 
@@ -302,11 +309,11 @@ Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
 
 | Category | Count |
 | --- | --- |
-| API Route Files | 54 |
+| API Route Files | 56 |
 | Database Models | 16 |
-| Frontend Pages | 37 |
-| Test Files | 36 (31 unit + 5 integration) |
-| Auth Routes | 7 + logout |
+| Frontend Pages | 39 |
+| Test Files | 37 (32 unit + 5 integration) |
+| Auth Routes | 9 (+ logout) |
 | Admin Routes | 11 |
 | Operations Probes | 2 |
 
