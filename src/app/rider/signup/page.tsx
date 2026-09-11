@@ -259,7 +259,7 @@ export default function RiderSignupPage() {
         <button
           type="submit"
           disabled={isLoading}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#1A0A5E] px-4 py-3.5 text-sm font-bold text-white transition hover:bg-[#120843] disabled:cursor-not-allowed disabled:bg-slate-400"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#F5C200] px-4 py-3.5 text-sm font-bold text-[#1A0A5E] shadow-gold transition hover:bg-[#E6B000] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
         >
           <CheckCircle2 size={18} />
           {isLoading ? 'Submitting application…' : 'Submit rider application'}
