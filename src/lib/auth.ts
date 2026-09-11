@@ -27,6 +27,20 @@ export type JWTPayload = {
 export const USER_ROLES = ['CUSTOMER', 'RIDER', 'PARTNER', 'ADMIN'] as const;
 export type UserRole = (typeof USER_ROLES)[number];
 
+/**
+ * Short-lived token handed to the client between "password accepted" and
+ * "correct 2FA code entered". It authorizes exactly one thing: submitting a
+ * code to the 2FA endpoint. verifyToken() rejects these, so a pending token
+ * can never be used as a session cookie.
+ */
+export type PendingTwoFactorPayload = JWTPayload & {
+  pendingTwoFactor: true;
+};
+
+export const PENDING_TWO_FACTOR_EXPIRY = '5m';
+/** Admin sessions are far shorter than customer sessions. */
+export const ADMIN_SESSION_EXPIRY = '2h';
+
 function getSecretKey(): Uint8Array {
   return new TextEncoder().encode(JWT_SECRET);
 }
@@ -34,22 +48,63 @@ function getSecretKey(): Uint8Array {
 /**
  * Sign a JWT token
  */
-export async function signToken(payload: JWTPayload): Promise<string> {
+export async function signToken(
+  payload: JWTPayload,
+  options?: { expiresIn?: string }
+): Promise<string> {
   return new SignJWT({ ...payload })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime(JWT_EXPIRY)
+    .setExpirationTime(options?.expiresIn ?? JWT_EXPIRY)
     .sign(getSecretKey());
 }
 
 /**
- * Verify and decode a JWT token
+ * Sign the short-lived pending-2FA token (see PendingTwoFactorPayload).
  */
+export async function signPendingTwoFactorToken(
+  payload: Omit<PendingTwoFactorPayload, 'pendingTwoFactor'>
+): Promise<string> {
+  return new SignJWT({ ...payload, pendingTwoFactor: true })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime(PENDING_TWO_FACTOR_EXPIRY)
+    .sign(getSecretKey());
+}
+
+/**
+ * Verify a pending-2FA token. Returns null for anything else (including valid
+ * session tokens, which do not carry the pendingTwoFactor claim).
+ */
+export async function verifyPendingTwoFactorToken(
+  token: string
+): Promise<PendingTwoFactorPayload | null> {
+  try {
+    const { payload } = await jwtVerify(token, getSecretKey(), {
+      algorithms: ['HS256'],
+    });
+    if (payload.pendingTwoFactor !== true) return null;
+    if (
+      typeof payload.userId !== 'string' ||
+      typeof payload.email !== 'string' ||
+      typeof payload.role !== 'string' ||
+      !(USER_ROLES as readonly string[]).includes(payload.role)
+    ) {
+      return null;
+    }
+    return payload as unknown as PendingTwoFactorPayload;
+  } catch {
+    return null;
+  }
+}
+
 export async function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
     const { payload } = await jwtVerify(token, getSecretKey(), {
       algorithms: ['HS256'],
     });
+    // A pending-2FA token must never double as a session token.
+    if (payload.pendingTwoFactor === true) return null;
     if (
       typeof payload.userId !== 'string' ||
       typeof payload.email !== 'string' ||

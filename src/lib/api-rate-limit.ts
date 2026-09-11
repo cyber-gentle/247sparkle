@@ -15,6 +15,9 @@ const localWindows = new Map<string, { count: number; resetAt: number }>();
 
 export const RATE_LIMIT_POLICIES = {
   auth: { limit: 10, windowMs: 60_000 },
+  // Stricter bucket for the admin login: a smaller attack surface warrants a
+  // tighter leash than the general auth policy.
+  adminAuth: { limit: 5, windowMs: 60_000 },
   certificateLookup: { limit: 20, windowMs: 60_000 },
   paymentVerification: { limit: 10, windowMs: 60_000 },
   mutation: { limit: 60, windowMs: 60_000 },
