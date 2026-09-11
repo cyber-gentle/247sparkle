@@ -4,6 +4,7 @@ import prisma from '@/lib/db';
 import { requireRole } from '@/lib/api-auth';
 import { RATE_LIMIT_POLICIES, rateLimitRequest } from '@/lib/api-rate-limit';
 import { assignRiderToPaidOrder } from '@/lib/order-integrity';
+import { notifyOrderStatusChange } from '@/lib/order-notifications';
 
 const acceptJobSchema = z.object({
   orderId: z.string(),
@@ -59,6 +60,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (!updatedOrder) {
       return NextResponse.json({ error: 'Order is no longer available' }, { status: 409 });
     }
+
+    // Best-effort customer notification; never fails an accepted job.
+    await notifyOrderStatusChange(orderId, 'RIDER_ASSIGNED');
 
     return NextResponse.json(
       {

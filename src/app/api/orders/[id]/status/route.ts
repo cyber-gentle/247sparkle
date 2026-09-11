@@ -4,6 +4,7 @@ import prisma from '@/lib/db';
 import { requireRole } from '@/lib/api-auth';
 import { RATE_LIMIT_POLICIES, rateLimitRequest } from '@/lib/api-rate-limit';
 import { transitionPaidOrder } from '@/lib/order-integrity';
+import { notifyOrderStatusChange } from '@/lib/order-notifications';
 import {
   canTransitionOrder,
   LAUNDRY_FULFILMENT_STATUSES,
@@ -105,6 +106,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         { status: 409 }
       );
     }
+
+    // Best-effort: the transition is already committed, so a notification
+    // failure must never turn a successful update into an error response.
+    await notifyOrderStatusChange(id, status as OrderStatus);
 
     return NextResponse.json(
       {

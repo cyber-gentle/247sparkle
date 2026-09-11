@@ -4,6 +4,7 @@ import prisma from '@/lib/db';
 import { requireRole } from '@/lib/api-auth';
 import { RATE_LIMIT_POLICIES, rateLimitRequest } from '@/lib/api-rate-limit';
 import { assignRiderToPaidOrder } from '@/lib/order-integrity';
+import { notifyOrderStatusChange } from '@/lib/order-notifications';
 
 const assignRiderSchema = z.object({
   riderId: z.string().min(1, 'riderId is required'),
@@ -78,6 +79,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         { status: 409 }
       );
     }
+
+    // Best-effort customer notification; never fails a committed assignment.
+    await notifyOrderStatusChange(id, 'RIDER_ASSIGNED');
 
     return NextResponse.json(
       {
