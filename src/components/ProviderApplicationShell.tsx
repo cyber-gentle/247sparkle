@@ -56,7 +56,10 @@ export default function ProviderApplicationShell({
         <div className="grid items-start gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-12">
           {/* Brand showcase panel */}
           <aside className="public-card public-card-accent isolate !border-[#1A0A5E] !bg-[#1A0A5E] text-white shadow-[0_30px_80px_rgba(26,10,94,0.28)] lg:sticky lg:top-8">
-            <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 overflow-hidden"
+            >
               <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full border border-white/10" />
               <div className="absolute -right-8 top-16 h-40 w-40 rounded-full border border-[#F5C200]/25" />
               <div className="absolute -bottom-24 -left-16 h-56 w-56 rounded-full bg-[#CC0000]/15 blur-3xl" />
