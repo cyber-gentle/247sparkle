@@ -21,8 +21,15 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import AppLogo from '@/components/ui/AppLogo';
+import PasswordField, { PASSWORD_MIN_LENGTH } from '@/components/ui/PasswordField';
 
 import { NIGERIAN_BANKS } from '@/lib/banks';
+
+// Mirrors `fieldClass` below, minus the border colour and horizontal padding,
+// which PasswordField owns (lock icon + eye toggle).
+const PROFILE_PASSWORD_INPUT_CLASS =
+  'w-full py-2.5 rounded-xl focus:ring-2 focus:ring-[#1A0A5E] focus:border-[#1A0A5E]';
+const PROFILE_PASSWORD_LABEL_CLASS = 'block text-sm font-semibold text-gray-700 mb-1';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -42,7 +49,7 @@ const profileSchema = z.object({
 const passwordSchema = z
   .object({
     currentPassword: z.string().min(1),
-    newPassword: z.string().min(6),
+    newPassword: z.string().min(8, 'New password must be at least 8 characters'),
     confirmPassword: z.string(),
   })
   .refine((d) => d.newPassword === d.confirmPassword, {
@@ -75,8 +82,11 @@ export default function PartnerProfilePage() {
     register: registerPassword,
     handleSubmit: handleSubmitPassword,
     reset: resetPasswordForm,
+    watch: watchPassword,
     formState: { errors: passwordErrors },
   } = useForm<PasswordFormData>({ resolver: zodResolver(passwordSchema) });
+
+  const newPasswordValue = watchPassword('newPassword') || '';
 
   useEffect(() => {
     fetchProfile();
@@ -480,47 +490,37 @@ export default function PartnerProfilePage() {
             Change Password
           </h2>
           <form onSubmit={handleSubmitPassword(onSubmitPassword)} className="space-y-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Current Password
-              </label>
-              <input
-                type="password"
-                {...registerPassword('currentPassword')}
-                className={fieldClass(!!passwordErrors.currentPassword)}
-              />
-              {passwordErrors.currentPassword && (
-                <p className="text-red-500 text-sm mt-1">
-                  {passwordErrors.currentPassword.message}
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">New Password</label>
-              <input
-                type="password"
-                {...registerPassword('newPassword')}
-                className={fieldClass(!!passwordErrors.newPassword)}
-              />
-              {passwordErrors.newPassword && (
-                <p className="text-red-500 text-sm mt-1">{passwordErrors.newPassword.message}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Confirm New Password
-              </label>
-              <input
-                type="password"
-                {...registerPassword('confirmPassword')}
-                className={fieldClass(!!passwordErrors.confirmPassword)}
-              />
-              {passwordErrors.confirmPassword && (
-                <p className="text-red-500 text-sm mt-1">
-                  {passwordErrors.confirmPassword.message}
-                </p>
-              )}
-            </div>
+            <PasswordField
+              {...registerPassword('currentPassword')}
+              id="currentPassword"
+              label="Current Password"
+              autoComplete="current-password"
+              error={passwordErrors.currentPassword?.message}
+              inputClassName={PROFILE_PASSWORD_INPUT_CLASS}
+              labelClassName={PROFILE_PASSWORD_LABEL_CLASS}
+            />
+            <PasswordField
+              {...registerPassword('newPassword')}
+              id="newPassword"
+              label="New Password"
+              minLength={PASSWORD_MIN_LENGTH}
+              autoComplete="new-password"
+              showRequirement
+              error={passwordErrors.newPassword?.message}
+              inputClassName={PROFILE_PASSWORD_INPUT_CLASS}
+              labelClassName={PROFILE_PASSWORD_LABEL_CLASS}
+            />
+            <PasswordField
+              {...registerPassword('confirmPassword')}
+              id="confirmPassword"
+              label="Confirm New Password"
+              minLength={PASSWORD_MIN_LENGTH}
+              autoComplete="new-password"
+              matchValue={newPasswordValue}
+              error={passwordErrors.confirmPassword?.message}
+              inputClassName={PROFILE_PASSWORD_INPUT_CLASS}
+              labelClassName={PROFILE_PASSWORD_LABEL_CLASS}
+            />
             <button
               type="submit"
               disabled={isChangingPassword}

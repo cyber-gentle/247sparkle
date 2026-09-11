@@ -7,7 +7,7 @@ import { RATE_LIMIT_POLICIES, rateLimitRequest } from '@/lib/api-rate-limit';
 
 const resetPasswordSchema = z.object({
   token: z.string().min(1, 'Reset token is required'),
-  newPassword: z.string().min(6, 'Password must be at least 6 characters'),
+  newPassword: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
 const FAILURE_MESSAGES = {

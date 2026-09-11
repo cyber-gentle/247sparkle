@@ -6,13 +6,14 @@ import { useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Lock, AlertCircle, KeyRound, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { AlertCircle, KeyRound, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import PortalAuthShell from '@/components/auth/PortalAuthShell';
+import PasswordField, { PASSWORD_MIN_LENGTH } from '@/components/ui/PasswordField';
 
 const resetPasswordSchema = z
   .object({
-    password: z.string().min(6, 'Password must be at least 6 characters'),
+    password: z.string().min(PASSWORD_MIN_LENGTH, 'Password must be at least 8 characters'),
     confirmPassword: z.string().min(1, 'Please confirm your password'),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -45,10 +46,13 @@ function ResetPasswordForm() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
   });
+
+  const passwordValue = watch('password') || '';
 
   const onSubmit = async (data: ResetPasswordFormData) => {
     setIsLoading(true);
@@ -123,53 +127,27 @@ function ResetPasswordForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-      <div>
-        <label htmlFor="password" className="mb-1.5 block text-sm font-bold text-slate-700">
-          New Password
-        </label>
-        <span className="relative block">
-          <Lock
-            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-            size={18}
-          />
-          <input
-            {...register('password')}
-            type="password"
-            id="password"
-            placeholder="At least 6 characters"
-            className={`public-field-with-icon ${errors.password ? 'border-red-500' : ''}`}
-          />
-        </span>
-        {errors.password && (
-          <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-            <AlertCircle size={14} /> {errors.password.message}
-          </p>
-        )}
-      </div>
+      <PasswordField
+        {...register('password')}
+        id="password"
+        label="New Password"
+        minLength={PASSWORD_MIN_LENGTH}
+        placeholder={`At least ${PASSWORD_MIN_LENGTH} characters`}
+        autoComplete="new-password"
+        showRequirement
+        error={errors.password?.message}
+      />
 
-      <div>
-        <label htmlFor="confirmPassword" className="mb-1.5 block text-sm font-bold text-slate-700">
-          Confirm New Password
-        </label>
-        <span className="relative block">
-          <Lock
-            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-            size={18}
-          />
-          <input
-            {...register('confirmPassword')}
-            type="password"
-            id="confirmPassword"
-            placeholder="Re-enter your new password"
-            className={`public-field-with-icon ${errors.confirmPassword ? 'border-red-500' : ''}`}
-          />
-        </span>
-        {errors.confirmPassword && (
-          <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-            <AlertCircle size={14} /> {errors.confirmPassword.message}
-          </p>
-        )}
-      </div>
+      <PasswordField
+        {...register('confirmPassword')}
+        id="confirmPassword"
+        label="Confirm New Password"
+        minLength={PASSWORD_MIN_LENGTH}
+        placeholder="Re-enter your new password"
+        autoComplete="new-password"
+        matchValue={passwordValue}
+        error={errors.confirmPassword?.message}
+      />
 
       {submitError && (
         <div

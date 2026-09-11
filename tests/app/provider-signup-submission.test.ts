@@ -33,6 +33,74 @@ describe('provider signup submission safeguards', () => {
     }
   );
 
+  it.each([
+    ['rider', riderSignupPage],
+    ['partner', partnerSignupPage],
+  ])('%s signup renders password inputs through the shared PasswordField component', (_, page) => {
+    const source = readFileSync(page, 'utf8');
+
+    expect(source).toContain("from '@/components/ui/PasswordField'");
+    expect(source).toContain('matchValue={passwordValue}');
+    expect(source).not.toContain('type="password"');
+  });
+
+  it('requires rider and partner passwords of at least 8 characters', () => {
+    const riderBase = {
+      fullName: 'John Rider',
+      email: 'rider@example.com',
+      phone: '08012345678',
+      address: '14 Upu Road, Otukpo',
+    };
+    const partnerBase = {
+      businessName: 'Sparkle Laundry Hub',
+      ownerName: 'Jane Partner',
+      email: 'partner@example.com',
+      phone: '08012345678',
+      address: '24 Commercial Avenue, Otukpo',
+      openingTime: '08:00',
+      closingTime: '18:00',
+    };
+
+    const shortRider = riderSignupSchema.safeParse({
+      ...riderBase,
+      password: 'pass123',
+      confirmPassword: 'pass123',
+    });
+    const shortPartner = partnerSignupSchema.safeParse({
+      ...partnerBase,
+      password: 'pass123',
+      confirmPassword: 'pass123',
+    });
+
+    expect(shortRider.success).toBe(false);
+    expect(shortPartner.success).toBe(false);
+    if (!shortRider.success) {
+      expect(shortRider.error.issues.map((issue) => issue.message)).toContain(
+        'Password must be at least 8 characters'
+      );
+    }
+    if (!shortPartner.success) {
+      expect(shortPartner.error.issues.map((issue) => issue.message)).toContain(
+        'Password must be at least 8 characters'
+      );
+    }
+
+    expect(
+      riderSignupSchema.safeParse({
+        ...riderBase,
+        password: 'pass1234',
+        confirmPassword: 'pass1234',
+      }).success
+    ).toBe(true);
+    expect(
+      partnerSignupSchema.safeParse({
+        ...partnerBase,
+        password: 'pass1234',
+        confirmPassword: 'pass1234',
+      }).success
+    ).toBe(true);
+  });
+
   it('requires partners to choose at least one operating day before their application is sent', () => {
     expect(getOperatingDaysError([])).toBe('Select at least one day your business is open.');
     expect(getOperatingDaysError(['Mon'])).toBeNull();
