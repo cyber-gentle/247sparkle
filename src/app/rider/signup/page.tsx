@@ -109,13 +109,13 @@ export default function RiderSignupPage() {
       loginLabel="Already registered? Sign in"
       steps={riderSteps}
     >
-      <form noValidate onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-7">
+      <form noValidate onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-5 sm:space-y-7">
         <fieldset>
           <legend className="text-sm font-bold text-slate-900">Your details</legend>
           <p className="mt-1 text-sm text-slate-500">
             We use these details to review and contact you.
           </p>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div className="mt-3 sm:mt-4 grid gap-3 sm:gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <label
                 htmlFor="fullName"
@@ -206,9 +206,9 @@ export default function RiderSignupPage() {
           </div>
         </fieldset>
 
-        <fieldset className="border-t border-slate-200 pt-6">
+        <fieldset className="border-t border-slate-200 pt-4 sm:pt-6">
           <legend className="text-sm font-bold text-slate-900">Create sign-in details</legend>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div className="mt-3 sm:mt-4 grid gap-3 sm:gap-4 sm:grid-cols-2">
             <PasswordField
               {...register('password')}
               id="password"

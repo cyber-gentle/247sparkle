@@ -108,10 +108,10 @@ export default function HeroSection() {
         </div>
       </div>
       {/* Main Content */}
-      <div className="relative z-10 max-w-screen-2xl mx-auto px-6 lg:px-10 pt-24 pb-16 w-full">
+      <div className="relative z-10 max-w-screen-2xl mx-auto px-6 lg:px-10 pt-20 pb-12 md:pt-24 md:pb-16 w-full">
         <div className="max-w-3xl">
           {/* Label */}
-          <div className="inline-flex items-center gap-2 bg-[#F5C200]/20 border border-[#F5C200]/30 backdrop-blur-sm rounded-full px-4 py-1.5 mb-6">
+          <div className="inline-flex items-center gap-2 bg-[#F5C200]/20 border border-[#F5C200]/30 backdrop-blur-sm rounded-full px-4 py-1.5 mb-4 md:mb-6">
             <span className="w-2 h-2 rounded-full bg-[#F5C200] animate-pulse" />
             <span className="text-[#F5C200] text-xs font-bold tracking-widest uppercase">
               Otukpo&apos;s #1 On-Demand Service
@@ -119,18 +119,18 @@ export default function HeroSection() {
           </div>
 
           {/* Headline */}
-          <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-white leading-tight mb-6 text-balance">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-white leading-tight mb-4 md:mb-6 text-balance">
             Pristine Laundry &amp; Cleaning <span className="text-[#F5C200]">Delivered Fresh.</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-white/90 leading-relaxed mb-8 max-w-2xl">
+          <p className="text-base md:text-xl text-white/90 leading-relaxed mb-6 md:mb-8 max-w-2xl">
             Skip the hassle. Our professional laundry, home cleaning, and fumigation services come
             to you with real-time tracking, flexible scheduling, and unbeatable care for your
             belongings.
           </p>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-12">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8 md:mb-12">
             <Link
               href="/customer/signup"
               className="inline-flex items-center justify-center gap-2 bg-[#F5C200] text-[#1A0A5E] font-bold px-8 py-4 rounded-xl text-base hover:bg-[#E6B000] active:scale-95 transition-all duration-150 shadow-gold"

@@ -90,7 +90,7 @@ export default function ServicesPage() {
   return (
     <>
       <PublicNavbar />
-      <main className="relative isolate overflow-hidden bg-slate-50 pb-20 pt-24">
+      <main className="relative isolate overflow-hidden bg-slate-50 pb-12 md:pb-20 pt-20 md:pt-24">
         <div aria-hidden="true" className="absolute inset-0 z-0 overflow-hidden">
           <video
             autoPlay
@@ -105,7 +105,7 @@ export default function ServicesPage() {
           <div className="absolute inset-0 bg-slate-50/80" />
         </div>
         <section className="relative z-10 mx-auto w-full max-w-6xl px-6 lg:px-10">
-          <div className="relative mb-10 overflow-hidden rounded-3xl bg-[#1A0A5E] p-8 text-white sm:p-10">
+          <div className="relative mb-8 md:mb-10 overflow-hidden rounded-3xl bg-[#1A0A5E] p-6 text-white sm:p-10">
             <div aria-hidden="true" className="absolute inset-y-0 right-0 w-2/5 opacity-30">
               <AppImage
                 src="/images/bg-image.jpeg"
@@ -130,7 +130,7 @@ export default function ServicesPage() {
             </div>
           </div>
 
-          <div className="mb-12 grid gap-5 md:grid-cols-2">
+          <div className="mb-8 md:mb-12 grid gap-4 md:gap-5 md:grid-cols-2">
             {SERVICE_ITEMS.map((item) => {
               const Icon = item.icon;
 
@@ -139,7 +139,7 @@ export default function ServicesPage() {
                   key={item.title}
                   className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_24px_65px_rgba(15,23,42,0.12)] transition-transform duration-300 hover:-translate-y-1"
                 >
-                  <div className="relative h-64 overflow-hidden bg-slate-200">
+                  <div className="relative h-44 md:h-64 overflow-hidden bg-slate-200">
                     <AppImage
                       src={item.image}
                       alt={item.imageAlt}
@@ -159,12 +159,12 @@ export default function ServicesPage() {
                       </span>
                     </div>
                   </div>
-                  <div className="flex min-h-[180px] flex-col p-6 sm:p-7">
-                    <h2 className="text-2xl font-extrabold text-[#1A0A5E]">{item.title}</h2>
-                    <p className="mt-2 max-w-md text-sm leading-6 text-slate-600">{item.details}</p>
+                  <div className="flex min-h-[130px] md:min-h-[180px] flex-col p-5 md:p-6 sm:p-7">
+                    <h2 className="text-xl md:text-2xl font-extrabold text-[#1A0A5E]">{item.title}</h2>
+                    <p className="mt-2 max-w-md text-[13px] md:text-sm leading-5 md:leading-6 text-slate-600">{item.details}</p>
                     <Link
                       href="/customer/signup"
-                      className="mt-5 inline-flex w-fit items-center gap-2 rounded-xl bg-[#1A0A5E] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#CC0000] focus:outline-none focus:ring-2 focus:ring-[#1A0A5E] focus:ring-offset-2"
+                      className="mt-4 md:mt-5 inline-flex w-fit items-center gap-2 rounded-xl bg-[#1A0A5E] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#CC0000] focus:outline-none focus:ring-2 focus:ring-[#1A0A5E] focus:ring-offset-2"
                     >
                       Start a request
                       <ArrowUpRight size={16} />

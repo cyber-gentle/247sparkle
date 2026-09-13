@@ -4,10 +4,10 @@ import { Store, Bike, ArrowRight, TrendingUp } from 'lucide-react';
 
 export default function PartnerBanner() {
   return (
-    <section id="partner" className="py-20 lg:py-28 bg-white">
+    <section id="partner" className="py-12 md:py-20 lg:py-28 bg-white">
       <div className="max-w-screen-2xl mx-auto px-6 lg:px-10">
         {/* Main Banner */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1A0A5E] to-[#2D1B8E] p-10 lg:p-16 mb-10">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1A0A5E] to-[#2D1B8E] p-6 md:p-10 lg:p-16">
           {/* Background decoration */}
           <div className="absolute top-0 right-0 w-80 h-80 bg-[#F5C200]/10 rounded-full -translate-y-1/2 translate-x-1/3" />
           <div className="absolute bottom-0 left-20 w-48 h-48 bg-[#CC0000]/10 rounded-full translate-y-1/3" />
@@ -19,25 +19,25 @@ export default function PartnerBanner() {
                 Join Our Network
               </span>
             </div>
-            <h2 className="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white mb-4 max-w-3xl mx-auto leading-tight">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white mb-3 md:mb-4 max-w-3xl mx-auto leading-tight">
               Grow Your Revenue with <span className="text-[#F5C200]">247Sparkle</span>
             </h2>
-            <p className="text-white/70 text-base lg:text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
+            <p className="text-white/70 text-sm md:text-base lg:text-lg max-w-2xl mx-auto mb-6 md:mb-10 leading-relaxed">
               Are you a laundry business or looking to earn as a delivery rider in Otukpo? Join our
               growing network and access a steady stream of customers from day one.
             </p>
 
             {/* Two Partner Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 max-w-3xl mx-auto">
               {/* Laundry Business */}
               <div className="group rounded-2xl border border-white/20 bg-white/10 p-6 text-left shadow-[0_18px_45px_rgba(0,0,0,0.14)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:bg-white/15">
                 <div className="w-12 h-12 rounded-xl bg-[#F5C200] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <Store size={22} className="text-[#1A0A5E]" />
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">
+                <h3 className="text-base md:text-lg font-bold text-white mb-2">
                   Register as a Laundry Business
                 </h3>
-                <p className="text-white/60 text-sm mb-5 leading-relaxed">
+                <p className="text-white/60 text-sm mb-4 md:mb-5 leading-relaxed">
                   List your shop on the 247Sparkle platform. We send you overflow orders and handle
                   customer acquisition — you focus on cleaning.
                 </p>
@@ -55,8 +55,8 @@ export default function PartnerBanner() {
                 <div className="w-12 h-12 rounded-xl bg-[#CC0000] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <Bike size={22} className="text-white" />
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">Register as a Rider</h3>
-                <p className="text-white/60 text-sm mb-5 leading-relaxed">
+                <h3 className="text-base md:text-lg font-bold text-white mb-2">Register as a Rider</h3>
+                <p className="text-white/60 text-sm mb-4 md:mb-5 leading-relaxed">
                   Earn money on your own schedule. Pick up and deliver laundry orders across Otukpo.
                   Earn 20% commission on every completed delivery.
                 </p>

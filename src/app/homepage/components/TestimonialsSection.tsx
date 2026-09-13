@@ -75,7 +75,7 @@ const VISIBLE_COUNT = 2;
 
 function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
   return (
-    <figure className="group relative bg-white rounded-2xl border border-slate-100 shadow-card p-6 flex flex-col transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+    <figure className="group relative bg-white rounded-2xl border border-slate-100 shadow-card p-5 md:p-6 flex flex-col transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       <Quote
         size={28}
         className="text-[#F5C200] mb-4"
@@ -124,24 +124,24 @@ export default function TestimonialsSection() {
   const expandLabel = `See ${hiddenCount} more ${hiddenCount === 1 ? 'testimony' : 'testimonies'}`;
 
   return (
-    <section className="py-14 sm:py-20 lg:py-28 bg-slate-50">
+    <section className="py-12 sm:py-20 lg:py-28 bg-slate-50">
       <div className="max-w-screen-2xl mx-auto px-6 lg:px-10">
         {/* Header */}
         <div className="text-center mb-10 sm:mb-14 lg:mb-16">
           <span className="text-xs font-bold tracking-widest uppercase text-[#CC0000] mb-3 block">
             Testimonials
           </span>
-          <h2 className="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-[#1A0A5E] mb-4">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold text-[#1A0A5E] mb-3 md:mb-4">
             Otukpo Trusts 247Sparkle
           </h2>
-          <p className="text-slate-500 max-w-2xl mx-auto text-base leading-relaxed">
+          <p className="text-slate-500 max-w-2xl mx-auto text-sm md:text-base leading-relaxed">
             Real words from our neighbours. We&apos;re proud to serve homes and businesses across
             Benue State.
           </p>
         </div>
 
         {/* Testimonial Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {initialTestimonials.map((testimonial) => (
             <TestimonialCard key={testimonial.id} testimonial={testimonial} />
           ))}

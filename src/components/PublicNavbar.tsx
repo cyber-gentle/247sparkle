@@ -1,9 +1,19 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
-import { Menu, X, Phone, MessageCircle } from 'lucide-react';
+import {
+  Menu,
+  X,
+  Phone,
+  MessageCircle,
+  ChevronDown,
+  User,
+  Handshake,
+  Bike,
+  ShieldCheck,
+} from 'lucide-react';
 
 const NAV_LINKS = [
   { label: 'Home', href: '/' },
@@ -13,17 +23,52 @@ const NAV_LINKS = [
   { label: 'Contact', href: '/contact' },
 ];
 
+// Portal logins. Admin is visually separated — it is an internal tool, not a
+// self-service portal, but keeping it here means staff have one obvious way in.
+const PORTAL_LINKS = [
+  { label: 'Customer', href: '/customer/login', icon: User },
+  { label: 'Partner', href: '/partner/login', icon: Handshake },
+  { label: 'Rider', href: '/rider/login', icon: Bike },
+];
+
 export default function PublicNavbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
   const pathname = usePathname();
   const solidNavbar = scrolled || pathname !== '/';
+  const loginRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Close the login dropdown on outside click, Escape, or navigation.
+  useEffect(() => {
+    const handlePointerDown = (event: MouseEvent | TouchEvent) => {
+      if (loginRef.current && !loginRef.current.contains(event.target as Node)) {
+        setLoginOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setLoginOpen(false);
+    };
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('touchstart', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('touchstart', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  useEffect(() => {
+    setLoginOpen(false);
+    setMobileOpen(false);
+  }, [pathname]);
 
   return (
     <>
@@ -71,6 +116,60 @@ export default function PublicNavbar() {
                 <MessageCircle size={16} />
                 WhatsApp
               </a>
+
+              {/* Login dropdown */}
+              <div ref={loginRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setLoginOpen((open) => !open)}
+                  aria-haspopup="menu"
+                  aria-expanded={loginOpen}
+                  className={`flex items-center gap-1.5 text-sm font-semibold px-3 py-2 rounded-lg transition-colors ${
+                    solidNavbar
+                      ? 'text-[#1A0A5E] hover:bg-[#1A0A5E]/5'
+                      : 'text-white hover:bg-white/10'
+                  }`}
+                >
+                  Login
+                  <ChevronDown
+                    size={15}
+                    className={`transition-transform duration-200 ${loginOpen ? 'rotate-180' : ''}`}
+                    aria-hidden="true"
+                  />
+                </button>
+
+                {loginOpen && (
+                  <div
+                    role="menu"
+                    aria-label="Portal logins"
+                    className="absolute right-0 top-full mt-2 w-52 rounded-xl border border-slate-100 bg-white p-2 shadow-xl"
+                  >
+                    {PORTAL_LINKS.map((portal) => (
+                      <Link
+                        key={`login-${portal.label.toLowerCase()}`}
+                        href={portal.href}
+                        role="menuitem"
+                        onClick={() => setLoginOpen(false)}
+                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-[#F5C200]/15 hover:text-[#1A0A5E] transition-colors"
+                      >
+                        <portal.icon size={16} className="shrink-0 text-[#1A0A5E]" />
+                        {portal.label}
+                      </Link>
+                    ))}
+                    <div className="my-1.5 border-t border-slate-100" role="separator" />
+                    <Link
+                      href="/admin/login"
+                      role="menuitem"
+                      onClick={() => setLoginOpen(false)}
+                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-500 hover:bg-[#F5C200]/15 hover:text-[#1A0A5E] transition-colors"
+                    >
+                      <ShieldCheck size={16} className="shrink-0" />
+                      Admin
+                    </Link>
+                  </div>
+                )}
+              </div>
+
               <Link
                 href="/customer/signup"
                 className="bg-[#F5C200] text-[#1A0A5E] font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-[#E6B000] active:scale-95 transition-all duration-150 shadow-gold"
@@ -95,7 +194,7 @@ export default function PublicNavbar() {
         {/* Mobile Menu */}
         <div
           className={`lg:hidden transition-all duration-300 overflow-hidden ${
-            mobileOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+            mobileOpen ? 'max-h-[640px] opacity-100' : 'max-h-0 opacity-0'
           } bg-white border-t border-gray-100 shadow-lg`}
         >
           <div className="px-6 py-4 flex flex-col gap-1">
@@ -109,6 +208,25 @@ export default function PublicNavbar() {
                 {link?.label}
               </Link>
             ))}
+
+            {/* Portal logins */}
+            <div className="pt-3 border-t border-gray-100">
+              <p className="px-4 pb-1 pt-2 text-xs font-bold uppercase tracking-wider text-slate-400">
+                Sign in to your account
+              </p>
+              {PORTAL_LINKS.map((portal) => (
+                <Link
+                  key={`mobile-login-${portal.label.toLowerCase()}`}
+                  href={portal.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold text-[#1A0A5E] hover:bg-[#F5C200]/10 transition-colors"
+                >
+                  <portal.icon size={16} className="text-[#1A0A5E]" />
+                  {portal.label}
+                </Link>
+              ))}
+            </div>
+
             <div className="pt-3 border-t border-gray-100 flex flex-col gap-2">
               <a
                 href="tel:09039661885"
