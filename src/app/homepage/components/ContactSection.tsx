@@ -3,12 +3,6 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Phone, Mail, MapPin, MessageCircle, Send, Loader2 } from 'lucide-react';
-import LocationMap, {
-  LocationMapCaption,
-  SPARKLE_LOCATION_DIRECTIONS_URL,
-  SPARKLE_LOCATION_EMBED_URL,
-  SPARKLE_LOCATION_QUERY,
-} from '@/components/LocationMap';
 
 interface ContactFormData {
   name: string;
@@ -50,25 +44,25 @@ export default function ContactSection() {
   };
 
   return (
-    <section id="contact" className="py-20 lg:py-28 bg-gray-50">
+    <section id="contact" className="py-12 md:py-20 lg:py-28 bg-gray-50">
       <div className="max-w-screen-2xl mx-auto px-6 lg:px-10">
-        <div className="text-center mb-14">
+        <div className="text-center mb-8 md:mb-14">
           <span className="text-xs font-bold tracking-widest uppercase text-[#CC0000] mb-3 block">
             Get In Touch
           </span>
-          <h2 className="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-[#1A0A5E] mb-4">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold text-[#1A0A5E] mb-3 md:mb-4">
             Contact Us
           </h2>
-          <p className="text-gray-500 max-w-xl mx-auto text-base">
+          <p className="text-gray-500 max-w-xl mx-auto text-sm md:text-base">
             Have a question or need a custom quote? We&apos;re always available — 24 hours a day, 7
             days a week.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 max-w-5xl mx-auto">
           {/* Contact Info */}
           <div>
-            <div className="space-y-5 mb-8">
+            <div className="space-y-3 md:space-y-5 mb-6 md:mb-8">
               {[
                 {
                   icon: Phone,
@@ -95,17 +89,13 @@ export default function ContactSection() {
                   icon: MapPin,
                   label: 'Location',
                   value: 'Otukpo, Benue State',
-                  href: SPARKLE_LOCATION_DIRECTIONS_URL,
                   color: '#F5C200',
                 },
               ].map((item) => {
                 const Icon = item.icon;
                 return (
-                  <a
+                  <div
                     key={`contact-${item.label.toLowerCase()}`}
-                    href={item.href}
-                    target={item.href.startsWith('http') ? '_blank' : undefined}
-                    rel={item.href.startsWith('http') ? 'noopener noreferrer' : undefined}
                     className="public-card public-card-hover flex items-center gap-4 p-4 group"
                   >
                     <div
@@ -120,29 +110,9 @@ export default function ContactSection() {
                       </div>
                       <div className="text-sm font-bold text-[#1A0A5E]">{item.value}</div>
                     </div>
-                  </a>
+                  </div>
                 );
               })}
-            </div>
-
-            {/* Location map — exact shop pin via Google share-embed */}
-            <div className="public-card overflow-hidden">
-              <LocationMap
-                query={SPARKLE_LOCATION_QUERY}
-                embedUrl={SPARKLE_LOCATION_EMBED_URL}
-                title="247Sparkle location — Otukpo, Benue State"
-              />
-              <div className="flex items-center justify-between gap-3 border-t border-gray-100 px-4 py-3">
-                <LocationMapCaption label="247Sparkle · Otukpo, Benue State" />
-                <a
-                  href={SPARKLE_LOCATION_DIRECTIONS_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="shrink-0 rounded-lg bg-[#1A0A5E] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[#2D1B8E]"
-                >
-                  Get Directions
-                </a>
-              </div>
             </div>
           </div>
 
