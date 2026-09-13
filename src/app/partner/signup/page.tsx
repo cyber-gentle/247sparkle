@@ -135,7 +135,11 @@ export default function PartnerSignupPage() {
       loginLabel="Already registered? Sign in"
       steps={partnerSteps}
     >
-      <form noValidate onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-5 sm:space-y-7">
+      <form
+        noValidate
+        onSubmit={handleSubmit(onSubmit, onInvalid)}
+        className="space-y-5 sm:space-y-7"
+      >
         <fieldset>
           <legend className="text-sm font-bold text-slate-900">Business profile</legend>
           <p className="mt-1 text-sm text-slate-500">
