@@ -73,24 +73,24 @@ const STEPS = [
 
 export default function HowItWorksSection() {
   return (
-    <section id="how-it-works" className="py-20 lg:py-28 bg-white">
+    <section id="how-it-works" className="py-12 md:py-20 lg:py-28 bg-white">
       <div className="max-w-screen-2xl mx-auto px-6 lg:px-10">
         {/* Header */}
-        <div className="text-center mb-14">
+        <div className="text-center mb-8 md:mb-14">
           <span className="text-xs font-bold tracking-widest uppercase text-[#CC0000] mb-3 block">
             Simple Process
           </span>
-          <h2 className="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-[#1A0A5E] mb-4">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold text-[#1A0A5E] mb-3 md:mb-4">
             How 247Sparkle Works
           </h2>
-          <p className="text-gray-500 max-w-xl mx-auto text-base leading-relaxed">
+          <p className="text-gray-500 max-w-xl mx-auto text-sm md:text-base leading-relaxed">
             Getting your laundry done has never been easier. Three steps, zero stress, complete
             peace of mind.
           </p>
         </div>
 
         {/* Steps */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 relative">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-6 relative">
           {/* Connector line */}
           <div className="hidden xl:block absolute top-16 left-[calc(8.3%+2rem)] right-[calc(8.3%+2rem)] h-px bg-gradient-to-r from-[#F5C200] via-[#1A0A5E] via-[#CC0000] to-[#059669] z-0" />
 
@@ -99,16 +99,16 @@ export default function HowItWorksSection() {
             return (
               <div
                 key={step?.id}
-                className="public-card public-card-hover relative z-10 flex flex-col items-center p-4 text-center group"
+                className="public-card public-card-hover relative z-10 flex flex-row md:flex-col items-start md:items-center gap-4 md:gap-0 p-4 text-left md:text-center group"
               >
                 {/* Icon Circle */}
                 <div
-                  className={`w-16 h-16 rounded-xl ${step?.color} flex items-center justify-center mb-4 shadow-lg group-hover:scale-105 transition-transform duration-300`}
+                  className={`w-12 h-12 md:w-16 md:h-16 shrink-0 rounded-xl ${step?.color} flex items-center justify-center md:mb-4 shadow-lg group-hover:scale-105 transition-transform duration-300`}
                 >
                   <Icon size={28} className={step?.textColor} />
                 </div>
                 {/* Number */}
-                <span className="text-xs font-bold tracking-widest text-gray-300 mb-2 uppercase">
+                <span className="text-xs font-bold tracking-widest text-gray-300 mb-1 md:mb-2 uppercase block">
                   Step {step?.number}
                 </span>
                 {/* Title */}

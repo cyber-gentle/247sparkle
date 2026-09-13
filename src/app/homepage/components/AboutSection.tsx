@@ -11,9 +11,9 @@ const ABOUT_POINTS = [
 
 export default function AboutSection() {
   return (
-    <section className="py-20 lg:py-28 bg-white">
+    <section className="py-12 md:py-20 lg:py-28 bg-white">
       <div className="max-w-screen-2xl mx-auto px-6 lg:px-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 items-center">
           {/* Image */}
           <div className="relative">
             <div className="relative rounded-3xl overflow-hidden aspect-[4/3] shadow-navy">
@@ -41,31 +41,31 @@ export default function AboutSection() {
             <span className="text-xs font-bold tracking-widest uppercase text-[#CC0000] mb-3 block">
               About Us
             </span>
-            <h2 className="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-[#1A0A5E] mb-6 leading-tight">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold text-[#1A0A5E] mb-4 md:mb-6 leading-tight">
               Proudly Indigenous. <span className="text-[#CC0000]">Reliably Excellent.</span>
             </h2>
             <div className="prose prose-gray max-w-none">
-              <p className="text-gray-600 leading-relaxed mb-4">
+              <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-3 md:mb-4">
                 247Sparkle is a proudly indigenous brand committed to delivering reliable,
                 high-quality laundry and apartment cleaning solutions tailored to your everyday
                 needs. We understand the demands of busy schedules, which is why we provide seamless
                 washing, professional cleaning, and convenient pick-up and delivery services
                 designed to save you time and effort.
               </p>
-              <p className="text-gray-600 leading-relaxed mb-6">
+              <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-3 md:mb-6">
                 Our approach is simple: consistent quality, attention to detail, and customer
                 satisfaction at every touchpoint. Whether it&apos;s your daily wear, office outfits,
                 or special fabrics, we handle every item with care, using effective cleaning methods
                 that keep your clothes fresh, spotless, and long-lasting.
               </p>
-              <p className="text-gray-600 leading-relaxed mb-6">
+              <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-3 md:mb-6">
                 With 247Sparkle, you don&apos;t just get a service — you get peace of mind, knowing
                 your laundry is in trusted hands, delivered back to you clean, crisp, and right on
                 time.
               </p>
             </div>
 
-            <ul className="space-y-3 mb-8">
+            <ul className="space-y-2.5 md:space-y-3 mb-6 md:mb-8">
               {ABOUT_POINTS?.map((point) => (
                 <li
                   key={`about-point-${point?.substring(0, 20)?.toLowerCase()?.replace(/\s+/g, '-')}`}

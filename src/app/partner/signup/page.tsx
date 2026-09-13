@@ -135,13 +135,13 @@ export default function PartnerSignupPage() {
       loginLabel="Already registered? Sign in"
       steps={partnerSteps}
     >
-      <form noValidate onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-7">
+      <form noValidate onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-5 sm:space-y-7">
         <fieldset>
           <legend className="text-sm font-bold text-slate-900">Business profile</legend>
           <p className="mt-1 text-sm text-slate-500">
             This information is used to review your application.
           </p>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div className="mt-3 sm:mt-4 grid gap-3 sm:gap-4 sm:grid-cols-2">
             <div>
               <label
                 htmlFor="businessName"
@@ -245,12 +245,12 @@ export default function PartnerSignupPage() {
           </div>
         </fieldset>
 
-        <fieldset className="border-t border-slate-200 pt-6">
+        <fieldset className="border-t border-slate-200 pt-4 sm:pt-6">
           <legend className="text-sm font-bold text-slate-900">Operating schedule</legend>
           <p className="mt-1 text-sm text-slate-500">
             Select your typical opening hours and available days.
           </p>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div className="mt-3 sm:mt-4 grid gap-3 sm:gap-4 sm:grid-cols-2">
             <div>
               <label
                 htmlFor="openingTime"
@@ -323,9 +323,9 @@ export default function PartnerSignupPage() {
           </div>
         </fieldset>
 
-        <fieldset className="border-t border-slate-200 pt-6">
+        <fieldset className="border-t border-slate-200 pt-4 sm:pt-6">
           <legend className="text-sm font-bold text-slate-900">Create sign-in details</legend>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div className="mt-3 sm:mt-4 grid gap-3 sm:gap-4 sm:grid-cols-2">
             <PasswordField
               {...register('password')}
               id="password"
