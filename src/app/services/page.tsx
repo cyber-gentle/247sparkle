@@ -160,8 +160,12 @@ export default function ServicesPage() {
                     </div>
                   </div>
                   <div className="flex min-h-[130px] md:min-h-[180px] flex-col p-5 md:p-6 sm:p-7">
-                    <h2 className="text-xl md:text-2xl font-extrabold text-[#1A0A5E]">{item.title}</h2>
-                    <p className="mt-2 max-w-md text-[13px] md:text-sm leading-5 md:leading-6 text-slate-600">{item.details}</p>
+                    <h2 className="text-xl md:text-2xl font-extrabold text-[#1A0A5E]">
+                      {item.title}
+                    </h2>
+                    <p className="mt-2 max-w-md text-[13px] md:text-sm leading-5 md:leading-6 text-slate-600">
+                      {item.details}
+                    </p>
                     <Link
                       href="/customer/signup"
                       className="mt-4 md:mt-5 inline-flex w-fit items-center gap-2 rounded-xl bg-[#1A0A5E] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#CC0000] focus:outline-none focus:ring-2 focus:ring-[#1A0A5E] focus:ring-offset-2"

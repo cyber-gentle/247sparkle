@@ -72,8 +72,12 @@ export default function TrustSection() {
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#F5C200] flex items-center justify-center mb-3 md:mb-4 group-hover:scale-110 transition-transform duration-300">
                   <Icon size={22} className="text-[#1A0A5E]" />
                 </div>
-                <h3 className="text-sm md:text-base font-bold text-white mb-1.5 md:mb-2">{item?.title}</h3>
-                <p className="text-xs md:text-sm text-white/60 leading-relaxed">{item?.description}</p>
+                <h3 className="text-sm md:text-base font-bold text-white mb-1.5 md:mb-2">
+                  {item?.title}
+                </h3>
+                <p className="text-xs md:text-sm text-white/60 leading-relaxed">
+                  {item?.description}
+                </p>
               </div>
             );
           })}

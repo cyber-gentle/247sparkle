@@ -55,7 +55,9 @@ export default function PartnerBanner() {
                 <div className="w-12 h-12 rounded-xl bg-[#CC0000] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <Bike size={22} className="text-white" />
                 </div>
-                <h3 className="text-base md:text-lg font-bold text-white mb-2">Register as a Rider</h3>
+                <h3 className="text-base md:text-lg font-bold text-white mb-2">
+                  Register as a Rider
+                </h3>
                 <p className="text-white/60 text-sm mb-4 md:mb-5 leading-relaxed">
                   Earn money on your own schedule. Pick up and deliver laundry orders across Otukpo.
                   Earn 20% commission on every completed delivery.
