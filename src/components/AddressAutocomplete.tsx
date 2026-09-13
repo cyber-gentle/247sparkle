@@ -1,13 +1,7 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import { MapPin, Navigation, Sparkles } from 'lucide-react';
-
-declare global {
-  interface Window {
-    google?: any;
-  }
-}
+import React, { useRef } from 'react';
+import { MapPin, Sparkles } from 'lucide-react';
 
 interface AddressAutocompleteProps {
   id?: string;
@@ -15,7 +9,6 @@ interface AddressAutocompleteProps {
   label?: string;
   value: string;
   onChange: (value: string) => void;
-  onPlaceSelected?: (data: { address: string; lat?: number; lng?: number }) => void;
   placeholder?: string;
   error?: string;
   required?: boolean;
@@ -37,13 +30,19 @@ const OTUKPO_LANDMARKS = [
   'Och’Idoma Palace Area, Otukpo',
 ];
 
+/**
+ * Address input with Otukpo landmark quick-select.
+ *
+ * Google Places autocomplete was removed to avoid Maps API usage charges —
+ * customers describe their address in free text (helped by the landmark
+ * chips) instead of a billed autocomplete session.
+ */
 export default function AddressAutocomplete({
   id = 'address-input',
   name = 'address',
   label,
   value,
   onChange,
-  onPlaceSelected,
   placeholder = 'e.g. 14 Upu Road, GRA, Otukpo',
   error,
   required = false,
@@ -54,90 +53,6 @@ export default function AddressAutocomplete({
   'aria-describedby': ariaDescribedby,
 }: AddressAutocompleteProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const [mapsLoaded, setMapsLoaded] = useState(false);
-  const [mapsAvailable, setMapsAvailable] = useState(false);
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-
-  // Initialize Google Maps Places Autocomplete if API key is provided
-  useEffect(() => {
-    if (!apiKey) {
-      return;
-    }
-
-    if (typeof window === 'undefined') return;
-
-    // Check if google maps script is already loaded
-    if (window.google?.maps?.places) {
-      setMapsLoaded(true);
-      setMapsAvailable(true);
-      return;
-    }
-
-    const scriptId = 'google-maps-script';
-    let script = document.getElementById(scriptId) as HTMLScriptElement | null;
-
-    if (!script) {
-      script = document.createElement('script');
-      script.id = scriptId;
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        setMapsLoaded(true);
-        setMapsAvailable(true);
-      };
-      script.onerror = () => {
-        console.warn('Google Maps script failed to load. Using landmark fallbacks.');
-        setMapsAvailable(false);
-      };
-      document.head.appendChild(script);
-    } else {
-      script.addEventListener('load', () => {
-        setMapsLoaded(true);
-        setMapsAvailable(true);
-      });
-    }
-  }, [apiKey]);
-
-  // Attach Autocomplete to textarea / input once Google Maps is ready
-  useEffect(() => {
-    if (!mapsLoaded || !mapsAvailable || !inputRef.current || !window.google?.maps?.places) {
-      return;
-    }
-
-    try {
-      const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current as any, {
-        componentRestrictions: { country: 'ng' },
-        fields: ['formatted_address', 'geometry', 'name'],
-      });
-
-      // Bias towards Otukpo, Benue State (lat 7.1950, lng 8.1326)
-      const otukpoCircle = new window.google.maps.Circle({
-        center: { lat: 7.195, lng: 8.1326 },
-        radius: 30000,
-      });
-      autocomplete.setBounds(otukpoCircle.getBounds()!);
-
-      const listener = autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace();
-        const address = place.formatted_address || place.name || '';
-        if (address) {
-          onChange(address);
-          const lat = place.geometry?.location?.lat();
-          const lng = place.geometry?.location?.lng();
-          onPlaceSelected?.({ address, lat, lng });
-        }
-      });
-
-      return () => {
-        if (window.google?.maps?.event) {
-          window.google.maps.event.removeListener(listener);
-        }
-      };
-    } catch (e) {
-      console.warn('Error initializing Google Places Autocomplete:', e);
-    }
-  }, [mapsLoaded, mapsAvailable, onChange, onPlaceSelected]);
 
   const handleLandmarkClick = (landmark: string) => {
     if (!value || value.trim() === '') {
@@ -155,16 +70,9 @@ export default function AddressAutocomplete({
   return (
     <div className="space-y-2">
       {label && (
-        <div className="flex items-center justify-between">
-          <label htmlFor={id} className="block text-sm font-semibold text-slate-700">
-            {label} {required && <span className="text-red-500">*</span>}
-          </label>
-          {mapsAvailable && (
-            <span className="flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-              <Navigation size={10} /> Maps Autocomplete Active
-            </span>
-          )}
-        </div>
+        <label htmlFor={id} className="block text-sm font-semibold text-slate-700">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
       )}
 
       <div className="relative">

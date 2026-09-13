@@ -268,10 +268,10 @@ Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
 
 ### Maps Integration
 
-- `AddressAutocomplete` (Google Places, gated on `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`,
-  with an Otukpo-landmarks offline fallback) and `LocationMap` (rider tracking)
-  components are implemented. A live API key has not yet been supplied or
-  billing-validated.
+- Removed (2026-09-13). Google Places autocomplete, embedded `LocationMap`
+  iframes, and "Open in Google Maps" links were all stripped to avoid Maps
+  API usage charges. `AddressAutocomplete` remains as a plain textarea with
+  Otukpo landmark quick-select chips.
 
 ### Payment Provider Validation
 
@@ -332,9 +332,14 @@ through the approved secret channel. No code changes are required to consume the
 
 | # | Item | Unblocks | Env var(s) |
 | --- | --- | --- | --- |
-| 1 | **Paystack test-mode keys** | Checkout, verification, signed webhook, replay and failure-path validation per `TESTING.md` | `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY` |
-| 2 | **Resend domain verification** | Real delivery of password-reset and order-status emails from a verified `247sparkle.com` sender | `RESEND_API_KEY`, `EMAIL_FROM` |
-| 3 | **Google Maps API key + billing** | Places autocomplete and live rider tracking (currently falls back to offline Otukpo landmarks) | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` |
+| 1 | **Resend domain verification** | Real delivery of password-reset and order-status emails from a verified `247sparkle.com` sender | `RESEND_API_KEY`, `EMAIL_FROM` |
+
+Paystack test-mode keys were supplied (2026-09-13) and are set in `.env`;
+end-to-end checkout, verification, signed-webhook, replay and failure-path
+validation per `TESTING.md` are still outstanding. Google Maps integration
+was removed entirely (address autocomplete, embedded maps, and tracking
+links) to avoid Maps API usage charges — addresses are entered as free text
+with Otukpo landmark quick-select chips.
 
 ### B. Infrastructure rehearsals (blocking launch)
 
