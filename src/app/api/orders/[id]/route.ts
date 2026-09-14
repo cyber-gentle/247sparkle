@@ -70,6 +70,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       serviceType: order.serviceType,
       status: order.status,
       paymentStatus: order.paymentStatus,
+      // Needed by the order page to verify payment after returning from
+      // Paystack checkout (the callback_url lands there with ?payment=return).
+      paystackReference: order.paystackReference,
       totalAmount: order.totalAmount,
       createdAt: order.createdAt,
       pickupOption: order.pickupOption,

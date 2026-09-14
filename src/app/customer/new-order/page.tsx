@@ -267,12 +267,16 @@ export default function CustomerNewOrderPage() {
         throw new Error(result.error || 'Failed to create order');
       }
 
-      toast.success('Order created successfully!');
-
       if (result.order?.paymentUrl) {
+        // Straight to Paystack checkout; its callback_url brings the customer
+        // back to the order page, which verifies the payment.
+        toast.success('Order created successfully!');
         window.location.href = result.order.paymentUrl;
       } else {
-        router.push('/customer/orders');
+        // 202: order saved but payment initialization failed — the order page
+        // has a Complete Payment button to retry.
+        toast.warning('Order saved, but payment could not start. Please complete payment now.');
+        router.push(`/customer/orders/${result.order?.id ?? ''}`);
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to create order');

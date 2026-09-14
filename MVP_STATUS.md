@@ -271,27 +271,46 @@ Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
 
 ## ⚠️ Known Issues / Gaps
 
-### 🔴 Payment return path not closed (launch blocker)
+### ✅ Payment return path — CLOSED (fixed & validated 2026-09-14)
 
-Found in the 2026-09-13 audit:
+The 2026-09-13 audit found the payment loop open after checkout. All three
+gaps are fixed and the full loop was validated end-to-end in Paystack **test
+mode** (real checkout, test card `4084...4081`):
 
-- **No `callback_url` is sent to Paystack** on transaction initialization
-  (`src/lib/paystack.ts`). After paying, the customer lands on Paystack's
-  default end page with no route back to the app. `NEXT_PUBLIC_SITE_URL` is
-  documented as the Paystack callback origin but is never used by the
-  payment code.
-- **`/api/payment/verify/[reference]` has zero client callers.** Payment
-  confirmation currently depends entirely on the webhook (which is solid:
-  HMAC-SHA512, timing-safe compare, amount/currency re-validation).
-- **"Retry payment" is a dead end.** When Paystack initialization fails,
-  `POST /api/orders` returns 202 telling the customer to "retry payment
-  from the order page", but the `paymentUrl` is discarded, no retry
-  endpoint exists, and the order detail page has no pay button. Such
-  orders are permanently unpayable.
+- **`callback_url` is now sent** on every transaction initialization
+  (`NEXT_PUBLIC_SITE_URL` + `/customer/orders/[id]?payment=return`), both at
+  order creation and on retry.
+- **The order page closes the loop client-side.** On return from Paystack it
+  auto-calls `/api/payment/verify/[reference]` (the endpoint finally has a
+  caller); the webhook remains the source of truth where reachable.
+- **Retry is no longer a dead end.** `POST /api/orders/[id]/pay`
+  (re-)initializes payment at the stored server-side total, and the order
+  page shows a **Complete Payment** button on unpaid orders. The 202 path
+  routes the customer to that button instead of a dead order list.
+- **Double-charge guard.** Before initializing a fresh transaction, the retry
+  endpoint re-verifies any existing reference with Paystack: if the earlier
+  checkout actually succeeded (order looks UNPAID locally, e.g. the return
+  verify failed transiently), the order is reconciled to PAID and no new
+  charge is created. Validated live: an order paid while the app was down
+  was recovered through this path on a cold server.
+- **P2028 fix.** Prisma interactive transactions (used by payment
+  confirmation) timed out at the 5s default on cold starts — the first
+  transaction must also establish a new TLS connection to the Supabase
+  pooler. `src/lib/db.ts` now configures `transactionOptions` (maxWait 15s,
+  timeout 30s) globally. This was the failure that made the return-path
+  verify 500 during validation; warm calls worked, masking the bug.
 
-Fix: send `callback_url` (from `NEXT_PUBLIC_SITE_URL`), add a payment
-confirmation page/step that calls the verify endpoint, and add a
-retry-payment endpoint plus a pay button on the order detail page.
+Remaining payment notes (not blockers):
+
+- Webhook (`charge.success`) remains unit-tested only — it needs a public
+  URL, so it can only be exercised after the production deploy. The
+  client-side verify covers confirmation until then.
+- Paystack checkout sits behind a Cloudflare Turnstile challenge that blocks
+  fully automated local testing; the final validation round used a human in
+  the loop on the visible browser.
+- Test keys (`sk_test_…`) are still in `.env`; production keys must be set
+  at deploy time, and the test seed accounts must not be seeded in
+  production (see `prisma/seed.ts` guards).
 
 ### 🔴 `/customer-dashboard` not auth-gated (launch blocker)
 
