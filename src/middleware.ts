@@ -65,6 +65,7 @@ const publicApiRoutes = [
   '/api/quotations', // POST (contact form) is public; GET is admin-gated in the handler
   '/api/certificates/verify', // public certificate lookup (no login required)
   '/api/pricing', // public price list for the booking flow
+  '/api/testimonials', // public: approved list for the homepage + submissions (admin-moderated)
   '/api/payment/webhook', // Paystack server-to-server; authenticated via HMAC signature in the handler
   '/api/health', // public liveness probe; exposes no database state
   '/api/readiness', // public readiness probe; returns generic dependency state only
@@ -87,7 +88,10 @@ const isPublicPath = (pathname: string) => {
 // left to Next.js routing so unknown URLs render the 404 page instead of being
 // bounced to a login screen.
 const protectedPagePrefixes = ['/customer/', '/rider/', '/partner/', '/admin/'];
-const protectedPagePaths = ['/admin-dashboard'];
+// Route hosts that re-export portal pages but don't share their prefix:
+// /customer/dashboard re-exports /customer-dashboard, /admin/dashboard
+// re-exports /admin-dashboard. Without these entries the hosts are public.
+const protectedPagePaths = ['/admin-dashboard', '/customer-dashboard'];
 
 const isProtectedPage = (pathname: string) =>
   protectedPagePaths.includes(pathname) ||
