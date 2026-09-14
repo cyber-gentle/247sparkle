@@ -252,6 +252,21 @@ model Pricing {
   @@map("pricing")
 }
 
+// ============= TESTIMONIALS =============
+// Public submissions, displayed on the homepage only after admin approval.
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  location  String?
+  service   String // LAUNDRY | HOME_CLEANING | OFFICE_CLEANING | FUMIGATION
+  rating    Int // 1–5
+  quote     String
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("testimonials")
+}
+
 // ============= COMMISSIONS =============
 model Commission {
   id        String  @id @default(cuid())

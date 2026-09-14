@@ -312,20 +312,32 @@ Remaining payment notes (not blockers):
   at deploy time, and the test seed accounts must not be seeded in
   production (see `prisma/seed.ts` guards).
 
-### 🔴 `/customer-dashboard` not auth-gated (launch blocker)
+### ✅ `/customer-dashboard` auth gate — CLOSED (fixed 2026-09-14)
 
-`src/middleware.ts` protects `/admin-dashboard` in `protectedPagePaths`,
-but the `/customer/` prefix matcher does not match `/customer-dashboard`.
-The full customer dashboard page (the implementation host that
-`/customer/dashboard` re-exports) is publicly reachable without a session.
-Fix the matcher, or remove the orphan route.
+The 2026-09-13 audit found `/customer-dashboard` (the implementation host
+that `/customer/dashboard` re-exports) publicly reachable: the `/customer/`
+prefix matcher didn't match it. It is now listed in `protectedPagePaths` in
+`src/middleware.ts` alongside `/admin-dashboard`, and anonymous visits
+redirect to `/customer/login` (validated: 307 without a session).
 
-### 🔴 Placeholder homepage content (launch blocker)
+### ✅ Placeholder testimonials — CLOSED (fixed 2026-09-14)
 
-`src/app/homepage/components/TestimonialsSection.tsx` ships fabricated
-5-star reviews ("Placeholder reviews per the brief"), one of which
-advertises map tracking — a feature that was removed. Replace with real
-quotes or remove the section before launch.
+The fabricated 5-star reviews (one advertising the removed map-tracking
+feature) are gone. The section is now a real pipeline:
+
+- **Public submission** — `POST /api/testimonials` (Zod-validated,
+  rate-limited at 3/min, no moderation state echoed to submitters) feeds a
+  `Testimonial` table; submissions land unapproved.
+- **Admin moderation** — `/admin/testimonials` (sidebar: Finance & Content)
+  lists pending-first with Approve / Unpublish / Delete, backed by
+  `/api/admin/testimonials`.
+- **Display** — the homepage section fetches approved testimonials only.
+  With zero approved it shows a first-customer invitation plus the
+  submission form; once approved quotes exist it renders the card grid with
+  the "share your testimony" form behind a toggle.
+
+Validated live end-to-end: public submit → pending → admin approve →
+public listing → admin delete → empty again.
 
 ### Quotations endpoint gaps
 
