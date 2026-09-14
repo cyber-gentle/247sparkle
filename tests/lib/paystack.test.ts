@@ -54,7 +54,11 @@ describe('Paystack client boundary', () => {
 
   it('sends callback_url when given so checkout returns the customer to the app', async () => {
     paystackHttp.post.mockResolvedValue({
-      data: { status: true, message: 'ok', data: { authorization_url: 'u', access_code: 'a', reference: 'r' } },
+      data: {
+        status: true,
+        message: 'ok',
+        data: { authorization_url: 'u', access_code: 'a', reference: 'r' },
+      },
     });
 
     await initializePayment(

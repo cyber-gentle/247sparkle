@@ -219,8 +219,7 @@ export async function POST(request: NextRequest) {
             id: order.id,
             totalAmount: order.totalAmount,
           },
-          error:
-            'Payment initialization failed. You can retry payment from the order page.',
+          error: 'Payment initialization failed. You can retry payment from the order page.',
         },
         { status: 202 }
       );

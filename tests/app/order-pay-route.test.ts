@@ -131,12 +131,15 @@ describe('POST /api/orders/[id]/pay (retry payment)', () => {
   it('re-verifies an existing reference and never double-charges a completed checkout', async () => {
     // Order looks UNPAID locally, but its earlier transaction succeeded at
     // Paystack (e.g. the return-path verify call failed transiently).
-    db.order.findUnique.mockResolvedValue(
-      unpaidOrder({ paystackReference: 'existing-reference' })
-    );
+    db.order.findUnique.mockResolvedValue(unpaidOrder({ paystackReference: 'existing-reference' }));
     paystack.verifyPayment.mockResolvedValue({
       status: true,
-      data: { reference: 'existing-reference', amount: 150_000, currency: 'NGN', status: 'success' },
+      data: {
+        reference: 'existing-reference',
+        amount: 150_000,
+        currency: 'NGN',
+        status: 'success',
+      },
     });
     paymentConfirmation.mockResolvedValue({ ok: true, alreadyProcessed: false, order: {} });
 
