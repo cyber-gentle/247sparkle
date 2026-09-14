@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -12,6 +12,8 @@ import {
   Mail,
   CheckCircle2,
   Clock,
+  CreditCard,
+  Loader2,
   Truck,
   Sparkles,
   Home,
@@ -26,6 +28,7 @@ interface OrderDetails {
   serviceType: string;
   status: string;
   paymentStatus: string;
+  paystackReference?: string | null;
   totalAmount: number;
   createdAt: string;
   pickupAddress?: string;
@@ -58,6 +61,10 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [orderId, setOrderId] = useState<string>('');
+  const [isPaying, setIsPaying] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  // Guards against double verification (React strict mode re-runs effects).
+  const verifyAttempted = useRef(false);
 
   useEffect(() => {
     params.then((p) => {
@@ -113,6 +120,75 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
       toast.error('Failed to load order details');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Paystack's callback_url lands the customer back here with ?payment=return.
+  // Close the payment loop client-side by verifying the transaction — the
+  // webhook may be unreachable in local deployments.
+  const verifyReturnedPayment = async (reference: string) => {
+    setIsVerifying(true);
+    try {
+      const response = await fetch(`/api/payment/verify/${reference}`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        toast.success('Payment confirmed — thank you!');
+      } else {
+        // The webhook remains the source of truth; this is not a hard failure
+        // for the customer, so keep the message calm.
+        toast.info('We are still confirming your payment. This page will update shortly.');
+      }
+    } catch {
+      toast.error('Could not reach the payment verification service.');
+    } finally {
+      setIsVerifying(false);
+      // Strip ?payment=return so refreshes don't re-trigger verification.
+      window.history.replaceState(null, '', `/customer/orders/${orderId}`);
+      await fetchOrderDetails(orderId);
+    }
+  };
+
+  useEffect(() => {
+    if (!order || verifyAttempted.current) return;
+    if (order.paymentStatus !== 'UNPAID' || !order.paystackReference) return;
+
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get('payment') === 'return') {
+      verifyAttempted.current = true;
+      verifyReturnedPayment(order.paystackReference);
+    }
+  }, [order]);
+
+  // (Re-)initialize payment for an unpaid order: covers both failed initial
+  // initialization and abandoned checkouts.
+  const handlePayNow = async () => {
+    if (!order) return;
+    setIsPaying(true);
+    try {
+      const response = await fetch(`/api/orders/${order.id}/pay`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 409) {
+          toast.info('This order is already paid.');
+          fetchOrderDetails(order.id);
+        } else {
+          throw new Error(data.error || 'Failed to start payment');
+        }
+        return;
+      }
+
+      window.location.href = data.paymentUrl;
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to start payment');
+    } finally {
+      setIsPaying(false);
     }
   };
 
@@ -227,10 +303,31 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
               <div className="text-sm text-gray-500 mt-1">
                 {order.paymentStatus === 'PAID' ? (
                   <span className="text-green-600 font-semibold">✓ Paid</span>
+                ) : isVerifying ? (
+                  <span className="text-blue-600 font-semibold flex items-center gap-1.5 justify-end">
+                    <Loader2 size={14} className="animate-spin" /> Verifying payment...
+                  </span>
                 ) : (
                   <span className="text-yellow-600 font-semibold">⏳ {order.paymentStatus}</span>
                 )}
               </div>
+              {order.paymentStatus === 'UNPAID' && !isVerifying && (
+                <button
+                  onClick={handlePayNow}
+                  disabled={isPaying}
+                  className="mt-3 inline-flex items-center gap-2 rounded-xl bg-[#1A0A5E] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#120843] disabled:opacity-50"
+                >
+                  {isPaying ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" /> Starting payment...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard size={16} /> Complete Payment
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
 

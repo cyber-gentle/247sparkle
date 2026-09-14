@@ -172,12 +172,21 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Initialize Paystack payment
+    // Initialize Paystack payment. The callback_url brings the customer's
+    // browser back to their order page, which verifies the payment via
+    // /api/payment/verify/[reference] — the client-side closure of the
+    // payment loop (the webhook may be unreachable in local deployments).
+    const callbackUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/customer/orders/${order.id}?payment=return`;
     try {
-      const paystackResponse = await initializePayment(user.email, totalKobo, {
-        orderId: order.id,
-        customerId: customer.id,
-      });
+      const paystackResponse = await initializePayment(
+        user.email,
+        totalKobo,
+        {
+          orderId: order.id,
+          customerId: customer.id,
+        },
+        callbackUrl
+      );
 
       // Update order with Paystack reference
       await prisma.order.update({
@@ -210,7 +219,8 @@ export async function POST(request: NextRequest) {
             id: order.id,
             totalAmount: order.totalAmount,
           },
-          error: 'Payment initialization failed. You can retry payment from the order page.',
+          error:
+            'Payment initialization failed. You can retry payment from the order page.',
         },
         { status: 202 }
       );
