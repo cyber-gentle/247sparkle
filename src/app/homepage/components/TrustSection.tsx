@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Truck, Lock, MapPin, Clock, Award } from 'lucide-react';
+import { Shield, Truck, Lock, Phone, Clock, Award } from 'lucide-react';
 
 const TRUST_ITEMS = [
   {
@@ -21,17 +21,16 @@ const TRUST_ITEMS = [
     description: 'Every item in our care is insured. We handle your clothes like they are our own.',
   },
   {
-    id: 'trust-tracking',
-    icon: MapPin,
-    title: 'Real-time Tracking',
-    description: 'Track your rider on a live map from pickup to delivery, every step of the way.',
+    id: 'trust-availability',
+    icon: Phone,
+    title: '24/7 Availability',
+    description: 'Book, call, or WhatsApp us any time — day or night, 7 days a week.',
   },
   {
     id: 'trust-time',
     icon: Clock,
     title: 'On-time, Every Time',
-    description:
-      '98% of orders delivered within the promised time window. We respect your schedule.',
+    description: 'We deliver within the promised time window. Your schedule is respected, always.',
   },
   {
     id: 'trust-secure',

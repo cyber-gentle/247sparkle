@@ -35,7 +35,7 @@ const STEPS = [
     icon: Truck,
     title: 'We Pick Up Your Items',
     description:
-      'Our professional rider picks up your items right from your door. Track them in real-time on our app or website.',
+      'Our professional rider picks up your items right from your door, at the time window you choose.',
     color: 'bg-[#CC0000]',
     textColor: 'text-white',
   },
