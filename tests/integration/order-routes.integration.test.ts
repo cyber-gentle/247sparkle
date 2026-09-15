@@ -48,7 +48,10 @@ describe('database-backed customer order routes', () => {
     expect(paystack.initializePayment).toHaveBeenCalledWith(
       user.email,
       500_000,
-      expect.objectContaining({ customerId: customer.id, orderId: payload.order.id })
+      expect.objectContaining({ customerId: customer.id, orderId: payload.order.id }),
+      // callback_url: checkout returns the customer to their order page,
+      // which verifies the payment client-side.
+      expect.stringContaining(`/customer/orders/${payload.order.id}?payment=return`)
     );
 
     const savedOrder = await prisma.order.findUnique({

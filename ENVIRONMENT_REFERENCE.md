@@ -19,7 +19,6 @@ Use this file as a **name-and-purpose reference only**. Put real values in a loc
 | `STRUCTURED_LOGGING` | Optional | Enables JSON console bridge outside production | Set to `true` only for controlled troubleshooting |
 | `RESEND_API_KEY` | Optional | Enables transactional email delivery (password reset links) via Resend | Without it, reset tokens are still issued but no email is sent; store in the secret manager |
 | `EMAIL_FROM` | Optional | From-address for outgoing email | Defaults to `247Sparkle <no-reply@247sparkle.com>`; use a Resend-verified sender |
-| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Optional | Enables Google Places address autocomplete and live rider map tracking | Browser-exposed by design; restrict by HTTP referrer and enable billing. Without it the UI falls back to offline Otukpo landmarks |
 
 ## Connection patterns
 

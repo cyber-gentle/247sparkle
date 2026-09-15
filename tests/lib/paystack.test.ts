@@ -52,6 +52,30 @@ describe('Paystack client boundary', () => {
     });
   });
 
+  it('sends callback_url when given so checkout returns the customer to the app', async () => {
+    paystackHttp.post.mockResolvedValue({
+      data: {
+        status: true,
+        message: 'ok',
+        data: { authorization_url: 'u', access_code: 'a', reference: 'r' },
+      },
+    });
+
+    await initializePayment(
+      'customer@example.com',
+      125075,
+      { orderId: 'order-1' },
+      'http://localhost:4028/customer/orders/order-1?payment=return'
+    );
+
+    expect(paystackHttp.post).toHaveBeenCalledWith('/transaction/initialize', {
+      email: 'customer@example.com',
+      amount: 125075,
+      metadata: { orderId: 'order-1' },
+      callback_url: 'http://localhost:4028/customer/orders/order-1?payment=return',
+    });
+  });
+
   it('verifies by reference and reports a provider error without exposing provider payloads', async () => {
     paystackHttp.get.mockRejectedValue({
       response: { data: { message: 'Transaction not found' } },

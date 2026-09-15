@@ -6,7 +6,6 @@ import Link from 'next/link';
 import {
   ArrowLeft,
   MapPin,
-  Navigation,
   Phone,
   Mail,
   CheckCircle,
@@ -283,16 +282,6 @@ export default function RiderJobPage({ params: paramPromise }: RiderJobPageProps
                   <p className="text-sm font-semibold text-gray-700">Pickup Location</p>
                 </div>
                 <p className="text-gray-600 ml-6">{order.pickupAddress}</p>
-                {order.pickupAddress && (
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.pickupAddress)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ml-6 mt-1 inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
-                  >
-                    <Navigation size={14} /> Open in Google Maps
-                  </a>
-                )}
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-2">
@@ -300,16 +289,6 @@ export default function RiderJobPage({ params: paramPromise }: RiderJobPageProps
                   <p className="text-sm font-semibold text-gray-700">Delivery Location</p>
                 </div>
                 <p className="text-gray-600 ml-6">{order.deliveryAddress}</p>
-                {order.deliveryAddress && (
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.deliveryAddress)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ml-6 mt-1 inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
-                  >
-                    <Navigation size={14} /> Open in Google Maps
-                  </a>
-                )}
               </div>
             </div>
           </div>

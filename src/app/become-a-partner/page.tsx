@@ -8,9 +8,9 @@ export default function BecomeAPartnerPage() {
   return (
     <>
       <PublicNavbar />
-      <main className="bg-slate-50 pb-20 pt-24">
+      <main className="bg-slate-50 pb-12 md:pb-20 pt-20 md:pt-24">
         <section className="mx-auto w-full max-w-6xl px-6 lg:px-10">
-          <div className="mb-8 rounded-3xl bg-[#1A0A5E] p-8 text-white">
+          <div className="mb-6 md:mb-8 rounded-3xl bg-[#1A0A5E] p-6 md:p-8 text-white">
             <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-[#F5C200]">
               Partner Program
             </p>
@@ -23,7 +23,7 @@ export default function BecomeAPartnerPage() {
             </p>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-4 md:gap-5 md:grid-cols-2">
             <article className="public-card public-card-hover public-card-accent">
               <div className="public-card-body flex h-full flex-col">
                 <div className="mb-5 flex items-start justify-between gap-4">

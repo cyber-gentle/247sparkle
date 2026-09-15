@@ -68,29 +68,29 @@ const SERVICES = [
 
 export default function ServicesSection() {
   return (
-    <section id="services" className="py-20 lg:py-28 bg-gray-50">
+    <section id="services" className="py-12 md:py-20 lg:py-28 bg-gray-50">
       <div className="max-w-screen-2xl mx-auto px-6 lg:px-10">
         {/* Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-8 md:mb-16">
           <span className="text-xs font-bold tracking-widest uppercase text-[#CC0000] mb-3 block">
             Complete Solutions
           </span>
-          <h2 className="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-[#1A0A5E] mb-4">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold text-[#1A0A5E] mb-3 md:mb-4">
             One App, All Your Cleaning Needs
           </h2>
-          <p className="text-gray-500 max-w-2xl mx-auto text-base leading-relaxed">
+          <p className="text-gray-500 max-w-2xl mx-auto text-sm md:text-base leading-relaxed">
             Whether it&apos;s laundry, your home, your office, or pest control — we handle
             everything with the same professional care and attention to detail.
           </p>
         </div>
 
         {/* Services Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
           {SERVICES?.map((service) => {
             const Icon = service?.icon;
             return (
               <div key={service?.id} className="public-card public-card-hover group flex flex-col">
-                <div className="relative h-60 overflow-hidden bg-slate-100">
+                <div className="relative h-36 md:h-60 overflow-hidden bg-slate-100">
                   <AppImage
                     src={service?.image}
                     alt={service?.imageAlt || service?.title}
@@ -101,26 +101,29 @@ export default function ServicesSection() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/15 via-transparent to-transparent" />
                   <div
-                    className="absolute top-4 left-4 flex h-10 w-10 items-center justify-center rounded-xl shadow-lg"
+                    className="absolute top-3 left-3 md:top-4 md:left-4 flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-xl shadow-lg"
                     style={{ backgroundColor: service?.accent }}
                   >
-                    <Icon size={20} className="text-white" />
+                    <Icon size={18} className="text-white md:hidden" />
+                    <Icon size={20} className="text-white hidden md:block" />
                   </div>
                 </div>
                 {/* Content */}
-                <div className="flex flex-1 flex-col p-5">
-                  <div className="mb-1">
+                <div className="flex flex-1 flex-col p-4 md:p-5">
+                  <div className="mb-1 hidden md:block">
                     <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">
                       {service?.subtitle}
                     </span>
                   </div>
-                  <h3 className="text-lg font-bold text-[#1A0A5E] mb-2">{service?.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed mb-4 flex-1">
+                  <h3 className="text-base md:text-lg font-bold text-[#1A0A5E] mb-1.5 md:mb-2">
+                    {service?.title}
+                  </h3>
+                  <p className="text-[13px] md:text-sm text-gray-500 leading-snug md:leading-relaxed mb-3 md:mb-4 flex-1">
                     {service?.description}
                   </p>
 
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-1.5 mb-4">
+                  {/* Tags (desktop and up — the services page carries the detail on mobile) */}
+                  <div className="hidden md:flex flex-wrap gap-1.5 mb-3 md:mb-4">
                     {service?.tags?.map((tag) => (
                       <span
                         key={`${service?.id}-tag-${tag?.toLowerCase()?.replace(/\s+/g, '-')}`}
@@ -132,7 +135,7 @@ export default function ServicesSection() {
                   </div>
 
                   {/* Price + CTA */}
-                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                  <div className="flex items-center justify-between pt-2.5 md:pt-3 border-t border-gray-100">
                     <span className="text-sm font-bold" style={{ color: service?.accent }}>
                       {service?.price}
                     </span>

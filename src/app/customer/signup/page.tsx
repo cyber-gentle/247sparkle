@@ -8,7 +8,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   ArrowLeft,
   CheckCircle2,
-  Lock,
   Mail,
   Phone,
   Sparkles,
@@ -16,6 +15,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import PasswordField, { PASSWORD_MIN_LENGTH } from '@/components/ui/PasswordField';
 import {
   customerSignupSchema,
   type CustomerSignupFormData,
@@ -45,6 +45,7 @@ export default function CustomerSignupPage() {
     register,
     handleSubmit,
     setFocus,
+    watch,
     formState: { errors },
   } = useForm<CustomerSignupFormData>({
     resolver: zodResolver(customerSignupSchema),
@@ -52,6 +53,8 @@ export default function CustomerSignupPage() {
     reValidateMode: 'onChange',
     shouldFocusError: true,
   });
+
+  const passwordValue = watch('password') || '';
 
   const onSubmit = async (data: CustomerSignupFormData) => {
     setIsLoading(true);
@@ -274,57 +277,27 @@ export default function CustomerSignupPage() {
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block">
-                  <span className="mb-1.5 block text-sm font-bold text-slate-700">Password</span>
-                  <span className="relative block">
-                    <Lock
-                      className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                      size={18}
-                    />
-                    <input
-                      {...register('password')}
-                      type="password"
-                      aria-invalid={!!errors.password}
-                      aria-describedby={errors.password ? 'password-error' : undefined}
-                      minLength={6}
-                      placeholder="At least 6 characters"
-                      className={`public-field-with-icon ${errors.password ? 'border-red-500' : ''}`}
-                    />
-                  </span>
-                  {errors.password && (
-                    <p id="password-error" className="mt-1 text-sm text-red-600">
-                      {errors.password.message}
-                    </p>
-                  )}
-                </label>
+                <PasswordField
+                  {...register('password')}
+                  id="password"
+                  label="Password"
+                  minLength={PASSWORD_MIN_LENGTH}
+                  placeholder={`At least ${PASSWORD_MIN_LENGTH} characters`}
+                  autoComplete="new-password"
+                  showRequirement
+                  error={errors.password?.message}
+                />
 
-                <label className="block">
-                  <span className="mb-1.5 block text-sm font-bold text-slate-700">
-                    Confirm Password
-                  </span>
-                  <span className="relative block">
-                    <Lock
-                      className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                      size={18}
-                    />
-                    <input
-                      {...register('confirmPassword')}
-                      type="password"
-                      aria-invalid={!!errors.confirmPassword}
-                      aria-describedby={
-                        errors.confirmPassword ? 'confirmPassword-error' : undefined
-                      }
-                      minLength={6}
-                      placeholder="Repeat password"
-                      className={`public-field-with-icon ${errors.confirmPassword ? 'border-red-500' : ''}`}
-                    />
-                  </span>
-                  {errors.confirmPassword && (
-                    <p id="confirmPassword-error" className="mt-1 text-sm text-red-600">
-                      {errors.confirmPassword.message}
-                    </p>
-                  )}
-                </label>
+                <PasswordField
+                  {...register('confirmPassword')}
+                  id="confirmPassword"
+                  label="Confirm Password"
+                  minLength={PASSWORD_MIN_LENGTH}
+                  placeholder="Repeat password"
+                  autoComplete="new-password"
+                  matchValue={passwordValue}
+                  error={errors.confirmPassword?.message}
+                />
               </div>
 
               {submitError && (

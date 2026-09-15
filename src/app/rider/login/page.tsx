@@ -6,18 +6,10 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import {
-  Lock,
-  Mail,
-  AlertCircle,
-  Zap,
-  CheckCircle2,
-  TrendingUp,
-  Shield,
-  Clock,
-} from 'lucide-react';
+import { Mail, AlertCircle, Zap, CheckCircle2, TrendingUp, Shield, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import PortalAuthShell from '@/components/auth/PortalAuthShell';
+import PasswordField from '@/components/ui/PasswordField';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -118,27 +110,14 @@ export default function RiderLoginPage() {
         </div>
 
         <div>
-          <label htmlFor="password" className="mb-1.5 block text-sm font-bold text-slate-700">
-            Password
-          </label>
-          <span className="relative block">
-            <Lock
-              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-              size={18}
-            />
-            <input
-              {...register('password')}
-              type="password"
-              id="password"
-              placeholder="••••••••"
-              className={`public-field-with-icon ${errors.password ? 'border-red-500' : ''}`}
-            />
-          </span>
-          {errors.password && (
-            <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-              <AlertCircle size={14} /> {errors.password.message}
-            </p>
-          )}
+          <PasswordField
+            {...register('password')}
+            id="password"
+            label="Password"
+            placeholder="••••••••"
+            autoComplete="current-password"
+            error={errors.password?.message}
+          />
           <div className="mt-2 text-right">
             <Link
               href="/forgot-password"

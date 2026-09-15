@@ -1,12 +1,13 @@
 # 247Sparkle MVP — Implementation Status
 
-**Last Updated**: September 2026
-**Overall Status**: Pre-production release candidate — feature-complete for MVP
-
-All MVP functionality is implemented and the five quality gates
-(`format:check`, `lint`, `type-check`, `test`, `build`) pass on the current
-commit. Remaining work is owner-supplied credentials and infrastructure
-rehearsals, not feature development — see [Remaining Work](#-remaining-work).
+**Last Updated**: 2026-09-13 (post-audit revision)
+**Overall Status**: Near-complete — all five quality gates pass on the current
+commit (`format:check`, `lint`, `type-check`, `test`, `build`; 190/190 unit
+tests green), but a 2026-09-13 audit found code-level launch blockers that
+must be fixed before publish — see [Known Issues](#️-known-issues--gaps) and
+[Remaining Work](#-remaining-work). Beyond those fixes, remaining work is
+owner-supplied credentials and infrastructure rehearsals, not feature
+development.
 
 ---
 
@@ -42,10 +43,13 @@ Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
   link on all four portal login pages
 - HTTP-only cookies with 7-day expiry
 - Role-based access control (CUSTOMER, RIDER, PARTNER, ADMIN)
+- Admin TOTP two-factor authentication (`/api/auth/admin/2fa`): first-login
+  QR enrollment, verify stage, lockout accounting, audit logging, rate
+  limited. No session cookie is issued until 2FA passes.
 
-### API Routes (56 endpoints)
+### API Routes (57 endpoints)
 
-#### Auth — `/api/auth/` (9 routes)
+#### Auth — `/api/auth/` (10 routes)
 
 - `POST /api/auth/customer/signup`
 - `POST /api/auth/customer/login`
@@ -53,7 +57,8 @@ Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
 - `POST /api/auth/rider/login`
 - `POST /api/auth/partner/signup`
 - `POST /api/auth/partner/login`
-- `POST /api/auth/admin/login`
+- `POST /api/auth/admin/login` — issues pending 2FA tokens when enrolled
+- `POST /api/auth/admin/2fa` — TOTP enrollment/verify for admin login
 - `POST /api/auth/forgot-password` — cross-role reset link email
 - `POST /api/auth/reset-password` — consume token, set new password
 
@@ -150,7 +155,11 @@ Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
 - `/verify` — Public certificate verification
 - `/forgot-password` — Cross-portal password reset request
 - `/reset-password` — Set new password from emailed token
-- `/customer-dashboard` — Public dashboard landing
+- `/customer-dashboard` — Implementation host for the customer dashboard
+  (the `/customer/dashboard` route re-exports it and supplies the shared
+  portal components). Orphan route — nothing links to it, and it is
+  currently **not covered by the middleware auth matcher** (see
+  [Known Issues](#️-known-issues--gaps))
 
 #### Customer Portal (8)
 
@@ -197,11 +206,13 @@ Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
 
 - JWT HTTP-only cookies (7-day expiry)
 - Role-based access control (CUSTOMER, RIDER, PARTNER, ADMIN)
-- Zod input validation on all API routes
+- Zod input validation on API routes (exception: `POST /api/quotations` —
+  manual coercion, see Known Issues)
 - Middleware injects `x-user-id`, `x-user-email`, `x-user-role` headers
 - Server-only RLS on all Supabase tables
 - Image upload with magic-byte validation and file-type enforcement
-- Rate limiting on sensitive endpoints
+- Rate limiting on sensitive endpoints (exception: `POST /api/quotations`,
+  see Known Issues)
 - Structured logging with PII/secret redaction
 - Spoofed identity header removal in middleware
 
@@ -235,30 +246,133 @@ Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
 - Best-effort delivery: notification failures are logged, never surfaced as
   request errors, and never roll back a committed order transition
 
-### Test Coverage (38 test files)
+### Test Coverage (42 test files)
 
-#### Unit Tests (33 files)
+#### Unit Tests (37 files)
 
-| Group | Count | Examples |
-| --- | --- | --- |
-| Route/page tests (`tests/app/`) | 18 | admin-order-assign, paystack-webhook, rider-jobs, upload, certificates |
-| Library tests (`tests/lib/`) | 11 | money, order-integrity, order-state, auth, rate-limit, logger, order-notifications |
-| Component tests (`tests/components/`) | 3 | app-logo, contact-section, provider-application-shell |
-| Prisma tests (`tests/prisma/`) | 1 | seed-policy |
+| Group                                 | Count | Examples                                                                                                                |
+| ------------------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------- |
+| Route/page tests (`tests/app/`)       | 19    | admin-order-assign, admin-login-2fa-safeguards, paystack-webhook, rider-jobs, upload, certificates                      |
+| Library tests (`tests/lib/`)          | 13    | money, order-integrity, order-state, auth, auth-pending-two-factor, two-factor, rate-limit, logger, order-notifications |
+| Component tests (`tests/components/`) | 4     | app-logo, contact-section, password-field, provider-application-shell                                                   |
+| Prisma tests (`tests/prisma/`)        | 1     | seed-policy                                                                                                             |
 
 #### Integration Tests (5 files)
 
-| Test | Behavior exercised |
-| --- | --- |
-| `fulfilment-routes` | Rider approval gate, atomic single claim, duplicate claim conflict, status transitions |
-| `operations` | Health/readiness probes against real PostgreSQL |
-| `order-integrity` | Server-side pricing, kobo-safe totals, payment-event idempotency |
-| `order-routes` | Session enforcement, price lookup, payment reference persistence |
-| `session-and-middleware` | Bcrypt login, HttpOnly cookie, token verification, role matrix |
+| Test                     | Behavior exercised                                                                     |
+| ------------------------ | -------------------------------------------------------------------------------------- |
+| `fulfilment-routes`      | Rider approval gate, atomic single claim, duplicate claim conflict, status transitions |
+| `operations`             | Health/readiness probes against real PostgreSQL                                        |
+| `order-integrity`        | Server-side pricing, kobo-safe totals, payment-event idempotency                       |
+| `order-routes`           | Session enforcement, price lookup, payment reference persistence                       |
+| `session-and-middleware` | Bcrypt login, HttpOnly cookie, token verification, role matrix                         |
 
 ---
 
 ## ⚠️ Known Issues / Gaps
+
+### ✅ Payment return path — CLOSED (fixed & validated 2026-09-14)
+
+The 2026-09-13 audit found the payment loop open after checkout. All three
+gaps are fixed and the full loop was validated end-to-end in Paystack **test
+mode** (real checkout, test card `4084...4081`):
+
+- **`callback_url` is now sent** on every transaction initialization
+  (`NEXT_PUBLIC_SITE_URL` + `/customer/orders/[id]?payment=return`), both at
+  order creation and on retry.
+- **The order page closes the loop client-side.** On return from Paystack it
+  auto-calls `/api/payment/verify/[reference]` (the endpoint finally has a
+  caller); the webhook remains the source of truth where reachable.
+- **Retry is no longer a dead end.** `POST /api/orders/[id]/pay`
+  (re-)initializes payment at the stored server-side total, and the order
+  page shows a **Complete Payment** button on unpaid orders. The 202 path
+  routes the customer to that button instead of a dead order list.
+- **Double-charge guard.** Before initializing a fresh transaction, the retry
+  endpoint re-verifies any existing reference with Paystack: if the earlier
+  checkout actually succeeded (order looks UNPAID locally, e.g. the return
+  verify failed transiently), the order is reconciled to PAID and no new
+  charge is created. Validated live: an order paid while the app was down
+  was recovered through this path on a cold server.
+- **P2028 fix.** Prisma interactive transactions (used by payment
+  confirmation) timed out at the 5s default on cold starts — the first
+  transaction must also establish a new TLS connection to the Supabase
+  pooler. `src/lib/db.ts` now configures `transactionOptions` (maxWait 15s,
+  timeout 30s) globally. This was the failure that made the return-path
+  verify 500 during validation; warm calls worked, masking the bug.
+
+Remaining payment notes (not blockers):
+
+- Webhook (`charge.success`) remains unit-tested only — it needs a public
+  URL, so it can only be exercised after the production deploy. The
+  client-side verify covers confirmation until then.
+- Paystack checkout sits behind a Cloudflare Turnstile challenge that blocks
+  fully automated local testing; the final validation round used a human in
+  the loop on the visible browser.
+- Test keys (`sk_test_…`) are still in `.env`; production keys must be set
+  at deploy time, and the test seed accounts must not be seeded in
+  production (see `prisma/seed.ts` guards).
+
+### ✅ `/customer-dashboard` auth gate — CLOSED (fixed 2026-09-14)
+
+The 2026-09-13 audit found `/customer-dashboard` (the implementation host
+that `/customer/dashboard` re-exports) publicly reachable: the `/customer/`
+prefix matcher didn't match it. It is now listed in `protectedPagePaths` in
+`src/middleware.ts` alongside `/admin-dashboard`, and anonymous visits
+redirect to `/customer/login` (validated: 307 without a session).
+
+### ✅ Placeholder testimonials — CLOSED (fixed 2026-09-14)
+
+The fabricated 5-star reviews (one advertising the removed map-tracking
+feature) are gone. The section is now a real pipeline:
+
+- **Public submission** — `POST /api/testimonials` (Zod-validated,
+  rate-limited at 3/min, no moderation state echoed to submitters) feeds a
+  `Testimonial` table; submissions land unapproved.
+- **Admin moderation** — `/admin/testimonials` (sidebar: Finance & Content)
+  lists pending-first with Approve / Unpublish / Delete, backed by
+  `/api/admin/testimonials`.
+- **Display** — the homepage section fetches approved testimonials only.
+  With zero approved it shows a first-customer invitation plus the
+  submission form; once approved quotes exist it renders the card grid with
+  the "share your testimony" form behind a toggle.
+
+Validated live end-to-end: public submit → pending → admin approve →
+public listing → admin delete → empty again.
+
+**2026-09-15 sweep:** the same fabricated-content class was removed from the
+rest of the public site — the hero's "Live Tracking Active / 3 riders near
+you" widget (removed feature), its hardcoded "Adaeze O." quote card (now a
+verifiable-fumigation-certificate card), "real-time tracking" copy in the
+hero, How It Works, and the site meta description (now 24/7 + secure
+payment), the TrustSection "Real-time Tracking" card (now 24/7
+Availability), its fabricated "98% on-time" claim, and the hero's
+fabricated stat counters (2400+ orders / 98% / 4.8★ → 24/7 availability,
+100% insured items, 100% secure payments — swap real numbers back in
+`HeroSection.tsx` when they exist).
+
+### Quotations endpoint gaps
+
+`POST /api/quotations` is public but has **no rate limiting and no Zod
+validation** (manual `String()` coercion), unlike the equivalent contact
+form. The public `GET`/`PUT` admin handlers authorize off the
+`x-user-role` header directly rather than `requireRole` (safe only because
+middleware strips spoofed headers, but inconsistent with every other
+route). This contradicts the earlier "Zod on all API routes" claim.
+
+### Cloudinary simulated-upload fallback
+
+When `CLOUDINARY_*` credentials are absent, `src/lib/cloudinary.ts`
+silently returns a base64 data URI with `simulated: true`. Multi-MB data
+URIs then get stored in the database via signup. Production should fail
+loudly instead of degrading silently.
+
+### Certificate PDF on Netlify serverless (unverified)
+
+`src/lib/certificate-pdf.ts` is buffer-only (no filesystem writes), but
+pdfkit loads built-in Helvetica `.afm` font data from disk at runtime and
+`next.config.mjs` has no `serverExternalPackages: ['pdfkit']` entry.
+Whether the Netlify function bundle includes the font files is unproven —
+no production deploy has been validated.
 
 ### Real-Time Updates
 
@@ -268,15 +382,23 @@ Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
 
 ### Maps Integration
 
-- `AddressAutocomplete` (Google Places, gated on `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`,
-  with an Otukpo-landmarks offline fallback) and `LocationMap` (rider tracking)
-  components are implemented. A live API key has not yet been supplied or
-  billing-validated.
+- Places autocomplete and rider live-tracking: **removed (2026-09-13)** —
+  per-request-billed APIs. `AddressAutocomplete` remains a plain textarea
+  with Otukpo landmark quick-select chips.
+- A keyless static Google Maps embed is **back on the contact page
+  (2026-09-14)**: the classic `output=embed` URL pins the exact shop
+  location, needs no API key, and is free with unlimited requests. See
+  `src/components/LocationMap.tsx`.
 
 ### Payment Provider Validation
 
-- Paystack integration is code-complete (init, verify, signed webhook, idempotency).
-- Real test-mode validation is **paused** until the owner supplies test-only credentials through the approved secret channel.
+- Paystack integration is code-complete (init with callback_url, verify,
+  signed webhook, idempotency, double-charge guard).
+- **Validated end-to-end in test mode (2026-09-14):** real checkout, test
+  card, PAID order, plus the paid-while-app-down recovery path (see the
+  closed payment-return-path entry above). Remaining: live webhook needs a
+  public URL (post-deploy), and production keys replace test keys at
+  deploy time.
 
 ### Email Delivery
 
@@ -291,15 +413,15 @@ Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
 
 ### Code Quality Debt
 
-Lint passes with **0 errors**, but **114 warnings** remain. These are
+Lint passes with **0 errors**, but **122 warnings** remain. These are
 pre-existing, non-blocking, and tracked rather than suppressed:
 
-| Rule | Count | Nature |
-| --- | --- | --- |
-| `@typescript-eslint/no-explicit-any` | 76 | Mostly `catch (error: any)` blocks and third-party payload shapes |
-| `@typescript-eslint/no-unused-vars` | 26 | Unused imports and unused caught-error bindings |
-| `react-hooks/exhaustive-deps` | 10 | Intentionally narrowed effect dependency arrays on fetch-on-mount pages |
-| `jsx-a11y/alt-text` | 2 | `AppImage` wrapper forwards `alt` dynamically; the rule cannot see through it |
+| Rule                                 | Count | Nature                                                                        |
+| ------------------------------------ | ----- | ----------------------------------------------------------------------------- |
+| `@typescript-eslint/no-explicit-any` | 76    | Mostly `catch (error: any)` blocks and third-party payload shapes             |
+| `@typescript-eslint/no-unused-vars`  | 26    | Unused imports and unused caught-error bindings                               |
+| `react-hooks/exhaustive-deps`        | 10    | Intentionally narrowed effect dependency arrays on fetch-on-mount pages       |
+| `jsx-a11y/alt-text`                  | 2     | `AppImage` wrapper forwards `alt` dynamically; the rule cannot see through it |
 
 None affect runtime behavior. Clearing them is a mechanical follow-up best done
 on its own branch so the diff stays reviewable.
@@ -321,53 +443,72 @@ on its own branch so the diff stays reviewable.
 
 ## 🔜 Remaining Work
 
-The application is **feature-complete for MVP**. Nothing below is a missing
-feature — the work splits into owner-supplied credentials, infrastructure
-rehearsals, and optional cleanup.
+The application needs **no new features**, but the 2026-09-13 audit found
+code-level blockers (section 0) that must land before launch. The rest
+splits into owner-supplied credentials, infrastructure rehearsals, and
+optional cleanup.
+
+### 0. Code fixes (blocking launch — from the 2026-09-13 audit)
+
+| #   | Item                                                                                                                                                                    | Files                                                                      |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| 0.1 | **Close the payment loop**: send `callback_url` to Paystack, add a payment-confirmation step that calls `/api/payment/verify/[reference]`, and persist the `paymentUrl` | `src/lib/paystack.ts`, `src/app/api/orders/route.ts`, customer order pages |
+| 0.2 | **Retry payment**: add a retry-payment endpoint and a pay button on the order detail page                                                                               | new route + `src/app/customer/orders/[id]/page.tsx`                        |
+| 0.3 | **Auth-gate `/customer-dashboard`** (or remove the orphan route)                                                                                                        | `src/middleware.ts`                                                        |
+| 0.4 | **Quotations hardening**: Zod validation + rate limiting on `POST /api/quotations`; use `requireRole` on the admin handlers                                             | `src/app/api/quotations/route.ts`                                          |
+| 0.5 | **Replace placeholder testimonials** with real quotes or remove the section                                                                                             | `src/app/homepage/components/TestimonialsSection.tsx`                      |
+| 0.6 | **Fail loudly on missing Cloudinary credentials in production** instead of the simulated data-URI fallback                                                              | `src/lib/cloudinary.ts`                                                    |
+| 0.7 | **Remove junk committed at repo root** (`iron/iron.mp4`, `iron/*.txt` — duplicates of `public/iron/`)                                                                   | repo root                                                                  |
 
 ### A. Owner-supplied credentials (blocking launch)
 
 Each item is blocked on a secret only the site owner can provide, delivered
 through the approved secret channel. No code changes are required to consume them.
 
-| # | Item | Unblocks | Env var(s) |
-| --- | --- | --- | --- |
-| 1 | **Paystack test-mode keys** | Checkout, verification, signed webhook, replay and failure-path validation per `TESTING.md` | `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY` |
-| 2 | **Resend domain verification** | Real delivery of password-reset and order-status emails from a verified `247sparkle.com` sender | `RESEND_API_KEY`, `EMAIL_FROM` |
-| 3 | **Google Maps API key + billing** | Places autocomplete and live rider tracking (currently falls back to offline Otukpo landmarks) | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` |
+| #   | Item                           | Unblocks                                                                                        | Env var(s)                     |
+| --- | ------------------------------ | ----------------------------------------------------------------------------------------------- | ------------------------------ |
+| 1   | **Resend domain verification** | Real delivery of password-reset and order-status emails from a verified `247sparkle.com` sender | `RESEND_API_KEY`, `EMAIL_FROM` |
+
+Paystack test-mode keys were supplied (2026-09-13) and are set in `.env`;
+end-to-end checkout, verification, signed-webhook, replay and failure-path
+validation per `TESTING.md` are still outstanding. Google Maps integration
+was removed entirely (address autocomplete, embedded maps, and tracking
+links) to avoid Maps API usage charges — addresses are entered as free text
+with Otukpo landmark quick-select chips.
 
 ### B. Infrastructure rehearsals (blocking launch)
 
-| # | Item | Completion condition |
-| --- | --- | --- |
-| 4 | **Supabase test-environment rehearsal** | Isolated cloud project with least-privilege Prisma role, migrations applied, RLS posture and pooled/direct connections verified |
-| 5 | **Backup and restore validation** | A restore rehearsal has actually **succeeded** into a non-production target, with a documented restore owner, retention decision and test cadence |
-| 6 | **Local integration suite run** | Provision `sparkle247_test`, then `npm run test:integration:reset && npm run test:integration` passes |
-| 7 | **Production monitoring** | `/api/health` and `/api/readiness` monitored, structured JSON logs visible in the Netlify host |
+| #   | Item                                    | Completion condition                                                                                                                              |
+| --- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4   | **Supabase test-environment rehearsal** | Isolated cloud project with least-privilege Prisma role, migrations applied, RLS posture and pooled/direct connections verified                   |
+| 5   | **Backup and restore validation**       | A restore rehearsal has actually **succeeded** into a non-production target, with a documented restore owner, retention decision and test cadence |
+| 6   | **Local integration suite run**         | Provision `sparkle247_test`, then `npm run test:integration:reset && npm run test:integration` passes                                             |
+| 7   | **Production monitoring**               | `/api/health` and `/api/readiness` monitored, structured JSON logs visible in the Netlify host                                                    |
 
 ### C. Hardening and cleanup (non-blocking)
 
-| # | Item | Notes |
-| --- | --- | --- |
-| 8 | **Dependency audit** | Address production `npm audit` findings on a separately tested upgrade branch |
-| 9 | **Lint warning cleanup** | Clear the 114 tracked warnings above; mechanical, best on its own branch |
-| 10 | **Rate limiting review** | Tune the existing limits across auth and payment endpoints under realistic load |
+| #   | Item                     | Notes                                                                           |
+| --- | ------------------------ | ------------------------------------------------------------------------------- |
+| 8   | **Dependency audit**     | Address production `npm audit` findings on a separately tested upgrade branch   |
+| 9   | **Lint warning cleanup** | Clear the 114 tracked warnings above; mechanical, best on its own branch        |
+| 10  | **Rate limiting review** | Tune the existing limits across auth and payment endpoints under realistic load |
 
 ### D. Post-MVP enhancements (explicitly out of scope)
 
-| # | Item | Notes |
-| --- | --- | --- |
-| 11 | **SMS notifications** | Twilio for urgent order alerts; email already covers the status lifecycle |
-| 12 | **Socket.io real-time** | Replace the current 10s polling; requires a socket server, which Netlify does not host |
-| 13 | **Customer reviews and ratings** | Not in the original MVP brief |
-| 14 | **React Native mobile clients** | Future phase |
+| #   | Item                             | Notes                                                                                  |
+| --- | -------------------------------- | -------------------------------------------------------------------------------------- |
+| 11  | **SMS notifications**            | Twilio for urgent order alerts; email already covers the status lifecycle              |
+| 12  | **Socket.io real-time**          | Replace the current 10s polling; requires a socket server, which Netlify does not host |
+| 13  | **Customer reviews and ratings** | Not in the original MVP brief                                                          |
+| 14  | **React Native mobile clients**  | Future phase                                                                           |
 
 ### Definition of launch-ready
 
-The platform is ready to publish once **A (1–3)** and **B (4–7)** are complete
-and the release commit passes all five gates: `format:check`, `lint`,
-`type-check`, `test`, and `build`. Section C is recommended before launch but
-not blocking; section D is deliberately deferred.
+The platform is ready to publish once **section 0 (audit fixes)**, **A**,
+and **B** are complete and the release commit passes all five gates:
+`format:check`, `lint`, `type-check`, `test`, and `build`. Section C is
+recommended before launch but not blocking; section D is deliberately
+deferred.
 
 ---
 
@@ -381,37 +522,37 @@ not blocking; section D is deliberately deferred.
 
 ### Default Credentials (after seed)
 
-| Role | Email | Password |
-| --- | --- | --- |
+| Role  | Email                | Password                                                    |
+| ----- | -------------------- | ----------------------------------------------------------- |
 | Admin | admin@247sparkle.com | Set via `SEED_ADMIN_PASSWORD` (or printed once by the seed) |
 
 ---
 
 ## 📊 Metrics
 
-| Category | Count |
-| --- | --- |
-| API Route Files | 56 |
-| Database Models | 16 |
-| Frontend Pages | 39 |
-| Test Files | 38 (33 unit + 5 integration) |
-| Unit Tests (assertions) | 159 passing |
-| Auth Routes | 9 (+ logout) |
-| Admin Routes | 11 |
-| Operations Probes | 2 |
+| Category                | Count                        |
+| ----------------------- | ---------------------------- |
+| API Route Files         | 57                           |
+| Database Models         | 16                           |
+| Frontend Pages          | 39                           |
+| Test Files              | 42 (37 unit + 5 integration) |
+| Unit Tests (assertions) | 190 passing                  |
+| Auth Routes             | 10 (+ logout)                |
+| Admin Routes            | 11                           |
+| Operations Probes       | 2                            |
 
 ---
 
 ## 📖 Related Documentation
 
-| File | Purpose |
-| --- | --- |
-| `README.md` | Project overview, quick start, environment setup, release gates |
-| `DATABASE_SETUP.md` | Database connection model, migration procedure, seed policy |
-| `SUPABASE_SETUP.md` | Supabase-specific setup, RLS posture, financial test gate |
-| `ENVIRONMENT_REFERENCE.md` | Environment variable names and purpose reference |
-| `LOCAL_INTEGRATION_TESTING.md` | Local PostgreSQL integration test setup and commands |
-| `TESTING.md` | Test layers, commands, manual smoke test matrix, Paystack checklist |
-| `OPERATIONS_RUNBOOK.md` | Health probes, structured logging, alert procedures, backup gate |
-| `SETUP.md` | Full development-to-production handoff guide |
-| `prompt.md` | Original developer brief and requirements specification |
+| File                           | Purpose                                                             |
+| ------------------------------ | ------------------------------------------------------------------- |
+| `README.md`                    | Project overview, quick start, environment setup, release gates     |
+| `DATABASE_SETUP.md`            | Database connection model, migration procedure, seed policy         |
+| `SUPABASE_SETUP.md`            | Supabase-specific setup, RLS posture, financial test gate           |
+| `ENVIRONMENT_REFERENCE.md`     | Environment variable names and purpose reference                    |
+| `LOCAL_INTEGRATION_TESTING.md` | Local PostgreSQL integration test setup and commands                |
+| `TESTING.md`                   | Test layers, commands, manual smoke test matrix, Paystack checklist |
+| `OPERATIONS_RUNBOOK.md`        | Health probes, structured logging, alert procedures, backup gate    |
+| `SETUP.md`                     | Full development-to-production handoff guide                        |
+| `prompt.md`                    | Original developer brief and requirements specification             |

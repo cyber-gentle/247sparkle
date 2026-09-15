@@ -59,11 +59,17 @@ export interface ResolvedAccount {
 
 /**
  * Initialize a payment with Paystack
+ *
+ * `callbackUrl` is where Paystack sends the customer's browser after checkout
+ * (with `?reference=...&trxref=...` appended). The confirmation flow there
+ * calls the verify endpoint, which is the client-side closure of the payment
+ * loop for local deployments where the webhook can't reach the app.
  */
 export async function initializePayment(
   email: string,
   amountKobo: number,
-  metadata?: Record<string, any>
+  metadata?: Record<string, any>,
+  callbackUrl?: string
 ): Promise<InitializePaymentResponse> {
   if (!Number.isSafeInteger(amountKobo) || amountKobo <= 0) {
     throw new Error('Payment amount must be a positive integer kobo value');
@@ -74,6 +80,7 @@ export async function initializePayment(
       email,
       amount: amountKobo,
       metadata: metadata || {},
+      ...(callbackUrl ? { callback_url: callbackUrl } : {}),
     });
     return response.data;
   } catch (error: any) {

@@ -9,6 +9,13 @@ import { z } from 'zod';
 import { ArrowLeft, User, Mail, Phone, MapPin, Save, Lock, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import AppLogo from '@/components/ui/AppLogo';
+import PasswordField, { PASSWORD_MIN_LENGTH } from '@/components/ui/PasswordField';
+
+// Mirrors the inline profile input styling, minus the border colour and the
+// horizontal padding, which PasswordField owns (lock icon + eye toggle).
+const PROFILE_PASSWORD_INPUT_CLASS =
+  'w-full py-2.5 rounded-xl focus:ring-2 focus:ring-[#1A0A5E] focus:border-[#1A0A5E]';
+const PROFILE_PASSWORD_LABEL_CLASS = 'block text-sm font-semibold text-gray-700 mb-1';
 
 const profileSchema = z.object({
   fullName: z.string().min(2, 'Full name must be at least 2 characters'),
@@ -19,7 +26,7 @@ const profileSchema = z.object({
 const passwordSchema = z
   .object({
     currentPassword: z.string().min(1, 'Current password is required'),
-    newPassword: z.string().min(6, 'New password must be at least 6 characters'),
+    newPassword: z.string().min(8, 'New password must be at least 8 characters'),
     confirmPassword: z.string(),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
@@ -59,10 +66,13 @@ export default function CustomerProfilePage() {
     register: registerPassword,
     handleSubmit: handleSubmitPassword,
     reset: resetPasswordForm,
+    watch: watchPassword,
     formState: { errors: passwordErrors },
   } = useForm<PasswordFormData>({
     resolver: zodResolver(passwordSchema),
   });
+
+  const newPasswordValue = watchPassword('newPassword') || '';
 
   useEffect(() => {
     fetchProfile();
@@ -361,49 +371,39 @@ export default function CustomerProfilePage() {
             Change Password
           </h2>
           <form onSubmit={handleSubmitPassword(onSubmitPassword)} className="space-y-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Current Password
-              </label>
-              <input
-                type="password"
-                {...registerPassword('currentPassword')}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1A0A5E] focus:border-transparent"
-              />
-              {passwordErrors.currentPassword && (
-                <p className="text-red-500 text-sm mt-1">
-                  {passwordErrors.currentPassword.message}
-                </p>
-              )}
-            </div>
+            <PasswordField
+              {...registerPassword('currentPassword')}
+              id="currentPassword"
+              label="Current Password"
+              autoComplete="current-password"
+              error={passwordErrors.currentPassword?.message}
+              inputClassName={PROFILE_PASSWORD_INPUT_CLASS}
+              labelClassName={PROFILE_PASSWORD_LABEL_CLASS}
+            />
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">New Password</label>
-              <input
-                type="password"
-                {...registerPassword('newPassword')}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1A0A5E] focus:border-transparent"
-              />
-              {passwordErrors.newPassword && (
-                <p className="text-red-500 text-sm mt-1">{passwordErrors.newPassword.message}</p>
-              )}
-            </div>
+            <PasswordField
+              {...registerPassword('newPassword')}
+              id="newPassword"
+              label="New Password"
+              minLength={PASSWORD_MIN_LENGTH}
+              autoComplete="new-password"
+              showRequirement
+              error={passwordErrors.newPassword?.message}
+              inputClassName={PROFILE_PASSWORD_INPUT_CLASS}
+              labelClassName={PROFILE_PASSWORD_LABEL_CLASS}
+            />
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Confirm New Password
-              </label>
-              <input
-                type="password"
-                {...registerPassword('confirmPassword')}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1A0A5E] focus:border-transparent"
-              />
-              {passwordErrors.confirmPassword && (
-                <p className="text-red-500 text-sm mt-1">
-                  {passwordErrors.confirmPassword.message}
-                </p>
-              )}
-            </div>
+            <PasswordField
+              {...registerPassword('confirmPassword')}
+              id="confirmPassword"
+              label="Confirm New Password"
+              minLength={PASSWORD_MIN_LENGTH}
+              autoComplete="new-password"
+              matchValue={newPasswordValue}
+              error={passwordErrors.confirmPassword?.message}
+              inputClassName={PROFILE_PASSWORD_INPUT_CLASS}
+              labelClassName={PROFILE_PASSWORD_LABEL_CLASS}
+            />
 
             <button
               type="submit"

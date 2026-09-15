@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -12,6 +12,8 @@ import {
   Mail,
   CheckCircle2,
   Clock,
+  CreditCard,
+  Loader2,
   Truck,
   Sparkles,
   Home,
@@ -20,13 +22,13 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import AppLogo from '@/components/ui/AppLogo';
-import LocationMap, { LocationMapCaption } from '@/components/LocationMap';
 
 interface OrderDetails {
   id: string;
   serviceType: string;
   status: string;
   paymentStatus: string;
+  paystackReference?: string | null;
   totalAmount: number;
   createdAt: string;
   pickupAddress?: string;
@@ -59,6 +61,10 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [orderId, setOrderId] = useState<string>('');
+  const [isPaying, setIsPaying] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  // Guards against double verification (React strict mode re-runs effects).
+  const verifyAttempted = useRef(false);
 
   useEffect(() => {
     params.then((p) => {
@@ -68,9 +74,8 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
   }, [params]);
 
   // Poll while the order is actively moving (rider en route in either
-  // direction): the rider's GPS updates land on the same payload, so a
-  // refresh keeps both the status timeline and the tracking map live without
-  // a socket server. Terminal and pre-payment states stop the polling.
+  // direction): a refresh keeps the status timeline live without a socket
+  // server. Terminal and pre-payment states stop the polling.
   const isActive =
     order?.status === 'RIDER_ASSIGNED' ||
     order?.status === 'PICKED_UP' ||
@@ -115,6 +120,75 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
       toast.error('Failed to load order details');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Paystack's callback_url lands the customer back here with ?payment=return.
+  // Close the payment loop client-side by verifying the transaction — the
+  // webhook may be unreachable in local deployments.
+  const verifyReturnedPayment = async (reference: string) => {
+    setIsVerifying(true);
+    try {
+      const response = await fetch(`/api/payment/verify/${reference}`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        toast.success('Payment confirmed — thank you!');
+      } else {
+        // The webhook remains the source of truth; this is not a hard failure
+        // for the customer, so keep the message calm.
+        toast.info('We are still confirming your payment. This page will update shortly.');
+      }
+    } catch {
+      toast.error('Could not reach the payment verification service.');
+    } finally {
+      setIsVerifying(false);
+      // Strip ?payment=return so refreshes don't re-trigger verification.
+      window.history.replaceState(null, '', `/customer/orders/${orderId}`);
+      await fetchOrderDetails(orderId);
+    }
+  };
+
+  useEffect(() => {
+    if (!order || verifyAttempted.current) return;
+    if (order.paymentStatus !== 'UNPAID' || !order.paystackReference) return;
+
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get('payment') === 'return') {
+      verifyAttempted.current = true;
+      verifyReturnedPayment(order.paystackReference);
+    }
+  }, [order]);
+
+  // (Re-)initialize payment for an unpaid order: covers both failed initial
+  // initialization and abandoned checkouts.
+  const handlePayNow = async () => {
+    if (!order) return;
+    setIsPaying(true);
+    try {
+      const response = await fetch(`/api/orders/${order.id}/pay`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 409) {
+          toast.info('This order is already paid.');
+          fetchOrderDetails(order.id);
+        } else {
+          throw new Error(data.error || 'Failed to start payment');
+        }
+        return;
+      }
+
+      window.location.href = data.paymentUrl;
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to start payment');
+    } finally {
+      setIsPaying(false);
     }
   };
 
@@ -229,10 +303,31 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
               <div className="text-sm text-gray-500 mt-1">
                 {order.paymentStatus === 'PAID' ? (
                   <span className="text-green-600 font-semibold">✓ Paid</span>
+                ) : isVerifying ? (
+                  <span className="text-blue-600 font-semibold flex items-center gap-1.5 justify-end">
+                    <Loader2 size={14} className="animate-spin" /> Verifying payment...
+                  </span>
                 ) : (
                   <span className="text-yellow-600 font-semibold">⏳ {order.paymentStatus}</span>
                 )}
               </div>
+              {order.paymentStatus === 'UNPAID' && !isVerifying && (
+                <button
+                  onClick={handlePayNow}
+                  disabled={isPaying}
+                  className="mt-3 inline-flex items-center gap-2 rounded-xl bg-[#1A0A5E] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#120843] disabled:opacity-50"
+                >
+                  {isPaying ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" /> Starting payment...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard size={16} /> Complete Payment
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
 
@@ -287,50 +382,6 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
             </div>
           </div>
         </div>
-
-        {/* Live Tracking (laundry pickup/delivery) */}
-        {order.serviceType === 'LAUNDRY' &&
-          order.rider &&
-          order.rider.latitude != null &&
-          order.rider.longitude != null && (
-            <div className="bg-white rounded-2xl border border-gray-200 p-8 mb-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Truck size={20} className="text-[#1A0A5E]" />
-                  <h3 className="text-lg font-bold text-[#1A0A5E]">Live Rider Tracking</h3>
-                </div>
-                {isActive && (
-                  <span className="flex items-center gap-1.5 text-xs font-semibold text-green-700 bg-green-50 px-2.5 py-1 rounded-full">
-                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                    Live
-                  </span>
-                )}
-              </div>
-              <LocationMap
-                query={`${order.rider.latitude},${order.rider.longitude}`}
-                zoom={15}
-                className="h-64 w-full border-0 rounded-xl"
-                title="Rider current location"
-              />
-              <div className="mt-3 flex items-center justify-between gap-4">
-                <LocationMapCaption
-                  label={`Rider position${
-                    order.rider.lastLocationUpdate
-                      ? ` · updated ${new Date(order.rider.lastLocationUpdate).toLocaleTimeString()}`
-                      : ''
-                  }`}
-                />
-                <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${order.rider.latitude},${order.rider.longitude}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm font-semibold text-[#1A0A5E] hover:underline flex items-center gap-1 shrink-0"
-                >
-                  <MapPin size={14} /> Open in Google Maps
-                </a>
-              </div>
-            </div>
-          )}
 
         {/* Order Items */}
         {order.items && order.items.length > 0 && (
@@ -448,11 +499,6 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
                   <p className="text-sm text-gray-600">
                     <Phone size={12} className="inline mr-1" />
                     {order.rider.phone}
-                  </p>
-                )}
-                {order.serviceType === 'LAUNDRY' && isActive && order.rider.latitude == null && (
-                  <p className="text-xs text-gray-400 mt-1">
-                    Live location appears here once your rider is on the move
                   </p>
                 )}
               </div>

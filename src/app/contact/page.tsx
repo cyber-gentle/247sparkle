@@ -5,8 +5,8 @@ import { FormEvent, useState } from 'react';
 import PublicFooter from '@/components/PublicFooter';
 import PublicNavbar from '@/components/PublicNavbar';
 import LocationMap, {
+  SPARKLE_LOCATION_DIRECTIONS_URL,
   SPARKLE_LOCATION_EMBED_URL,
-  SPARKLE_LOCATION_QUERY,
 } from '@/components/LocationMap';
 
 export default function ContactPage() {
@@ -60,7 +60,7 @@ export default function ContactPage() {
   return (
     <>
       <PublicNavbar />
-      <main className="bg-slate-50 pb-20 pt-24">
+      <main className="bg-slate-50 pb-12 md:pb-20 pt-20 md:pt-24">
         <section className="mx-auto grid w-full max-w-6xl gap-6 px-6 lg:grid-cols-2 lg:px-10">
           <div className="public-card public-card-accent">
             <div className="public-card-body">
@@ -158,7 +158,7 @@ export default function ContactPage() {
             </div>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             <div className="public-card public-card-accent">
               <div className="public-card-body">
                 <h2 className="text-xl font-bold text-[#1A0A5E]">Contact Details</h2>
@@ -180,11 +180,23 @@ export default function ContactPage() {
 
             <div className="public-card overflow-hidden">
               <LocationMap
-                query={SPARKLE_LOCATION_QUERY}
                 embedUrl={SPARKLE_LOCATION_EMBED_URL}
                 title="247Sparkle location — Otukpo"
                 className="h-72 w-full border-0"
               />
+              <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-4 py-3">
+                <p className="text-xs font-semibold text-slate-500">
+                  247Sparkle · Otukpo, Benue State
+                </p>
+                <a
+                  href={SPARKLE_LOCATION_DIRECTIONS_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 rounded-lg bg-[#1A0A5E] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[#2D1B8E]"
+                >
+                  Get Directions
+                </a>
+              </div>
             </div>
           </div>
         </section>

@@ -24,6 +24,17 @@ model User {
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
+  // TOTP two-factor (admin login). The secret is AES-256-GCM encrypted with a
+  // key derived from JWT_SECRET — it must be recoverable to verify codes, but a
+  // raw database leak alone must not be enough to generate them.
+  twoFactorSecret  String?
+  twoFactorEnabled Boolean   @default(false)
+
+  // Admin account lockout: consecutive failed password attempts and the time
+  // until which login is refused. Reset on successful login.
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+
   // Relations
   customer      Customer?
   rider         Rider?
@@ -239,6 +250,21 @@ model Pricing {
 
   @@unique([serviceType, itemName])
   @@map("pricing")
+}
+
+// ============= TESTIMONIALS =============
+// Public submissions, displayed on the homepage only after admin approval.
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  location  String?
+  service   String // LAUNDRY | HOME_CLEANING | OFFICE_CLEANING | FUMIGATION
+  rating    Int // 1–5
+  quote     String
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("testimonials")
 }
 
 // ============= COMMISSIONS =============
