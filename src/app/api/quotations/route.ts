@@ -1,22 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import prisma from '@/lib/db';
+import { requireRole } from '@/lib/api-auth';
+import { RATE_LIMIT_POLICIES, rateLimitRequest } from '@/lib/api-rate-limit';
 
 // Values are stored lowercase to match the public contact form options and
 // the admin quotations UI (which capitalizes them for display). The Quotation
 // model columns are free-form strings, so casing is unconstrained at the DB layer.
 const ALLOWED_TYPES = ['office_cleaning', 'office_fumigation', 'commercial_fumigation'] as const;
-type ServiceType = (typeof ALLOWED_TYPES)[number];
+
+// Mirrors the public contact-message schema's bounds — same form family,
+// same guarantees. Rejects wrong types and oversized payloads instead of
+// coercing them.
+const quotationSchema = z.object({
+  serviceType: z.enum(ALLOWED_TYPES),
+  contactName: z.string().trim().min(2, 'Name must be at least 2 characters').max(100),
+  businessName: z.string().trim().max(100).optional(),
+  address: z.string().trim().min(5, 'Address must be at least 5 characters').max(300),
+  phone: z.string().trim().min(7, 'Phone number is required').max(20),
+  email: z.string().trim().email('Invalid email address'),
+  message: z.string().trim().min(10, 'Message must be at least 10 characters').max(2000),
+});
 
 /**
  * GET /api/quotations — admin only.
  * Returns all quotation requests, newest first.
  */
 export async function GET(request: NextRequest) {
-  const role = request.headers.get('x-user-role');
-
-  if (role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requireRole(request, ['ADMIN']);
+  if (!auth.ok) return auth.response;
 
   try {
     const quotations = await prisma.quotation.findMany({
@@ -31,48 +43,46 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * POST /api/quotations — public (no auth required).
+ * POST /api/quotations — public (no auth required), rate-limited.
  * Submitted from the public contact/quotation form.
  */
 export async function POST(request: NextRequest) {
+  const limited = await rateLimitRequest(
+    request,
+    'quotation-submission',
+    RATE_LIMIT_POLICIES.quotationSubmission
+  );
+  if (limited) return limited;
+
   try {
     const body = await request.json().catch(() => null);
     if (!body) {
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
 
-    const serviceType = String(body.serviceType ?? '');
-    const contactName = String(body.contactName ?? '').trim();
-    const address = String(body.address ?? '').trim();
-    const phone = String(body.phone ?? '').trim();
-    const email = String(body.email ?? '').trim();
-    const message = String(body.message ?? '').trim();
-
-    if (!ALLOWED_TYPES.includes(serviceType as ServiceType)) {
-      return NextResponse.json({ error: 'Invalid serviceType' }, { status: 400 });
-    }
-    if (!contactName || !address || !phone || !email || !message) {
-      return NextResponse.json(
-        { error: 'contactName, address, phone, email, and message are required' },
-        { status: 400 }
-      );
-    }
+    const data = quotationSchema.parse(body);
 
     const quotation = await prisma.quotation.create({
       data: {
-        serviceType: serviceType as ServiceType,
-        contactName,
-        businessName: String(body.businessName ?? '').trim() || null,
-        address,
-        phone,
-        email,
-        message,
+        serviceType: data.serviceType,
+        contactName: data.contactName,
+        businessName: data.businessName || null,
+        address: data.address,
+        phone: data.phone,
+        email: data.email,
+        message: data.message,
         status: 'new',
       },
     });
 
     return NextResponse.json({ quotation }, { status: 201 });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: error.issues },
+        { status: 400 }
+      );
+    }
     console.error('Create quotation error:', error);
     return NextResponse.json({ error: 'Failed to submit quotation request' }, { status: 500 });
   }

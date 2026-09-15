@@ -350,14 +350,25 @@ fabricated stat counters (2400+ orders / 98% / 4.8★ → 24/7 availability,
 100% insured items, 100% secure payments — swap real numbers back in
 `HeroSection.tsx` when they exist).
 
-### Quotations endpoint gaps
+### ✅ Quotations endpoint gaps — CLOSED (fixed 2026-09-15)
 
-`POST /api/quotations` is public but has **no rate limiting and no Zod
-validation** (manual `String()` coercion), unlike the equivalent contact
-form. The public `GET`/`PUT` admin handlers authorize off the
-`x-user-role` header directly rather than `requireRole` (safe only because
-middleware strips spoofed headers, but inconsistent with every other
-route). This contradicts the earlier "Zod on all API routes" claim.
+The 2026-09-13 audit found `POST /api/quotations` public with no rate
+limiting and no Zod validation (manual `String()` coercion), and the admin
+`GET`/`PUT` handlers authorizing off the `x-user-role` header instead of
+`requireRole`. All fixed:
+
+- `POST` is rate-limited (5/min, `quotationSubmission` policy) before
+  validation or any database write.
+- A Zod schema mirrors the contact-form bounds (email format, 2–100 name,
+  5–300 address, 10–2000 message, serviceType enum); wrong types are
+  rejected instead of coerced — `phone: {"$gt": ""}` no longer becomes
+  `"[object Object]"` in the database.
+- `GET` and `PUT` authorize via `requireRole(['ADMIN'])`, matching every
+  other admin route; no longer dependent on middleware header hygiene.
+
+Validated live: valid submission 201, bad email and non-string phone 400,
+rate limit 429 at exactly 5 requests/minute. Covered by
+`tests/app/quotations.test.ts`.
 
 ### Cloudinary simulated-upload fallback
 
