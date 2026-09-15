@@ -23,6 +23,9 @@ export const RATE_LIMIT_POLICIES = {
   // Public testimonial submissions — loose enough for real customers,
   // tight enough to blunt spam before moderation.
   testimonialSubmission: { limit: 3, windowMs: 60_000 },
+  // Public quotation requests (contact form) — matches the contact-message
+  // policy's intent; separate bucket so one form can't exhaust the other.
+  quotationSubmission: { limit: 5, windowMs: 60_000 },
   mutation: { limit: 60, windowMs: 60_000 },
 } as const satisfies Record<string, RateLimitPolicy>;
 
