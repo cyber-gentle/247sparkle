@@ -2,12 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import AppImage from '@/components/ui/AppImage';
-import { ArrowRight, ChevronDown, Star, MapPin } from 'lucide-react';
+import { ArrowRight, ChevronDown, Phone, ShieldCheck } from 'lucide-react';
 
-const HERO_STATS = [
-  { value: 2400, suffix: '+', label: 'Orders Delivered' },
-  { value: 98, suffix: '%', label: 'Satisfaction Rate' },
-  { value: 4.8, suffix: '★', label: 'Customer Rating', decimals: 1 },
+// Claims that are true pre-launch — no fabricated order counts or ratings.
+// When real numbers exist, swap them back in here.
+const HERO_STATS: { value: number; suffix: string; label: string; decimals?: number }[] = [
+  { value: 24, suffix: '/7', label: 'Always Available' },
+  { value: 100, suffix: '%', label: 'Insured Items' },
+  { value: 100, suffix: '%', label: 'Secure Payments' },
 ];
 
 function CountUpNumber({
@@ -86,25 +88,25 @@ export default function HeroSection() {
         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 w-52">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-white/80 text-xs font-semibold">Live Tracking Active</span>
+            <span className="text-white/80 text-xs font-semibold">Open 24/7</span>
           </div>
           <div className="flex items-center gap-2">
-            <MapPin size={14} className="text-[#F5C200]" />
-            <span className="text-white text-xs">3 riders near you</span>
+            <Phone size={14} className="text-[#F5C200]" />
+            <span className="text-white text-xs">Call or WhatsApp anytime</span>
           </div>
         </div>
       </div>
       <div className="absolute top-48 right-10 lg:right-24 z-10 hidden lg:block mt-24">
         <div className="bg-[#F5C200]/95 rounded-2xl p-4 w-48 shadow-gold">
-          <div className="flex items-center gap-1 mb-1">
-            {[1, 2, 3, 4, 5]?.map((s) => (
-              <Star key={`hero-star-${s}`} size={12} fill="#1A0A5E" className="text-[#1A0A5E]" />
-            ))}
+          <div className="flex items-center gap-1.5 mb-1">
+            <ShieldCheck size={14} className="text-[#1A0A5E]" />
+            <span className="text-[#1A0A5E] text-[10px] font-bold uppercase tracking-wider">
+              Verified Certificates
+            </span>
           </div>
           <p className="text-[#1A0A5E] text-xs font-semibold leading-snug">
-            &quot;My clothes came back better than dry-clean!&quot;
+            Every fumigation ends with an official certificate, verifiable online.
           </p>
-          <p className="text-[#1A0A5E]/60 text-[10px] mt-1 font-medium">— Adaeze O., Otukpo</p>
         </div>
       </div>
       {/* Main Content */}
@@ -125,7 +127,7 @@ export default function HeroSection() {
 
           <p className="text-base md:text-xl text-white/90 leading-relaxed mb-6 md:mb-8 max-w-2xl">
             Skip the hassle. Our professional laundry, home cleaning, and fumigation services come
-            to you with real-time tracking, flexible scheduling, and unbeatable care for your
+            to you with flexible scheduling, secure payment, and unbeatable care for your
             belongings.
           </p>
 

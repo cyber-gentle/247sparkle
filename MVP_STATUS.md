@@ -339,6 +339,17 @@ feature) are gone. The section is now a real pipeline:
 Validated live end-to-end: public submit → pending → admin approve →
 public listing → admin delete → empty again.
 
+**2026-09-15 sweep:** the same fabricated-content class was removed from the
+rest of the public site — the hero's "Live Tracking Active / 3 riders near
+you" widget (removed feature), its hardcoded "Adaeze O." quote card (now a
+verifiable-fumigation-certificate card), "real-time tracking" copy in the
+hero, How It Works, and the site meta description (now 24/7 + secure
+payment), the TrustSection "Real-time Tracking" card (now 24/7
+Availability), its fabricated "98% on-time" claim, and the hero's
+fabricated stat counters (2400+ orders / 98% / 4.8★ → 24/7 availability,
+100% insured items, 100% secure payments — swap real numbers back in
+`HeroSection.tsx` when they exist).
+
 ### Quotations endpoint gaps
 
 `POST /api/quotations` is public but has **no rate limiting and no Zod
