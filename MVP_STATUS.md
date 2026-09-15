@@ -382,15 +382,23 @@ no production deploy has been validated.
 
 ### Maps Integration
 
-- Removed (2026-09-13). Google Places autocomplete, embedded `LocationMap`
-  iframes, and "Open in Google Maps" links were all stripped to avoid Maps
-  API usage charges. `AddressAutocomplete` remains as a plain textarea with
-  Otukpo landmark quick-select chips.
+- Places autocomplete and rider live-tracking: **removed (2026-09-13)** —
+  per-request-billed APIs. `AddressAutocomplete` remains a plain textarea
+  with Otukpo landmark quick-select chips.
+- A keyless static Google Maps embed is **back on the contact page
+  (2026-09-14)**: the classic `output=embed` URL pins the exact shop
+  location, needs no API key, and is free with unlimited requests. See
+  `src/components/LocationMap.tsx`.
 
 ### Payment Provider Validation
 
-- Paystack integration is code-complete (init, verify, signed webhook, idempotency).
-- Real test-mode validation is **paused** until the owner supplies test-only credentials through the approved secret channel.
+- Paystack integration is code-complete (init with callback_url, verify,
+  signed webhook, idempotency, double-charge guard).
+- **Validated end-to-end in test mode (2026-09-14):** real checkout, test
+  card, PAID order, plus the paid-while-app-down recovery path (see the
+  closed payment-return-path entry above). Remaining: live webhook needs a
+  public URL (post-deploy), and production keys replace test keys at
+  deploy time.
 
 ### Email Delivery
 
@@ -405,7 +413,7 @@ no production deploy has been validated.
 
 ### Code Quality Debt
 
-Lint passes with **0 errors**, but **114 warnings** remain. These are
+Lint passes with **0 errors**, but **122 warnings** remain. These are
 pre-existing, non-blocking, and tracked rather than suppressed:
 
 | Rule                                 | Count | Nature                                                                        |
