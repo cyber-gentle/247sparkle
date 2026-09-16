@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { requireRole } from '@/lib/api-auth';
 
 export async function GET(request: NextRequest) {
-  if (request.headers.get('x-user-role') !== 'ADMIN') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-  }
+  const auth = await requireRole(request, ['ADMIN']);
+  if (!auth.ok) return auth.response;
 
   try {
     const today = new Date();

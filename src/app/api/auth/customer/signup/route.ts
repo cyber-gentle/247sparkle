@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash password
-    const passwordHash = await hash(validatedData.password, 10);
+    const passwordHash = await hash(validatedData.password, 12);
 
     // Create user and customer
     const user = await prisma.user.create({
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     response.cookies.set('auth_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60,
     });
 

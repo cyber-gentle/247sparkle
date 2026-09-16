@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/db';
+import { requireRole } from '@/lib/api-auth';
 
 const updateProfileSchema = z.object({
   fullName: z.string().min(2),
@@ -14,22 +15,17 @@ const updateProfileSchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
-  try {
-    const userId = request.headers.get('x-user-id');
+  const auth = await requireRole(request, ['RIDER']);
+  if (!auth.ok) return auth.response;
 
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  try {
+    const userId = auth.session.userId;
 
     const rider = await prisma.rider.findUnique({
       where: { userId },
       include: {
         user: {
-          select: {
-            fullName: true,
-            email: true,
-            phone: true,
-          },
+          select: { fullName: true, email: true, phone: true },
         },
       },
     });
@@ -61,17 +57,14 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  const auth = await requireRole(request, ['RIDER']);
+  if (!auth.ok) return auth.response;
+
   try {
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    const userId = auth.session.userId;
     const body = await request.json();
     const validatedData = updateProfileSchema.parse(body);
 
-    // Update user info
     await prisma.user.update({
       where: { id: userId },
       data: {
@@ -80,7 +73,6 @@ export async function PUT(request: NextRequest) {
       },
     });
 
-    // Update rider info
     const rider = await prisma.rider.update({
       where: { userId },
       data: {

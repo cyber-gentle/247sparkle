@@ -282,7 +282,7 @@ export async function generateCertificatePDF(data: CertificatePDFData): Promise<
       .font('Helvetica')
       .fillColor('#64748B')
       .text(
-        `Authenticity can be verified at anytime online: ${verifyUrl} · Tel: 09039661885`,
+        `Authenticity can be verified at anytime online: ${verifyUrl} · Tel: ${process.env.NEXT_PUBLIC_SUPPORT_PHONE ?? ''}`.trimEnd(),
         0,
         542,
         { align: 'center' }

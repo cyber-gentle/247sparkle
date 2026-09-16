@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/db';
+import { requireRole } from '@/lib/api-auth';
 import { nairaToKobo } from '@/lib/money';
 
 const withdrawalSchema = z.object({
@@ -8,13 +9,11 @@ const withdrawalSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const auth = await requireRole(request, ['RIDER']);
+  if (!auth.ok) return auth.response;
+
   try {
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    const userId = auth.session.userId;
     const body = await request.json();
     const validatedData = withdrawalSchema.parse(body);
     const amountKobo = nairaToKobo(validatedData.amount);
@@ -80,12 +79,11 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  try {
-    const userId = request.headers.get('x-user-id');
+  const auth = await requireRole(request, ['RIDER']);
+  if (!auth.ok) return auth.response;
 
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  try {
+    const userId = auth.session.userId;
 
     const rider = await prisma.rider.findUnique({
       where: { userId },
