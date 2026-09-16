@@ -141,7 +141,7 @@ export async function setAuthCookie(token: string): Promise<void> {
   cookieStore.set('auth_token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: 'strict',
     maxAge: 7 * 24 * 60 * 60, // 7 days
   });
 }

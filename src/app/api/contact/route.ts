@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
         email: validated.email,
         phone: validated.phone,
         message: validated.message,
-        status: 'new',
+        status: 'NEW',
       },
     });
 

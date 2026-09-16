@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: FAILURE_MESSAGES[consumed.reason] }, { status: 400 });
     }
 
-    const newPasswordHash = await hash(validatedData.newPassword, 10);
+    const newPasswordHash = await hash(validatedData.newPassword, 12);
 
     // The token was already consumed atomically, so even if this request is
     // replayed the reset endpoint rejects it — the password update itself is

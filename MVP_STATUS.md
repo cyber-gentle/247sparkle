@@ -1,6 +1,6 @@
 # 247Sparkle MVP — Implementation Status
 
-**Last Updated**: 2026-09-13 (post-audit revision)
+**Last Updated**: 2026-09-16 (post-audit Phase 1 & 2 fixes applied)
 **Overall Status**: Near-complete — all five quality gates pass on the current
 commit (`format:check`, `lint`, `type-check`, `test`, `build`; 190/190 unit
 tests green), but a 2026-09-13 audit found code-level launch blockers that
@@ -567,3 +567,74 @@ deferred.
 | `OPERATIONS_RUNBOOK.md`        | Health probes, structured logging, alert procedures, backup gate    |
 | `SETUP.md`                     | Full development-to-production handoff guide                        |
 | `prompt.md`                    | Original developer brief and requirements specification             |
+
+---
+
+## ✅ 2026-09-16 Audit Fixes — Phase 1 & 2 Applied
+
+A full engineering audit (~80+ files) was performed covering security,
+performance, architecture, testing, database, and API design. All Phase 1
+(immediate) and most Phase 2 fixes were applied in this session.
+
+### Auth / Security
+
+| Fix | Files changed |
+| --- | --- |
+| Replaced every raw `x-user-role` / `x-user-id` header auth check with `requireRole` / `requireSession` from `src/lib/api-auth.ts` | `api/admin/orders`, `api/admin/riders`, `api/admin/riders/[id]`, `api/admin/partners`, `api/admin/partners/[id]`, `api/admin/customers`, `api/admin/stats`, `api/rider/withdrawals`, `api/rider/profile`, `api/rider/availability`, `api/riders/location`, `api/orders/[id]` |
+| All auth cookies changed to `sameSite: 'strict'` | `api/auth/*/login`, `api/auth/logout`, `src/lib/auth.ts` |
+| bcrypt cost factor raised from 10 → 12 on all signup and reset-password routes | `api/auth/customer/signup`, `api/auth/rider/signup`, `api/auth/partner/signup`, `api/auth/reset-password` |
+| Removed raw `secret` field from 2FA enrollment JSON response (only `otpauthUri` returned) | `api/auth/admin/login` |
+| Fixed IP spoofing in `getClientIp` — now prefers `x-nf-client-connection-ip`, falls back to rightmost `x-forwarded-for` value | `src/lib/api-rate-limit.ts` |
+| Removed `Password: ${password}` from seed-admin stdout | `scripts/seed-admin.ts` |
+
+### Data Integrity
+
+| Fix | Files changed |
+| --- | --- |
+| Fixed `status: 'new'` → `'NEW'` so contact submissions appear in admin quotations list | `api/contact` |
+| Fixed N+1 pricing query — replaced per-item `findFirst` loop with single `findMany` + `Map` lookup | `api/orders` |
+| Fixed certificate number race condition — wrapped read-then-write in a retry loop (max 3 attempts) catching Prisma `P2002` | `api/certificates` |
+
+### Admin API Hardening
+
+| Fix | Files changed |
+| --- | --- |
+| Added pagination (`PAGE_SIZE=50`, `?page=` param, `skip`/`take`, returns `total`) | `api/admin/orders`, `api/admin/riders`, `api/admin/partners`, `api/admin/customers` |
+| Replaced unbounded `commissions: true` / `assignedOrders: true` / `orders: true` includes with `_count` summaries | `api/admin/riders`, `api/admin/partners`, `api/admin/customers` |
+| Removed `as any` casts; simplified action→status mapping via `ACTION_TO_STATUS` object | `api/admin/riders/[id]`, `api/admin/partners/[id]` |
+| Removed in-memory `totalSpend` computation (was loading all orders into memory) | `api/admin/customers` |
+
+### Configuration / Housekeeping
+
+| Fix | Files changed |
+| --- | --- |
+| Hardcoded support phone replaced with `process.env.NEXT_PUBLIC_SUPPORT_PHONE ?? ''` | `src/lib/certificate-pdf.ts` |
+| Added `NEXT_PUBLIC_SUPPORT_PHONE=` to env documentation | `.env.example` |
+| Added `prompt.md` and `*.mp4`/`*.mov`/`*.avi` to `.gitignore` | `.gitignore` |
+| Deleted `src/lib/enums.ts` — dead file with divergent/incomplete status values (7 vs 10 in `order-state.ts`) | deleted |
+
+### Verification (post-fix grep)
+
+All fixes confirmed present in the committed files:
+
+- No remaining raw `x-user-role` / `x-user-id` header auth checks in API routes
+- No `Password:` in seed-admin stdout
+- No raw `secret` in 2FA enrollment response
+- `status: 'NEW'` in contact route
+- `getClientIp` uses `x-nf-client-connection-ip` + rightmost XFF
+- All bcrypt calls use cost factor 12
+- All auth cookies use `sameSite: 'strict'`
+- `pricingMap` present in orders route (N+1 fix)
+- `attempt` / `P2002` present in certificates route (retry loop)
+- `src/lib/enums.ts` deleted
+
+### Remaining unfixed audit items (tracked, not blocking)
+
+| ID | Item |
+| --- | --- |
+| S3 | CSP `unsafe-inline` / `unsafe-eval` in `next.config.mjs` |
+| S9 | `GET /api/banks/resolve` unauthenticated Paystack proxy |
+| A3/D2 | Dual Float/Int money columns (`amount` / `amountKobo`) — requires schema migration |
+| P6 | Stale `RateLimitBucket` rows never pruned |
+| T1–T6 | Missing integration tests for race conditions (certificate retry, N+1 regression) |
+| T7 | CI pipeline does not run the integration suite |

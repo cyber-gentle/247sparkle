@@ -126,11 +126,9 @@ export async function POST(request: NextRequest) {
             email: user.email,
             role: 'ADMIN',
           }),
-          // Needed to render the QR code / manual entry key. The secret is only
-          // confirmed (twoFactorEnabled) once the admin proves their
-          // authenticator works.
+          // The otpauth URI is all the client needs to render the QR code.
+          // The raw secret is intentionally omitted from the response.
           otpauthUri: totpUri(user.email, secret),
-          secret,
         },
         { status: 200 }
       );

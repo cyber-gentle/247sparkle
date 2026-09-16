@@ -49,7 +49,6 @@ async function main() {
   console.log('========================================');
   console.log(`  Role:     ${admin.role}`);
   console.log(`  Email:    ${admin.email}`);
-  console.log(`  Password: ${password}`);
   console.log(`  Login UI: http://localhost:4028/admin/login`);
   console.log('========================================\n');
 }

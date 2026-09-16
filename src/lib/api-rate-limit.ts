@@ -30,7 +30,21 @@ export const RATE_LIMIT_POLICIES = {
 } as const satisfies Record<string, RateLimitPolicy>;
 
 export function getClientIp(headers: Headers): string {
-  return headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  // On Netlify, x-nf-client-connection-ip is set by the platform and cannot
+  // be forged by the client. Fall back to the rightmost x-forwarded-for entry
+  // (the last hop added by a trusted proxy) rather than the leftmost, which
+  // the client controls.
+  const netlifyIp = headers.get('x-nf-client-connection-ip')?.trim();
+  if (netlifyIp) return netlifyIp;
+
+  const forwarded = headers.get('x-forwarded-for');
+  if (forwarded) {
+    const parts = forwarded.split(',');
+    const rightmost = parts[parts.length - 1]?.trim();
+    if (rightmost) return rightmost;
+  }
+
+  return 'unknown';
 }
 
 function limitInMemory(key: string, policy: RateLimitPolicy): RateLimitResult {

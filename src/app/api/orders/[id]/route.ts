@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { requireSession } from '@/lib/api-auth';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  try {
-    const userId = request.headers.get('x-user-id');
-    const userRole = request.headers.get('x-user-role');
+  const auth = await requireSession(request);
+  if (!auth.ok) return auth.response;
 
-    if (!userId || !userRole) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  try {
+    const userId = auth.session.userId;
+    const userRole = auth.session.role;
 
     const { id } = await params;
 

@@ -80,52 +80,71 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate certificate number: SPKFUM-YYYY-XXXXX
+    // Uses a retry loop to handle the rare concurrent-issuance race where two
+    // requests read the same latest sequence and one gets a unique-constraint
+    // violation (P2002). At most 3 attempts are made before giving up.
     const currentYear = new Date().getFullYear();
     const prefix = `SPKFUM-${currentYear}-`;
-    const latestCert = await prisma.certificate.findFirst({
-      where: { certificateNumber: { startsWith: prefix } },
-      orderBy: { certificateNumber: 'desc' },
-    });
 
-    let nextSeq = 1;
-    if (latestCert) {
-      const parts = latestCert.certificateNumber.split('-');
-      const num = parseInt(parts[2], 10);
-      if (!Number.isNaN(num)) {
-        nextSeq = num + 1;
+    let certificate;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const latestCert = await prisma.certificate.findFirst({
+        where: { certificateNumber: { startsWith: prefix } },
+        orderBy: { certificateNumber: 'desc' },
+      });
+
+      let nextSeq = 1;
+      if (latestCert) {
+        const parts = latestCert.certificateNumber.split('-');
+        const num = parseInt(parts[2], 10);
+        if (!Number.isNaN(num)) {
+          nextSeq = num + 1;
+        }
+      }
+      const certificateNumber = `${prefix}${String(nextSeq).padStart(5, '0')}`;
+
+      const customerName = order.customer.user.fullName;
+      const propertyAddress = (
+        validatedData.propertyAddress ||
+        order.deliveryAddress ||
+        order.pickupAddress ||
+        'Address not specified'
+      ).trim();
+
+      const propertyType = (
+        validatedData.propertyType ||
+        order.items?.[0]?.itemName ||
+        'Residential Property'
+      ).trim();
+
+      const serviceDate = validatedData.serviceDate
+        ? new Date(validatedData.serviceDate)
+        : order.scheduledDate || order.createdAt;
+
+      try {
+        certificate = await prisma.certificate.create({
+          data: {
+            orderId: order.id,
+            customerId: order.customerId,
+            certificateNumber,
+            customerName,
+            propertyAddress,
+            propertyType,
+            serviceDate,
+          },
+        });
+        break; // success
+      } catch (err: any) {
+        if (err?.code === 'P2002' && attempt < 2) {
+          continue; // unique constraint race — retry with next sequence
+        }
+        throw err;
       }
     }
-    const certificateNumber = `${prefix}${String(nextSeq).padStart(5, '0')}`;
 
-    const customerName = order.customer.user.fullName;
-    const propertyAddress = (
-      validatedData.propertyAddress ||
-      order.deliveryAddress ||
-      order.pickupAddress ||
-      'Address not specified'
-    ).trim();
-
-    const propertyType = (
-      validatedData.propertyType ||
-      order.items?.[0]?.itemName ||
-      'Residential Property'
-    ).trim();
-
-    const serviceDate = validatedData.serviceDate
-      ? new Date(validatedData.serviceDate)
-      : order.scheduledDate || order.createdAt;
-
-    const certificate = await prisma.certificate.create({
-      data: {
-        orderId: order.id,
-        customerId: order.customerId,
-        certificateNumber,
-        customerName,
-        propertyAddress,
-        propertyType,
-        serviceDate,
-      },
-    });
+    if (!certificate) {
+      return NextResponse.json({ error: 'Failed to generate certificate number' }, { status: 500 });
+    }
 
     // Audit log
     await prisma.auditLog.create({

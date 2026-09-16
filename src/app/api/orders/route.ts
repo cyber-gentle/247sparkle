@@ -78,13 +78,15 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Fetch all pricing rows in one query, then look up in memory (avoids N+1).
+      const itemNames = validatedData.items.map((i) => i.itemName);
+      const pricingRows = await prisma.pricing.findMany({
+        where: { serviceType: 'LAUNDRY', itemName: { in: itemNames } },
+      });
+      const pricingMap = new Map(pricingRows.map((p) => [p.itemName, p]));
+
       for (const item of validatedData.items) {
-        const pricing = await prisma.pricing.findFirst({
-          where: {
-            serviceType: 'LAUNDRY',
-            itemName: item.itemName,
-          },
-        });
+        const pricing = pricingMap.get(item.itemName);
 
         if (!pricing) {
           return NextResponse.json({ error: `Unknown item: ${item.itemName}` }, { status: 400 });

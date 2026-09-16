@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
         phone: data.phone,
         email: data.email,
         message: data.message,
-        status: 'new',
+        status: 'NEW',
       },
     });
 

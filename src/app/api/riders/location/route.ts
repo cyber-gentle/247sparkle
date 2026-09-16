@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/db';
+import { requireRole } from '@/lib/api-auth';
 
 const locationSchema = z.object({
   latitude: z.number(),
@@ -11,18 +12,14 @@ const locationSchema = z.object({
  * POST /api/riders/location - Update rider's current location
  */
 export async function POST(request: NextRequest) {
+  const auth = await requireRole(request, ['RIDER']);
+  if (!auth.ok) return auth.response;
+
   try {
-    const userId = request.headers.get('x-user-id');
-    const userRole = request.headers.get('x-user-role');
-
-    if (!userId || userRole !== 'RIDER') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    const userId = auth.session.userId;
     const body = await request.json();
     const { latitude, longitude } = locationSchema.parse(body);
 
-    // Update rider's location
     const rider = await prisma.rider.update({
       where: { userId },
       data: {
@@ -61,13 +58,11 @@ export async function POST(request: NextRequest) {
  * GET /api/riders/location - Get rider's current location
  */
 export async function GET(request: NextRequest) {
-  try {
-    const userId = request.headers.get('x-user-id');
-    const userRole = request.headers.get('x-user-role');
+  const auth = await requireRole(request, ['RIDER']);
+  if (!auth.ok) return auth.response;
 
-    if (!userId || userRole !== 'RIDER') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  try {
+    const userId = auth.session.userId;
 
     const rider = await prisma.rider.findUnique({
       where: { userId },

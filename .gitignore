@@ -31,6 +31,14 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 
+# Development/AI-assistance artifacts
+prompt.md
+
+# Binary media files (use external storage instead)
+*.mp4
+*.mov
+*.avi
+
 # Vercel deployment
 .vercel/
 
