@@ -1,13 +1,11 @@
 # 247Sparkle MVP — Implementation Status
 
-**Last Updated**: 2026-09-16 (post-audit Phase 1 & 2 fixes applied)
+**Last Updated**: 2026-09-16 (Resend validated; Supabase test-environment cleared)
 **Overall Status**: Near-complete — all five quality gates pass on the current
 commit (`format:check`, `lint`, `type-check`, `test`, `build`; 190/190 unit
-tests green), but a 2026-09-13 audit found code-level launch blockers that
-must be fixed before publish — see [Known Issues](#️-known-issues--gaps) and
-[Remaining Work](#-remaining-work). Beyond those fixes, remaining work is
-owner-supplied credentials and infrastructure rehearsals, not feature
-development.
+tests green). All code-level audit blockers are resolved. Remaining work is
+infrastructure rehearsals only — backup/restore validation, local integration
+suite run, and production monitoring setup.
 
 ---
 
@@ -415,7 +413,9 @@ no production deploy has been validated.
 
 - Resend integration is code-complete (`src/lib/email.ts`, active when
   `RESEND_API_KEY` is set) and powers password-reset and order-status emails.
-  A verified sender domain has not yet been supplied, so delivery is unvalidated.
+- **Validated 2026-09-16**: `RESEND_API_KEY` set; password-reset email delivered
+  end-to-end using Resend shared sender (`onboarding@resend.dev`). Swap
+  `EMAIL_FROM` to a verified `247sparkle.com` sender once the domain is acquired.
 - Order-status email notifications are implemented (`src/lib/order-notifications.ts`)
   and fire on rider assignment and every customer-facing status transition.
   Delivery is best-effort: a notification failure never rolls back a committed
@@ -473,12 +473,9 @@ optional cleanup.
 
 ### A. Owner-supplied credentials (blocking launch)
 
-Each item is blocked on a secret only the site owner can provide, delivered
-through the approved secret channel. No code changes are required to consume them.
-
-| #   | Item                           | Unblocks                                                                                        | Env var(s)                     |
-| --- | ------------------------------ | ----------------------------------------------------------------------------------------------- | ------------------------------ |
-| 1   | **Resend domain verification** | Real delivery of password-reset and order-status emails from a verified `247sparkle.com` sender | `RESEND_API_KEY`, `EMAIL_FROM` |
+| #   | Item                           | Status | Notes |
+| --- | ------------------------------ | ------ | ----- |
+| 1   | **Resend domain verification** | ✅ Validated 2026-09-16 | `RESEND_API_KEY` set; email delivery confirmed. Swap `EMAIL_FROM` to verified `247sparkle.com` sender once domain is acquired. |
 
 Paystack test-mode keys were supplied (2026-09-13) and are set in `.env`;
 end-to-end checkout, verification, signed-webhook, replay and failure-path
@@ -489,12 +486,12 @@ with Otukpo landmark quick-select chips.
 
 ### B. Infrastructure rehearsals (blocking launch)
 
-| #   | Item                                    | Completion condition                                                                                                                              |
-| --- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 4   | **Supabase test-environment rehearsal** | Isolated cloud project with least-privilege Prisma role, migrations applied, RLS posture and pooled/direct connections verified                   |
-| 5   | **Backup and restore validation**       | A restore rehearsal has actually **succeeded** into a non-production target, with a documented restore owner, retention decision and test cadence |
-| 6   | **Local integration suite run**         | Provision `sparkle247_test`, then `npm run test:integration:reset && npm run test:integration` passes                                             |
-| 7   | **Production monitoring**               | `/api/health` and `/api/readiness` monitored, structured JSON logs visible in the Netlify host                                                    |
+| #   | Item                                    | Status | Completion condition                                                                                                                              |
+| --- | --------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4   | **Supabase test-environment rehearsal** | ✅ Done 2026-09-16 | Isolated Supabase project; migrations applied; customer signup, login, order creation, and `/api/readiness` all validated. |
+| 5   | **Backup and restore validation**       | ⏳ Pending | A restore rehearsal has actually **succeeded** into a non-production target, with a documented restore owner, retention decision and test cadence. Use `docker run --rm postgres:16 pg_dump "$DIRECT_URL" -Fc > sparkle247_backup.dump` then restore into a second Supabase project. |
+| 6   | **Local integration suite run**         | ⏳ Pending (personal PC) | Provision `sparkle247_test` (PostgreSQL or Docker), then `npm run test:integration:reset && npm run test:integration` passes. Docker: `docker run -d --name sparkle247_test -e POSTGRES_PASSWORD=test -e POSTGRES_DB=sparkle247_test -p 5433:5432 postgres:16` then set `TEST_DATABASE_URL` in `.env.test.local`. |
+| 7   | **Production monitoring**               | ⏳ Pending (post-deploy) | `/api/health` and `/api/readiness` monitored, structured JSON logs visible in the Netlify host.                                                    |
 
 ### C. Hardening and cleanup (non-blocking)
 
