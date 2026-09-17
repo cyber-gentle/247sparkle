@@ -86,6 +86,7 @@ export default function CustomerDashboardPage() {
       <CustomerSidebar
         collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+        customer={customer}
       />
 
       {/* Mobile overlay */}

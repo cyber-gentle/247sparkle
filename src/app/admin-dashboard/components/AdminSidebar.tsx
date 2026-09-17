@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
@@ -38,29 +38,9 @@ const NAV_GROUPS = [
     id: 'group-operations',
     label: 'Operations',
     items: [
-      {
-        id: 'admin-nav-orders',
-        label: 'Orders',
-        icon: ShoppingBag,
-        href: '/admin/orders',
-        badge: '12',
-      },
-      {
-        id: 'admin-nav-riders',
-        label: 'Riders',
-        icon: Bike,
-        href: '/admin/riders',
-        badge: '3',
-        badgeAlert: true,
-      },
-      {
-        id: 'admin-nav-partners',
-        label: 'Partners',
-        icon: Store,
-        href: '/admin/partners',
-        badge: '2',
-        badgeAlert: true,
-      },
+      { id: 'admin-nav-orders', label: 'Orders', icon: ShoppingBag, href: '/admin/orders', badge: null },
+      { id: 'admin-nav-riders', label: 'Riders', icon: Bike, href: '/admin/riders', badge: null },
+      { id: 'admin-nav-partners', label: 'Partners', icon: Store, href: '/admin/partners', badge: null },
       {
         id: 'admin-nav-customers',
         label: 'Customers',
@@ -88,13 +68,7 @@ const NAV_GROUPS = [
         href: '/admin/certificates',
         badge: null,
       },
-      {
-        id: 'admin-nav-quotations',
-        label: 'Quotations',
-        icon: MessageSquare,
-        href: '/admin/quotations',
-        badge: '5',
-      },
+      { id: 'admin-nav-quotations', label: 'Quotations', icon: MessageSquare, href: '/admin/quotations', badge: null },
       {
         id: 'admin-nav-testimonials',
         label: 'Testimonials',
@@ -124,6 +98,14 @@ export default function AdminSidebar({
 }: AdminSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const [user, setUser] = useState<{ fullName: string; email: string } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (data) setUser(data); })
+      .catch(() => {});
+  }, []);
 
   async function handleLogout() {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -214,11 +196,13 @@ export default function AdminSidebar({
         {!collapsed && (
           <div className="flex items-center gap-3 px-3 py-2.5 mb-1">
             <div className="w-8 h-8 rounded-full bg-[#CC0000] flex items-center justify-center text-white text-xs font-bold shrink-0">
-              AD
+              {user?.fullName
+                ? user.fullName.split(' ').filter(Boolean).map((n) => n[0]).slice(0, 2).join('').toUpperCase()
+                : '?'}
             </div>
             <div className="overflow-hidden">
-              <div className="text-xs font-bold text-white truncate">Admin User</div>
-              <div className="text-[10px] text-white/35 truncate">247biz@gmail.com</div>
+              <div className="text-xs font-bold text-white truncate">{user?.fullName ?? ''}</div>
+              <div className="text-[10px] text-white/35 truncate">{user?.email ?? ''}</div>
             </div>
           </div>
         )}
