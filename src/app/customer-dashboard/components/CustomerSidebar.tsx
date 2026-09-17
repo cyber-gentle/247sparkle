@@ -31,12 +31,12 @@ const NAV_ITEMS = [
     href: '/customer/new-order',
     badge: null,
   },
-  { id: 'nav-orders', label: 'My Orders', icon: Package, href: '/customer/orders', badge: '3' },
+  { id: 'nav-orders', label: 'My Orders', icon: Package, href: '/customer/orders', badge: null },
   {
     id: 'nav-track',
     label: 'Track Order',
     icon: MapPin,
-    href: '/customer/orders/sample-order-001',
+    href: '/customer/orders',
     badge: null,
   },
   {
@@ -44,7 +44,7 @@ const NAV_ITEMS = [
     label: 'Certificates',
     icon: FileText,
     href: '/customer/certificates',
-    badge: '1',
+    badge: null,
   },
   { id: 'nav-profile', label: 'My Profile', icon: User, href: '/customer/profile', badge: null },
 ];
@@ -52,10 +52,9 @@ const NAV_ITEMS = [
 interface CustomerSidebarProps {
   collapsed: boolean;
   onToggle: () => void;
-  /** True while the mobile off-canvas drawer is showing. */
   mobileOpen?: boolean;
-  /** Closes the mobile drawer when a nav item is tapped. */
   onNavigate?: () => void;
+  customer?: { fullName: string; email: string } | null;
 }
 
 export default function CustomerSidebar({
@@ -63,6 +62,7 @@ export default function CustomerSidebar({
   onToggle,
   mobileOpen = false,
   onNavigate,
+  customer,
 }: CustomerSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -147,11 +147,13 @@ export default function CustomerSidebar({
         {!collapsed && (
           <div className="flex items-center gap-3 px-3 py-2.5 mb-1">
             <div className="w-8 h-8 rounded-full bg-[#F5C200] flex items-center justify-center text-[#1A0A5E] text-xs font-bold shrink-0">
-              AO
+              {customer?.fullName
+                ? customer.fullName.split(' ').filter(Boolean).map((n) => n[0]).slice(0, 2).join('').toUpperCase()
+                : '?'}
             </div>
             <div className="overflow-hidden">
-              <div className="text-xs font-bold text-white truncate">Adaeze Okonkwo</div>
-              <div className="text-[10px] text-white/40 truncate">adaeze@gmail.com</div>
+              <div className="text-xs font-bold text-white truncate">{customer?.fullName ?? ''}</div>
+              <div className="text-[10px] text-white/40 truncate">{customer?.email ?? ''}</div>
             </div>
           </div>
         )}
