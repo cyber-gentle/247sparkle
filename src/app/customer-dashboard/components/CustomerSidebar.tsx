@@ -75,8 +75,8 @@ export default function CustomerSidebar({
 
   return (
     <aside
-      className={`fixed left-0 top-0 bottom-0 z-40 flex flex-col bg-[#1A0A5E] transition-all duration-300 ease-in-out w-64 ${
-        collapsed ? 'lg:w-16' : 'lg:w-64'
+      className={`fixed left-0 top-0 bottom-0 z-40 flex flex-col bg-[#1A0A5E] transition-all duration-300 ease-in-out ${
+        collapsed ? 'w-16' : 'w-64'
       } ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
     >
       {/* Logo */}
