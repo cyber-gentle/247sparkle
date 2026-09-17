@@ -231,6 +231,7 @@ export default function PartnerSignupPage() {
                 aria-invalid={!!errors.address}
                 aria-describedby={errors.address ? 'address-error' : undefined}
                 required
+                showLandmarks={false}
               />
             </div>
             <div className="sm:col-span-2">
@@ -244,6 +245,19 @@ export default function PartnerSignupPage() {
                 }
                 folder="247sparkle/partners"
                 error={errors.ownerPhotoUrl?.message}
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <ImageUploadField
+                id="ninPhotoUrl"
+                label="National Identity Card (NIN)"
+                description="Upload a clear photo of your National Identity Card for verification."
+                value={watch('ninPhotoUrl') || ''}
+                onChange={(url) =>
+                  setValue('ninPhotoUrl', url, { shouldValidate: true, shouldDirty: true })
+                }
+                folder="247sparkle/partners/nin"
+                error={errors.ninPhotoUrl?.message}
               />
             </div>
           </div>

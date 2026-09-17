@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth';
+import { verifyToken, cookieNameForRole, USER_ROLES } from '@/lib/auth';
 
 type Role = 'CUSTOMER' | 'RIDER' | 'PARTNER' | 'ADMIN';
 
@@ -104,15 +104,42 @@ const requiresSession = (pathname: string, isApiRoute: boolean) =>
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  const token = request.cookies.get('auth_token')?.value;
   const isApiRoute = pathname.startsWith('/api/');
+
+  // Pick the role-specific cookie that matches the requested path.
+  // Falls back to the legacy auth_token for backwards compatibility.
+  function getToken(): string | undefined {
+    if (pathname.startsWith('/customer/') || pathname.startsWith('/customer-dashboard')) {
+      return request.cookies.get(cookieNameForRole('CUSTOMER'))?.value;
+    }
+    if (pathname.startsWith('/rider/')) {
+      return request.cookies.get(cookieNameForRole('RIDER'))?.value;
+    }
+    if (pathname.startsWith('/partner/')) {
+      return request.cookies.get(cookieNameForRole('PARTNER'))?.value;
+    }
+    if (pathname.startsWith('/admin/') || pathname.startsWith('/admin-dashboard')) {
+      return request.cookies.get(cookieNameForRole('ADMIN'))?.value;
+    }
+    // API routes and public paths: try all role cookies then legacy.
+    for (const role of USER_ROLES) {
+      const val = request.cookies.get(cookieNameForRole(role))?.value;
+      if (val) return val;
+    }
+    return request.cookies.get('auth_token')?.value;
+  }
+
+  const token = getToken();
 
   // API routes expect a JSON 401 (not an HTML redirect) so fetch callers can
   // react to it — e.g. by routing to the portal login page.
-  const unauthorized = () =>
-    isApiRoute
-      ? NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      : NextResponse.redirect(new URL('/customer/login', request.url));
+  const unauthorized = () => {
+    if (isApiRoute) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (pathname.startsWith('/rider/')) return NextResponse.redirect(new URL('/rider/login', request.url));
+    if (pathname.startsWith('/partner/')) return NextResponse.redirect(new URL('/partner/login', request.url));
+    if (pathname.startsWith('/admin/') || pathname.startsWith('/admin-dashboard')) return NextResponse.redirect(new URL('/admin/login', request.url));
+    return NextResponse.redirect(new URL('/customer/login', request.url));
+  };
 
   // Always try to decode the token so we can attach the user identity to the
   // request headers for downstream handlers — even on public routes (a logged-in

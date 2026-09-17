@@ -169,9 +169,7 @@ export default function AdminSidebar({
                           {item.badge && (
                             <span
                               className={`ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center ${
-                                item.badgeAlert
-                                  ? 'bg-[#CC0000] text-white'
-                                  : 'bg-white/15 text-white'
+                                'bg-white/15 text-white'
                               }`}
                             >
                               {item.badge}
@@ -179,7 +177,7 @@ export default function AdminSidebar({
                           )}
                         </>
                       )}
-                      {collapsed && item.badge && item.badgeAlert && (
+                      {collapsed && item.badge && (
                         <span className="absolute top-1 right-1 w-2 h-2 bg-[#CC0000] rounded-full" />
                       )}
                     </Link>

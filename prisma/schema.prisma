@@ -138,6 +138,7 @@ model Partner {
   businessName     String
   ownerName        String
   ownerPhotoUrl    String?      // Cloudinary URL
+  ninPhotoUrl      String?      // National Identity Card — Cloudinary URL
   address          String
 
   openingTime      String?      // HH:MM format

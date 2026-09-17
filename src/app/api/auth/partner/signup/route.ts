@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
             businessName: validatedData.businessName,
             ownerName: validatedData.ownerName,
             ownerPhotoUrl: validatedData.ownerPhotoUrl || null,
+            ninPhotoUrl: validatedData.ninPhotoUrl || null,
             address: validatedData.address,
             openingTime: validatedData.openingTime,
             closingTime: validatedData.closingTime,

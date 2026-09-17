@@ -154,11 +154,11 @@ export async function POST(request: NextRequest) {
         entityId: certificate.id,
         userId: auth.session.userId,
         changes: JSON.stringify({
-          certificateNumber,
+          certificateNumber: certificate.certificateNumber,
           orderId: order.id,
-          customerName,
-          propertyAddress,
-          propertyType,
+          customerName: certificate.customerName,
+          propertyAddress: certificate.propertyAddress,
+          propertyType: certificate.propertyType,
         }),
       },
     });

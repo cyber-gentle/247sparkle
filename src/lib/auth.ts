@@ -125,31 +125,49 @@ export async function getSessionFromRequest(request: Pick<NextRequest, 'cookies'
   return token ? verifyToken(token) : null;
 }
 
+/** Cookie name for a given role. */
+export function cookieNameForRole(role: UserRole): string {
+  return `auth_token_${role.toLowerCase()}`;
+}
+
 /**
- * Get token from cookies
+ * Get token from cookies — reads the role-specific cookie for the given role,
+ * falling back to the legacy `auth_token` cookie for backwards compatibility.
  */
-export async function getTokenFromCookies(): Promise<string | null> {
+export async function getTokenFromCookies(role?: UserRole): Promise<string | null> {
   const cookieStore = await cookies();
+  if (role) {
+    return (
+      cookieStore.get(cookieNameForRole(role))?.value ||
+      cookieStore.get('auth_token')?.value ||
+      null
+    );
+  }
   return cookieStore.get('auth_token')?.value || null;
 }
 
 /**
- * Set auth token in cookies
+ * Set auth token in a role-specific cookie.
  */
-export async function setAuthCookie(token: string): Promise<void> {
+export async function setAuthCookie(token: string, role?: UserRole): Promise<void> {
   const cookieStore = await cookies();
-  cookieStore.set('auth_token', token, {
+  const name = role ? cookieNameForRole(role) : 'auth_token';
+  cookieStore.set(name, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60, // 7 days
+    maxAge: 7 * 24 * 60 * 60,
   });
 }
 
 /**
- * Clear auth token from cookies
+ * Clear auth token cookie for a given role (or the legacy cookie).
  */
-export async function clearAuthCookie(): Promise<void> {
+export async function clearAuthCookie(role?: UserRole): Promise<void> {
   const cookieStore = await cookies();
+  if (role) {
+    cookieStore.delete(cookieNameForRole(role));
+  }
+  // Always clear the legacy cookie too so old sessions don't linger.
   cookieStore.delete('auth_token');
 }

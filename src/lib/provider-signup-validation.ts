@@ -64,6 +64,7 @@ export const partnerSignupSchema = z
       .min(1, 'Business address is required')
       .min(5, 'Business address must be at least 5 characters'),
     ownerPhotoUrl: z.string().trim().optional().or(z.literal('')),
+    ninPhotoUrl: z.string().trim().optional().or(z.literal('')),
     openingTime: z.string().trim().min(1, 'Opening time is required'),
     closingTime: z.string().trim().min(1, 'Closing time is required'),
     password: z

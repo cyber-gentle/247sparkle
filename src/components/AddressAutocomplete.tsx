@@ -15,6 +15,7 @@ interface AddressAutocompleteProps {
   className?: string;
   disabled?: boolean;
   rows?: number;
+  showLandmarks?: boolean;
   'aria-invalid'?: boolean;
   'aria-describedby'?: string;
 }
@@ -49,6 +50,7 @@ export default function AddressAutocomplete({
   className = '',
   disabled = false,
   rows = 3,
+  showLandmarks = true,
   'aria-invalid': ariaInvalid,
   'aria-describedby': ariaDescribedby,
 }: AddressAutocompleteProps) {
@@ -101,24 +103,26 @@ export default function AddressAutocomplete({
       )}
 
       {/* Otukpo Quick-Select Landmark Chips */}
-      <div className="pt-1">
-        <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 mb-1.5">
-          <Sparkles size={12} className="text-amber-500" />
-          <span>Otukpo landmark quick-select:</span>
+      {showLandmarks && (
+        <div className="pt-1">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 mb-1.5">
+            <Sparkles size={12} className="text-amber-500" />
+            <span>Otukpo landmark quick-select:</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {OTUKPO_LANDMARKS.map((landmark) => (
+              <button
+                key={landmark}
+                type="button"
+                onClick={() => handleLandmarkClick(landmark)}
+                className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-700 transition hover:border-[#1A0A5E]/40 hover:bg-[#1A0A5E]/5 hover:text-[#1A0A5E] active:scale-95"
+              >
+                + {landmark}
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          {OTUKPO_LANDMARKS.map((landmark) => (
-            <button
-              key={landmark}
-              type="button"
-              onClick={() => handleLandmarkClick(landmark)}
-              className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-700 transition hover:border-[#1A0A5E]/40 hover:bg-[#1A0A5E]/5 hover:text-[#1A0A5E] active:scale-95"
-            >
-              + {landmark}
-            </button>
-          ))}
-        </div>
-      </div>
+      )}
     </div>
   );
 }
