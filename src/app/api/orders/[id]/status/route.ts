@@ -111,6 +111,53 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // failure must never turn a successful update into an error response.
     await notifyOrderStatusChange(id, status as OrderStatus);
 
+    // Auto-issue fumigation certificate when order is completed.
+    if (status === 'COMPLETED' && order.serviceType === 'FUMIGATION' && order.paymentStatus === 'PAID') {
+      try {
+        const existingCert = await prisma.certificate.findUnique({ where: { orderId: id } });
+        if (!existingCert) {
+          const fullOrder = await prisma.order.findUnique({
+            where: { id },
+            include: { customer: { include: { user: { select: { fullName: true } } } }, items: true },
+          });
+          if (fullOrder) {
+            const currentYear = new Date().getFullYear();
+            const prefix = `SPKFUM-${currentYear}-`;
+            for (let attempt = 0; attempt < 3; attempt++) {
+              const latestCert = await prisma.certificate.findFirst({
+                where: { certificateNumber: { startsWith: prefix } },
+                orderBy: { certificateNumber: 'desc' },
+              });
+              let nextSeq = 1;
+              if (latestCert) {
+                const num = parseInt(latestCert.certificateNumber.split('-')[2], 10);
+                if (!Number.isNaN(num)) nextSeq = num + 1;
+              }
+              try {
+                await prisma.certificate.create({
+                  data: {
+                    orderId: id,
+                    customerId: fullOrder.customerId,
+                    certificateNumber: `${prefix}${String(nextSeq).padStart(5, '0')}`,
+                    customerName: fullOrder.customer.user.fullName,
+                    propertyAddress: (fullOrder.deliveryAddress || fullOrder.pickupAddress || 'Address not specified').trim(),
+                    propertyType: (fullOrder.items?.[0]?.itemName || 'Residential Property').trim(),
+                    serviceDate: fullOrder.scheduledDate || fullOrder.createdAt,
+                  },
+                });
+                break;
+              } catch (err: any) {
+                if (err?.code === 'P2002' && attempt < 2) continue;
+                throw err;
+              }
+            }
+          }
+        }
+      } catch (certErr) {
+        console.error('Auto-issue certificate error (non-fatal):', certErr);
+      }
+    }
+
     return NextResponse.json(
       {
         message: 'Order status updated',

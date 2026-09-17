@@ -306,7 +306,7 @@ export default function PartnerDashboardPage() {
             <p className="text-2xl font-bold text-gray-900 mt-1">
               ₦{revenueThisMonth.toLocaleString('en-NG', { maximumFractionDigits: 0 })}
             </p>
-            <p className="text-sm text-gray-500 mt-1">Paid orders routed to your shop</p>
+            <p className="text-sm text-gray-500 mt-1">Your 85% share of paid orders</p>
           </div>
         </div>
 

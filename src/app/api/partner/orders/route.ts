@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
             o.paymentStatus === 'PAID' &&
             o.createdAt >= new Date(new Date().getFullYear(), new Date().getMonth(), 1)
         )
-        .reduce((sum, o) => sum + o.totalAmount, 0),
+        .reduce((sum, o) => sum + o.totalAmount * 0.85, 0),
     });
   } catch (error) {
     console.error('Get partner orders error:', error);

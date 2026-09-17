@@ -155,11 +155,11 @@ async function buildSuccessResponse(user: {
     { status: 200 }
   );
 
-  response.cookies.set('auth_token', token, {
+  response.cookies.set('auth_token_admin', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-    maxAge: 2 * 60 * 60, // matches ADMIN_SESSION_EXPIRY
+    maxAge: 2 * 60 * 60,
   });
 
   return response;
