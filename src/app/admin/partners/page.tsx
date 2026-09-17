@@ -15,7 +15,7 @@ type Partner = {
   workloadStatus: string;
   createdAt: string;
   user: { fullName: string; email: string; phone: string };
-  assignedOrders: { id: string }[];
+  _count: { assignedOrders: number; commissions: number };
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -190,7 +190,7 @@ export default function AdminPartnersPage() {
                           {partner.workloadStatus === 'AVAILABLE' ? '● Available' : '○ Busy'}
                         </span>
                       </td>
-                      <td className="px-5 py-4 text-slate-600">{partner.assignedOrders.length}</td>
+                      <td className="px-5 py-4 text-slate-600">{partner._count.assignedOrders}</td>
                       <td className="px-5 py-4 text-slate-500">
                         {new Date(partner.createdAt).toLocaleDateString()}
                       </td>
