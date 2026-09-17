@@ -13,8 +13,7 @@ type Rider = {
   walletBalance: number;
   createdAt: string;
   user: { fullName: string; email: string; phone: string };
-  assignedOrders: { id: string }[];
-  commissions: { amount: number; status: string }[];
+  _count: { assignedOrders: number; commissions: number };
 };
 
 type Withdrawal = {
@@ -254,7 +253,7 @@ export default function AdminRidersPage() {
                           {rider.availabilityStatus === 'WORKING' ? '● On Duty' : '○ Off Duty'}
                         </span>
                       </td>
-                      <td className="px-5 py-4 text-slate-600">{rider.assignedOrders.length}</td>
+                      <td className="px-5 py-4 text-slate-600">{rider._count.assignedOrders}</td>
                       <td className="px-5 py-4 font-semibold text-[#1A0A5E]">
                         ₦{rider.walletBalance.toLocaleString()}
                       </td>
