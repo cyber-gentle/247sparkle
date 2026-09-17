@@ -293,8 +293,8 @@ export default function CustomerNewOrderPage() {
     : ['Service', 'Items', 'Pickup', 'Delivery', 'Review'];
 
   return (
-    <main className="min-h-screen bg-slate-50 py-10 px-4">
-      <div className="max-w-2xl mx-auto">
+    <main className="min-h-screen bg-slate-50 py-6 px-4">
+      <div className="max-w-xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-[#CC0000] text-xs font-bold uppercase tracking-wider mb-2">
