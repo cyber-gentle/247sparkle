@@ -8,6 +8,7 @@ import {
   ON_SITE_STATUSES,
   type OrderStatus,
 } from '@/lib/order-state';
+import { RIDER_COMMISSION_PERCENT } from '@/lib/commission-rates';
 
 type DatabaseTransaction = Prisma.TransactionClient;
 
@@ -157,7 +158,7 @@ export async function assignRiderToPaidOrder({
       throw new Error('Assigned order could not be loaded');
     }
 
-    const commissionKobo = calculatePercentageKobo(assignedOrder.totalKobo, 20);
+    const commissionKobo = calculatePercentageKobo(assignedOrder.totalKobo, RIDER_COMMISSION_PERCENT);
     await tx.commission.upsert({
       where: { orderId_riderId: { orderId, riderId } },
       create: {
@@ -321,7 +322,7 @@ export async function transitionPaidOrder({
           select: { amountKobo: true },
         });
         const commissionKobo =
-          commission?.amountKobo ?? calculatePercentageKobo(completedOrder?.totalKobo ?? 0, 20);
+          commission?.amountKobo ?? calculatePercentageKobo(completedOrder?.totalKobo ?? 0, RIDER_COMMISSION_PERCENT);
 
         if (!commission) {
           await tx.commission.create({
