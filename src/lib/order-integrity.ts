@@ -1,14 +1,14 @@
 import crypto from 'crypto';
 import { Prisma } from '@prisma/client';
 import prisma from '@/lib/db';
-import { calculatePercentageKobo, koboToNaira } from '@/lib/money';
+import { koboToNaira } from '@/lib/money';
 import {
   assertOrderTransition,
   LAUNDRY_FULFILMENT_STATUSES,
   ON_SITE_STATUSES,
   type OrderStatus,
 } from '@/lib/order-state';
-import { RIDER_COMMISSION_PERCENT } from '@/lib/commission-rates';
+import { RIDER_COMMISSION_KOBO } from '@/lib/commission-rates';
 
 type DatabaseTransaction = Prisma.TransactionClient;
 
@@ -158,7 +158,7 @@ export async function assignRiderToPaidOrder({
       throw new Error('Assigned order could not be loaded');
     }
 
-    const commissionKobo = calculatePercentageKobo(assignedOrder.totalKobo, RIDER_COMMISSION_PERCENT);
+    const commissionKobo = RIDER_COMMISSION_KOBO;
     await tx.commission.upsert({
       where: { orderId_riderId: { orderId, riderId } },
       create: {
@@ -315,14 +315,14 @@ export async function transitionPaidOrder({
       const riderId = completedOrder?.riderId;
       if (riderId) {
         // Prefer the commission recorded at assignment; fall back to the
-        // standard 20% calculation if the row is missing (e.g. an order
+        // flat rider commission if the row is missing (e.g. an order
         // assigned outside assignRiderToPaidOrder).
         const commission = await tx.commission.findUnique({
           where: { orderId_riderId: { orderId, riderId } },
           select: { amountKobo: true },
         });
         const commissionKobo =
-          commission?.amountKobo ?? calculatePercentageKobo(completedOrder?.totalKobo ?? 0, RIDER_COMMISSION_PERCENT);
+          commission?.amountKobo ?? RIDER_COMMISSION_KOBO;
 
         if (!commission) {
           await tx.commission.create({

@@ -14,6 +14,8 @@ import {
   confirmOrderPayment,
   transitionPaidOrder,
 } from '../../src/lib/order-integrity';
+import { RIDER_COMMISSION_KOBO } from '../../src/lib/commission-rates';
+import { koboToNaira } from '../../src/lib/money';
 
 // transitionPaidOrder now reads the order's serviceType first (to enforce the
 // laundry vs on-site fulfilment tracks), before running the guarded update.
@@ -504,7 +506,7 @@ describe('Rider wallet crediting on order completion', () => {
     );
   });
 
-  it('falls back to a 20% commission calculation when no commission row exists', async () => {
+  it('falls back to flat rider commission when no commission row exists', async () => {
     const tx = createCompletionTransaction({ commissionKobo: null, riderId: 'rider-1' });
     database.$transaction.mockImplementation(
       async (callback: (transaction: typeof tx) => unknown) => callback(tx)
@@ -517,15 +519,22 @@ describe('Rider wallet crediting on order completion', () => {
       actorUserId: 'user-rider',
     });
 
-    // 20% of 125000 kobo = 25000 kobo
     expect(tx.commission.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ amountKobo: 25000, riderId: 'rider-1', status: 'PENDING' }),
+        data: expect.objectContaining({
+          amountKobo: RIDER_COMMISSION_KOBO,
+          amount: koboToNaira(RIDER_COMMISSION_KOBO),
+          riderId: 'rider-1',
+          status: 'PENDING',
+        }),
       })
     );
     expect(tx.rider.update).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: { walletBalanceKobo: { increment: 25000 }, walletBalance: { increment: 250 } },
+        data: {
+          walletBalanceKobo: { increment: RIDER_COMMISSION_KOBO },
+          walletBalance: { increment: koboToNaira(RIDER_COMMISSION_KOBO) },
+        },
       })
     );
   });

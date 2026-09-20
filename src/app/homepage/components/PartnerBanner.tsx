@@ -60,7 +60,7 @@ export default function PartnerBanner() {
                 </h3>
                 <p className="text-white/60 text-sm mb-4 md:mb-5 leading-relaxed">
                   Earn money on your own schedule. Pick up and deliver laundry orders across Otukpo.
-                  Earn 20% commission on every completed delivery.
+                  Earn ₦200 on every completed delivery.
                 </p>
                 <Link
                   href="/rider/signup"
