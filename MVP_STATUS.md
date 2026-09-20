@@ -221,7 +221,7 @@ Certificate, Quotation, AuditLog, PaymentEvent, RateLimitBucket
 - Paystack webhook signature verification
 - Idempotent payment event processing (concurrent duplicate settlement → one event)
 - Atomic rider job claim (prevents double-assignment)
-- Commission rate standardized at 20%
+- Rider commission standardized at flat ₦200 per completed delivery (configured in src/lib/commission-rates.ts)
 - Withdrawal approval workflow with wallet balance guards
 
 ### Operations

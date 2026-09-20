@@ -19,7 +19,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 const FEATURES = [
-  { icon: TrendingUp, text: 'Earn 20% commission on every delivery' },
+  { icon: TrendingUp, text: 'Earn ₦200 commission on every delivery' },
   { icon: Clock, text: 'Flexible working hours' },
   { icon: Shield, text: 'Secure and instant payouts' },
 ];
