@@ -120,7 +120,19 @@ export async function verifyToken(token: string): Promise<JWTPayload | null> {
   }
 }
 
-export async function getSessionFromRequest(request: Pick<NextRequest, 'cookies'>) {
+export async function getSessionFromRequest(request: Pick<NextRequest, 'cookies' | 'headers'>) {
+  // Prefer the identity headers injected by middleware (already verified).
+  const userId = (request as NextRequest).headers?.get('x-user-id');
+  const email = (request as NextRequest).headers?.get('x-user-email');
+  const role = (request as NextRequest).headers?.get('x-user-role');
+  if (userId && email && role && (USER_ROLES as readonly string[]).includes(role)) {
+    return { userId, email, role } as JWTPayload;
+  }
+  // Fallback: try all role-specific cookies then the legacy cookie.
+  for (const r of USER_ROLES) {
+    const token = request.cookies.get(cookieNameForRole(r))?.value;
+    if (token) return verifyToken(token);
+  }
   const token = request.cookies.get('auth_token')?.value;
   return token ? verifyToken(token) : null;
 }

@@ -49,7 +49,11 @@ describe('GET /api/admin/stats revenue series and service distribution', () => {
 
   it('returns 403 for a non-admin caller', async () => {
     const request = new NextRequest('http://localhost/api/admin/stats', {
-      headers: { 'x-user-role': 'CUSTOMER' },
+      headers: {
+        'x-user-id': 'cust-user',
+        'x-user-email': 'cust@test',
+        'x-user-role': 'CUSTOMER',
+      },
     });
     const response = await getAdminStats(request);
     expect(response.status).toBe(403);
@@ -81,7 +85,11 @@ describe('GET /api/admin/stats revenue series and service distribution', () => {
     });
 
     const request = new NextRequest('http://localhost/api/admin/stats', {
-      headers: { 'x-user-role': 'ADMIN' },
+      headers: {
+        'x-user-id': 'admin-user',
+        'x-user-email': 'admin@test',
+        'x-user-role': 'ADMIN',
+      },
     });
     const response = await getAdminStats(request);
     const data = await response.json();
@@ -111,7 +119,11 @@ describe('GET /api/admin/stats revenue series and service distribution', () => {
     ]);
 
     const request = new NextRequest('http://localhost/api/admin/stats', {
-      headers: { 'x-user-role': 'ADMIN' },
+      headers: {
+        'x-user-id': 'admin-user',
+        'x-user-email': 'admin@test',
+        'x-user-role': 'ADMIN',
+      },
     });
     const response = await getAdminStats(request);
     const data = await response.json();
