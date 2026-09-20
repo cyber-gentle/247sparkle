@@ -95,7 +95,7 @@ describe('POST /api/contact — Public Contact Form', () => {
         email: 'ngozi@example.com',
         phone: '08099887766',
         message: 'Hello, I would like to inquire about office cleaning services in Otukpo.',
-        status: 'new',
+        status: 'NEW',
       },
     });
 

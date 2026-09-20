@@ -28,7 +28,7 @@ describe('admin login hardening safeguards', () => {
   it('never issues a session cookie from the password step alone', () => {
     // The only cookie-setting code in the 2FA flow must live in the 2FA route.
     expect(loginRoute).not.toContain('cookies.set');
-    expect(twoFactorRoute).toContain("response.cookies.set('auth_token'");
+    expect(twoFactorRoute).toContain("response.cookies.set('auth_token_admin'");
     // And it must use the short admin expiry.
     expect(twoFactorRoute).toContain('ADMIN_SESSION_EXPIRY');
   });

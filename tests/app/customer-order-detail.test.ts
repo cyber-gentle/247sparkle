@@ -16,6 +16,7 @@ function customerRequest() {
   return new NextRequest('http://localhost/api/orders/order-1', {
     headers: {
       'x-user-id': 'customer-user',
+      'x-user-email': 'ada@test',
       'x-user-role': 'CUSTOMER',
     },
   });
@@ -111,6 +112,7 @@ describe('GET /api/orders/[id] (order detail payload)', () => {
     const request = new NextRequest('http://localhost/api/orders/order-1', {
       headers: {
         'x-user-id': 'someone-else',
+        'x-user-email': 'other@test',
         'x-user-role': 'CUSTOMER',
       },
     });

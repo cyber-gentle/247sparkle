@@ -262,8 +262,8 @@ describe('GET /api/partner/orders', () => {
     expect(data.activeOrders[0].customer.name).toBe('Ada Obi');
     expect(data.activeOrders[0].itemCount).toBe(1);
     expect(data.orderHistory).toHaveLength(2);
-    // Only the September PAID orders count: 5000 + 3000.
-    expect(data.revenueThisMonth).toBe(8000);
+    // Only the September PAID orders count: (5000 + 3000) × 0.85 partner share.
+    expect(data.revenueThisMonth).toBe(6800);
   });
 
   it('returns 404 when no partner record exists for the user', async () => {

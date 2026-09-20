@@ -61,7 +61,7 @@ describe('public quotation submission (POST /api/quotations)', () => {
 
     expect(response.status).toBe(201);
     expect(db.quotation.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({ ...VALID_SUBMISSION, businessName: null, status: 'new' }),
+      data: expect.objectContaining({ ...VALID_SUBMISSION, businessName: null, status: 'NEW' }),
     });
   });
 
