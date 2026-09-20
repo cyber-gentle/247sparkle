@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { requireRole } from '@/lib/api-auth';
+import { PARTNER_REVENUE_SHARE } from '@/lib/commission-rates';
 
 /**
  * GET /api/partner/orders - Orders routed to this partner for cleaning.
@@ -70,7 +71,7 @@ export async function GET(request: NextRequest) {
             o.paymentStatus === 'PAID' &&
             o.createdAt >= new Date(new Date().getFullYear(), new Date().getMonth(), 1)
         )
-        .reduce((sum, o) => sum + o.totalAmount * 0.85, 0),
+        .reduce((sum, o) => sum + o.totalAmount * PARTNER_REVENUE_SHARE, 0),
     });
   } catch (error) {
     console.error('Get partner orders error:', error);
