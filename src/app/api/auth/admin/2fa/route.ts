@@ -158,7 +158,7 @@ async function buildSuccessResponse(user: {
   response.cookies.set('auth_token_admin', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'lax',
     path: '/',
     maxAge: 2 * 60 * 60,
   });

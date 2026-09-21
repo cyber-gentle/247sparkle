@@ -153,14 +153,24 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
 
   useEffect(() => {
     if (!order || verifyAttempted.current) return;
-    if (order.paymentStatus !== 'UNPAID' || !order.paystackReference) return;
 
     const searchParams = new URLSearchParams(window.location.search);
     if (searchParams.get('payment') === 'return') {
       verifyAttempted.current = true;
-      verifyReturnedPayment(order.paystackReference);
+      if (order.paymentStatus === 'PAID') {
+        toast.success('Payment confirmed — thank you!');
+        window.history.replaceState(null, '', `/customer/orders/${orderId}`);
+      } else {
+        const ref =
+          searchParams.get('reference') || searchParams.get('trxref') || order.paystackReference;
+        if (ref) {
+          verifyReturnedPayment(ref);
+        } else {
+          window.history.replaceState(null, '', `/customer/orders/${orderId}`);
+        }
+      }
     }
-  }, [order]);
+  }, [order, orderId]);
 
   // (Re-)initialize payment for an unpaid order: covers both failed initial
   // initialization and abandoned checkouts.
