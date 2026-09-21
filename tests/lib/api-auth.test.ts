@@ -30,6 +30,54 @@ describe('API authorization helpers', () => {
     expect(enforceSameOrigin(request)?.status).toBe(403);
   });
 
+  it('allows same-origin requests behind reverse proxy with protocol difference', () => {
+    // Browser sends https://two47sparkle.onrender.com, internal container is http://two47sparkle.onrender.com:10000
+    const request = new NextRequest(
+      'http://two47sparkle.onrender.com:10000/api/auth/partner/login',
+      {
+        method: 'POST',
+        headers: {
+          origin: 'https://two47sparkle.onrender.com',
+          'x-forwarded-host': 'two47sparkle.onrender.com',
+          'x-forwarded-proto': 'https',
+        },
+      }
+    );
+
+    expect(enforceSameOrigin(request)).toBeNull();
+  });
+
+  it('allows requests matching NEXT_PUBLIC_SITE_URL', () => {
+    const originalSiteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    process.env.NEXT_PUBLIC_SITE_URL = 'https://two47sparkle.onrender.com';
+
+    const request = new NextRequest('http://127.0.0.1:10000/api/auth/partner/login', {
+      method: 'POST',
+      headers: {
+        origin: 'https://two47sparkle.onrender.com',
+      },
+    });
+
+    expect(enforceSameOrigin(request)).toBeNull();
+
+    process.env.NEXT_PUBLIC_SITE_URL = originalSiteUrl;
+  });
+
+  it('blocks attacker origin even when reverse proxy headers exist', () => {
+    const request = new NextRequest(
+      'http://two47sparkle.onrender.com:10000/api/auth/partner/login',
+      {
+        method: 'POST',
+        headers: {
+          origin: 'https://malicious-site.example',
+          'x-forwarded-host': 'two47sparkle.onrender.com',
+        },
+      }
+    );
+
+    expect(enforceSameOrigin(request)?.status).toBe(403);
+  });
+
   it('excludes public image assets from the protected-route matcher', () => {
     const matcher = new RegExp(`^${middlewareConfig.matcher[0]}$`);
 

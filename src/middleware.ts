@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken, cookieNameForRole, USER_ROLES } from '@/lib/auth';
+import { isAllowedOrigin } from '@/lib/api-auth';
 
 type Role = 'CUSTOMER' | 'RIDER' | 'PARTNER' | 'ADMIN';
 
@@ -169,9 +170,11 @@ export async function middleware(request: NextRequest) {
   }
 
   if (isApiRoute && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
-    const origin = request.headers.get('origin');
-    if (origin && origin !== request.nextUrl.origin) {
-      return NextResponse.json({ error: 'Cross-origin request blocked' }, { status: 403 });
+    if (pathname !== '/api/payment/webhook') {
+      const origin = request.headers.get('origin');
+      if (origin && !isAllowedOrigin(origin, request)) {
+        return NextResponse.json({ error: 'Cross-origin request blocked' }, { status: 403 });
+      }
     }
   }
 
