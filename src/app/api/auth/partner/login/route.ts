@@ -53,95 +53,93 @@ export async function POST(request: NextRequest) {
 
     // Role detection: if user is an ADMIN, route through admin 2FA flow
     if (user.role === 'ADMIN') {
-      const adminLimited = await rateLimitRequest(
-        request,
-        'admin-auth',
-        RATE_LIMIT_POLICIES.adminAuth
-      );
-      if (adminLimited) return adminLimited;
+      try {
+        if (user.lockedUntil && user.lockedUntil > new Date()) {
+          auditAdminLogin('ADMIN_LOGIN_LOCKED', user.email, user.id);
+          return NextResponse.json(
+            {
+              error:
+                'Too many failed attempts. This account is temporarily locked — try again later.',
+            },
+            { status: 423 }
+          );
+        }
 
-      if (user.lockedUntil && user.lockedUntil > new Date()) {
-        auditAdminLogin('ADMIN_LOGIN_LOCKED', user.email, user.id);
-        return NextResponse.json(
-          {
-            error:
-              'Too many failed attempts. This account is temporarily locked — try again later.',
-          },
-          { status: 423 }
-        );
-      }
+        const isValidPassword = await compare(validatedData.password, user.passwordHash);
+        if (!isValidPassword) {
+          const attempts = (user.failedLoginAttempts || 0) + 1;
+          const shouldLock = attempts >= TWO_FACTOR_LOCKOUT_THRESHOLD;
 
-      const isValidPassword = await compare(validatedData.password, user.passwordHash);
-      if (!isValidPassword) {
-        const attempts = user.failedLoginAttempts + 1;
-        const shouldLock = attempts >= TWO_FACTOR_LOCKOUT_THRESHOLD;
-
-        await prisma.user.update({
-          where: { id: user.id },
-          data: shouldLock
-            ? {
-                failedLoginAttempts: attempts,
-                lockedUntil: new Date(Date.now() + TWO_FACTOR_LOCKOUT_MINUTES * 60_000),
-              }
-            : { failedLoginAttempts: attempts },
-        });
-
-        auditAdminLogin(
-          shouldLock ? 'ADMIN_LOGIN_LOCKOUT_TRIGGERED' : 'ADMIN_LOGIN_FAILED',
-          user.email,
-          user.id
-        );
-
-        return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
-      }
-
-      if (user.failedLoginAttempts > 0 || user.lockedUntil) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { failedLoginAttempts: 0, lockedUntil: null },
-        });
-      }
-
-      if (!user.twoFactorEnabled) {
-        let secret = user.twoFactorSecret ? decryptTotpSecret(user.twoFactorSecret) : null;
-        if (!secret) {
-          secret = generateTotpSecret();
           await prisma.user.update({
             where: { id: user.id },
-            data: { twoFactorSecret: encryptTotpSecret(secret) },
+            data: shouldLock
+              ? {
+                  failedLoginAttempts: attempts,
+                  lockedUntil: new Date(Date.now() + TWO_FACTOR_LOCKOUT_MINUTES * 60_000),
+                }
+              : { failedLoginAttempts: attempts },
+          });
+
+          auditAdminLogin(
+            shouldLock ? 'ADMIN_LOGIN_LOCKOUT_TRIGGERED' : 'ADMIN_LOGIN_FAILED',
+            user.email,
+            user.id
+          );
+
+          return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+        }
+
+        if ((user.failedLoginAttempts && user.failedLoginAttempts > 0) || user.lockedUntil) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { failedLoginAttempts: 0, lockedUntil: null },
           });
         }
+
+        if (!user.twoFactorEnabled) {
+          let secret = user.twoFactorSecret ? decryptTotpSecret(user.twoFactorSecret) : null;
+          if (!secret) {
+            secret = generateTotpSecret();
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { twoFactorSecret: encryptTotpSecret(secret) },
+            });
+          }
+
+          return NextResponse.json(
+            {
+              role: 'ADMIN',
+              requiresEnrollment: true,
+              pendingToken: await signPendingTwoFactorToken({
+                userId: user.id,
+                email: user.email,
+                role: 'ADMIN',
+              }),
+              otpauthUri: totpUri(user.email, secret),
+              secret,
+            },
+            { status: 200 }
+          );
+        }
+
+        auditAdminLogin('ADMIN_LOGIN_2FA_PENDING', user.email, user.id);
 
         return NextResponse.json(
           {
             role: 'ADMIN',
-            requiresEnrollment: true,
+            requiresTwoFactor: true,
             pendingToken: await signPendingTwoFactorToken({
               userId: user.id,
               email: user.email,
               role: 'ADMIN',
             }),
-            otpauthUri: totpUri(user.email, secret),
-            secret,
           },
           { status: 200 }
         );
+      } catch (adminError: any) {
+        console.error('Admin routed login error:', adminError);
+        return NextResponse.json({ error: adminError?.message || 'Login failed' }, { status: 500 });
       }
-
-      auditAdminLogin('ADMIN_LOGIN_2FA_PENDING', user.email, user.id);
-
-      return NextResponse.json(
-        {
-          role: 'ADMIN',
-          requiresTwoFactor: true,
-          pendingToken: await signPendingTwoFactorToken({
-            userId: user.id,
-            email: user.email,
-            role: 'ADMIN',
-          }),
-        },
-        { status: 200 }
-      );
     }
 
     // Check account lockout
@@ -235,6 +233,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ error: 'Login failed' }, { status: 500 });
+    return NextResponse.json({ error: error?.message || 'Login failed' }, { status: 500 });
   }
 }

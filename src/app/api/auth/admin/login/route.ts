@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     const isValidPassword = await compare(validatedData.password, user.passwordHash);
 
     if (!isValidPassword) {
-      const attempts = user.failedLoginAttempts + 1;
+      const attempts = (user.failedLoginAttempts || 0) + 1;
       const shouldLock = attempts >= TWO_FACTOR_LOCKOUT_THRESHOLD;
 
       await prisma.user.update({
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Password accepted — the counter is only ever reset on a successful login.
-    if (user.failedLoginAttempts > 0 || user.lockedUntil) {
+    if ((user.failedLoginAttempts && user.failedLoginAttempts > 0) || user.lockedUntil) {
       await prisma.user.update({
         where: { id: user.id },
         data: { failedLoginAttempts: 0, lockedUntil: null },
