@@ -176,9 +176,12 @@ export async function POST(request: NextRequest) {
 
     // Initialize Paystack payment. The callback_url brings the customer's
     // browser back to their order page, which verifies the payment via
-    // /api/payment/verify/[reference] — the client-side closure of the
-    // payment loop (the webhook may be unreachable in local deployments).
-    const callbackUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/customer/orders/${order.id}?payment=return`;
+    const forwardedHost = request.headers.get('x-forwarded-host') || request.headers.get('host');
+    const forwardedProto = request.headers.get('x-forwarded-proto') || 'https';
+    const dynamicBase = forwardedHost
+      ? `${forwardedProto}://${forwardedHost.split(',')[0].trim()}`
+      : (process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, '') || request.nextUrl.origin);
+    const callbackUrl = `${dynamicBase}/customer/orders/${order.id}?payment=return`;
     try {
       const paystackResponse = await initializePayment(
         user.email,
