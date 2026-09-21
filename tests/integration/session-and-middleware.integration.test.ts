@@ -67,6 +67,18 @@ describe('database-backed session and middleware behavior', () => {
     );
     expect(blockedOrigin.status).toBe(403);
 
+    const renderProxyAllowed = await middleware(
+      new NextRequest('http://two47sparkle.onrender.com:10000/api/auth/partner/login', {
+        method: 'POST',
+        headers: {
+          origin: 'https://two47sparkle.onrender.com',
+          'x-forwarded-host': 'two47sparkle.onrender.com',
+          'x-forwarded-proto': 'https',
+        },
+      })
+    );
+    expect(renderProxyAllowed.status).toBe(200);
+
     const admin = await middleware(
       new NextRequest('http://localhost:4028/api/admin/users', {
         headers: {
