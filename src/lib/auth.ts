@@ -167,7 +167,7 @@ export async function setAuthCookie(token: string, role?: UserRole): Promise<voi
   cookieStore.set(name, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'lax',
     path: '/',
     maxAge: 7 * 24 * 60 * 60,
   });
