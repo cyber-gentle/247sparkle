@@ -3,16 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
-import {
-  Menu,
-  X,
-  Phone,
-  MessageCircle,
-  ChevronDown,
-  User,
-  Handshake,
-  Bike,
-} from 'lucide-react';
+import { Menu, X, Phone, MessageCircle, ChevronDown, User, Handshake, Bike } from 'lucide-react';
 
 const NAV_LINKS = [
   { label: 'Home', href: '/' },
