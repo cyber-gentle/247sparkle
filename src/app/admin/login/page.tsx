@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -42,6 +42,35 @@ export default function AdminLoginPage() {
   const [twoFactor, setTwoFactor] = useState<TwoFactorStage | null>(null);
   const [code, setCode] = useState('');
   const [isCopied, setIsCopied] = useState(false);
+
+  useEffect(() => {
+    try {
+      const handoffRaw = sessionStorage.getItem('sparkle:admin-2fa-handoff');
+      if (handoffRaw) {
+        const handoff = JSON.parse(handoffRaw);
+        sessionStorage.removeItem('sparkle:admin-2fa-handoff');
+        if (handoff.pendingToken) {
+          let secret = handoff.secret;
+          if (!secret && handoff.otpauthUri) {
+            try {
+              const parsed = new URL(handoff.otpauthUri);
+              secret = parsed.searchParams.get('secret') || undefined;
+            } catch {
+              // URL parse failure fallback
+            }
+          }
+          setTwoFactor({
+            stage: handoff.requiresEnrollment ? 'enroll' : 'verify',
+            pendingToken: handoff.pendingToken,
+            otpauthUri: handoff.otpauthUri,
+            secret,
+          });
+        }
+      }
+    } catch {
+      // sessionStorage unavailable
+    }
+  }, []);
 
   const {
     register,
@@ -158,6 +187,7 @@ export default function AdminLoginPage() {
     setTwoFactor(null);
     setCode('');
     setSubmitError('');
+    router.push('/partner/login');
   };
 
   const codeInput = (
@@ -184,8 +214,8 @@ export default function AdminLoginPage() {
       cardTitle="Admin Login"
       cardDescription="Restricted access — authorised staff only"
       notice={{
-        title: 'Internal accounts only',
-        text: 'Admin accounts are managed internally. Contact support if you need access.',
+        title: 'Routed Authentication',
+        text: 'For enhanced security, administrator sign-in is routed through the Partner Portal.',
       }}
     >
       <Toaster position="top-center" richColors />
