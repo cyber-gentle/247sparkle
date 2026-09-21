@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import AppLogo from '@/components/ui/AppLogo';
+import { formatOrderNumber } from '@/lib/order-utils';
 
 interface OrderDetails {
   id: string;
@@ -303,7 +304,7 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
                 <h2 className="text-2xl font-bold text-[#1A0A5E]">
                   {getServiceLabel(order.serviceType)}
                 </h2>
-                <p className="text-sm text-gray-500">Order #{order.id.slice(-8)}</p>
+                <p className="text-sm text-gray-500">{formatOrderNumber(order.id)}</p>
               </div>
             </div>
             <div className="text-right">

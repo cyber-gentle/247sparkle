@@ -19,7 +19,7 @@ const ADMIN_ALERTS = [
   },
   {
     id: 'alert-003',
-    text: 'Order #ORD-2025-0051 payment failed — manual review needed',
+    text: 'Order #B8K2F9 payment failed — manual review needed',
     time: '42 mins ago',
     type: 'error',
     read: false,

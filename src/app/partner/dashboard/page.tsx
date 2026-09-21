@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import AppLogo from '@/components/ui/AppLogo';
+import { formatOrderNumber } from '@/lib/order-utils';
 
 interface PartnerProfile {
   id: string;
@@ -353,7 +354,8 @@ export default function PartnerDashboardPage() {
                           {order.itemCount === 1 ? '' : 's'}
                         </p>
                         <p className="text-xs text-gray-500 mt-0.5">
-                          #{order.id.slice(-8)} · {new Date(order.createdAt).toLocaleString()}
+                          {formatOrderNumber(order.id)} ·{' '}
+                          {new Date(order.createdAt).toLocaleString()}
                         </p>
                       </div>
                       <span
@@ -429,7 +431,7 @@ export default function PartnerDashboardPage() {
                 >
                   <div>
                     <p className="text-sm font-semibold text-gray-900">
-                      #{order.id.slice(-8)} · {order.customer.name}
+                      {formatOrderNumber(order.id)} · {order.customer.name}
                     </p>
                     <p className="text-xs text-gray-500">
                       {new Date(order.createdAt).toLocaleDateString()} · Payout:{' '}

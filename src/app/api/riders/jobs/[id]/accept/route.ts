@@ -5,6 +5,7 @@ import { requireRole } from '@/lib/api-auth';
 import { RATE_LIMIT_POLICIES, rateLimitRequest } from '@/lib/api-rate-limit';
 import { assignRiderToPaidOrder } from '@/lib/order-integrity';
 import { notifyOrderStatusChange } from '@/lib/order-notifications';
+import { formatOrderNumber } from '@/lib/order-utils';
 
 const acceptJobSchema = z.object({
   orderId: z.string(),
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         message: 'Job accepted successfully',
         order: {
           id: updatedOrder.id,
-          orderNumber: `ORD-${updatedOrder.id.slice(0, 6).toUpperCase()}`,
+          orderNumber: formatOrderNumber(updatedOrder.id),
           status: updatedOrder.status,
           totalAmount: updatedOrder.totalAmount,
           customer: {

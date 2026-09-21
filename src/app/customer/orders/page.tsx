@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Package, Calendar, MapPin, Filter, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import AppLogo from '@/components/ui/AppLogo';
+import { formatOrderNumber } from '@/lib/order-utils';
 
 interface Order {
   id: string;
@@ -279,7 +280,7 @@ export default function CustomerOrdersPage() {
                     <div className="text-2xl font-bold text-[#1A0A5E]">
                       ₦{order.totalAmount.toLocaleString()}
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">Order ID: {order.id.slice(-8)}</div>
+                    <div className="text-xs text-gray-500 mt-1">{formatOrderNumber(order.id)}</div>
                   </div>
                 </div>
               </Link>

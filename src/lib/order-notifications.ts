@@ -2,6 +2,7 @@ import prisma from '@/lib/db';
 import { sendEmail } from '@/lib/email';
 import { logger } from '@/lib/logger';
 import type { OrderStatus } from '@/lib/order-state';
+import { formatOrderNumber } from '@/lib/order-utils';
 
 /**
  * Customer-facing copy for each status a customer should hear about.
@@ -82,7 +83,7 @@ export async function notifyOrderStatusChange(
     }
 
     const orderLink = buildOrderLink(orderId);
-    const reference = orderId.slice(-8).toUpperCase();
+    const orderNumber = formatOrderNumber(orderId);
     const service = order.serviceType.replace(/_/g, ' ').toLowerCase();
 
     const result = await sendEmail({
@@ -94,7 +95,7 @@ export async function notifyOrderStatusChange(
         copy.headline,
         '',
         `Service: ${service}`,
-        `Order reference: ${reference}`,
+        `Order: ${orderNumber}`,
         '',
         `Track your order: ${orderLink}`,
         '',
@@ -105,7 +106,7 @@ export async function notifyOrderStatusChange(
         <p>${copy.headline}</p>
         <p>
           <strong>Service:</strong> ${service}<br />
-          <strong>Order reference:</strong> ${reference}
+          <strong>Order:</strong> ${orderNumber}
         </p>
         <p><a href="${orderLink}">Track your order</a></p>
         <p>— 247Sparkle Laundry &amp; Cleaning Services</p>

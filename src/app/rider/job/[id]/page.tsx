@@ -14,6 +14,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { formatOrderNumber } from '@/lib/order-utils';
 
 interface Order {
   id: string;
@@ -210,7 +211,7 @@ export default function RiderJobPage({ params: paramPromise }: RiderJobPageProps
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-6 text-white">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold">ORD-{order.id.slice(0, 6).toUpperCase()}</h1>
+                <h1 className="text-2xl font-bold">{formatOrderNumber(order.id)}</h1>
                 <p className="text-blue-100 mt-1">{order.serviceType.replace(/_/g, ' ')}</p>
               </div>
               <span

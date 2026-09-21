@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Loader, Search, UserPlus, ArrowRightCircle, Store } from 'lucide-react';
 import { toast } from 'sonner';
+import { formatOrderNumber } from '@/lib/order-utils';
 
 type Order = {
   id: string;
@@ -314,7 +315,7 @@ export default function AdminOrdersPage() {
                       className="border-b border-slate-100 hover:bg-slate-50 transition"
                     >
                       <td className="px-5 py-4 font-mono text-xs text-slate-500">
-                        ORD-{order.id.slice(0, 6).toUpperCase()}
+                        {formatOrderNumber(order.id)}
                       </td>
                       <td className="px-5 py-4">
                         <p className="font-semibold text-slate-800">
