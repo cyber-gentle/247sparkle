@@ -321,8 +321,7 @@ export async function transitionPaidOrder({
           where: { orderId_riderId: { orderId, riderId } },
           select: { amountKobo: true },
         });
-        const commissionKobo =
-          commission?.amountKobo ?? RIDER_COMMISSION_KOBO;
+        const commissionKobo = commission?.amountKobo ?? RIDER_COMMISSION_KOBO;
 
         if (!commission) {
           await tx.commission.create({

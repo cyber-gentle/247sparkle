@@ -71,18 +71,30 @@ export default function AdminLoginPage() {
 
       // Password accepted — but no session yet: hand off to the 2FA stage.
       if (result.requiresEnrollment || result.requiresTwoFactor) {
+        let secret = result.secret;
+        if (!secret && result.otpauthUri) {
+          try {
+            const parsed = new URL(result.otpauthUri);
+            secret = parsed.searchParams.get('secret') || undefined;
+          } catch {
+            // URL parse failure fallback
+          }
+        }
         setTwoFactor({
           stage: result.requiresEnrollment ? 'enroll' : 'verify',
           pendingToken: result.pendingToken,
           otpauthUri: result.otpauthUri,
-          secret: result.secret,
+          secret,
         });
         return;
       }
 
-      toast.success('Welcome back, Admin!');
-      router.push('/admin/dashboard');
-      router.refresh();
+      const name = result.user?.fullName?.trim() || 'Admin';
+      toast.success(`Welcome ${name}`);
+      setTimeout(() => {
+        router.push('/admin/dashboard');
+        router.refresh();
+      }, 800);
     } catch (error: any) {
       const msg = error.message || 'An error occurred';
       setSubmitError(msg);
@@ -116,11 +128,12 @@ export default function AdminLoginPage() {
         return;
       }
 
-      toast.success(
-        twoFactor.stage === 'enroll' ? 'Two-factor enabled. Welcome back!' : 'Welcome back, Admin!'
-      );
-      router.push('/admin/dashboard');
-      router.refresh();
+      const name = result.user?.fullName?.trim() || 'Admin';
+      toast.success(`Welcome ${name}`);
+      setTimeout(() => {
+        router.push('/admin/dashboard');
+        router.refresh();
+      }, 800);
     } catch (error: any) {
       const msg = error.message || 'An error occurred';
       setSubmitError(msg);

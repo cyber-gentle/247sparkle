@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Mail, AlertCircle, Zap, CheckCircle2, TrendingUp, Shield, Clock } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast, Toaster } from 'sonner';
 import PortalAuthShell from '@/components/auth/PortalAuthShell';
 import PasswordField from '@/components/ui/PasswordField';
 
@@ -55,10 +55,9 @@ export default function RiderLoginPage() {
         return;
       }
 
-      toast.success('Logged in successfully!');
-      setTimeout(() => {
-        router.push('/rider/dashboard');
-      }, 1500);
+      const name = result.user?.fullName?.trim() || 'Rider';
+      toast.success(`Welcome ${name}`);
+      setTimeout(() => router.push('/rider/dashboard'), 800);
     } catch (error: any) {
       const errorMsg = error.message || 'An error occurred';
       setSubmitError(errorMsg);
@@ -84,6 +83,7 @@ export default function RiderLoginPage() {
       switchHref="/rider/signup"
       switchLabel="New to 247Sparkle? Sign up →"
     >
+      <Toaster position="top-center" richColors />
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div>
           <label htmlFor="email" className="mb-1.5 block text-sm font-bold text-slate-700">

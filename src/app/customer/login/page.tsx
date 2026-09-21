@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Mail, AlertCircle, Sparkles, CheckCircle2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast, Toaster } from 'sonner';
 import PortalAuthShell from '@/components/auth/PortalAuthShell';
 import PasswordField from '@/components/ui/PasswordField';
 
@@ -54,12 +54,11 @@ export default function CustomerLoginPage() {
         return;
       }
 
-      toast.success('Login successful! Redirecting...');
+      const name = result.user?.fullName?.trim() || 'Customer';
+      toast.success(`Welcome ${name}`);
 
       // Cookie is already set by the API, just redirect
-      setTimeout(() => {
-        router.push('/customer/dashboard');
-      }, 1000);
+      setTimeout(() => router.push('/customer/dashboard'), 800);
     } catch (error: any) {
       const errorMsg = error.message || 'An error occurred';
       setSubmitError(errorMsg);
@@ -81,6 +80,7 @@ export default function CustomerLoginPage() {
       switchHref="/customer/signup"
       switchLabel="New here? Create an account →"
     >
+      <Toaster position="top-center" richColors />
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div>
           <label htmlFor="email" className="mb-1.5 block text-sm font-bold text-slate-700">

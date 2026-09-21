@@ -95,7 +95,7 @@ const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(function 
     if (domValue !== uncontrolledValue) {
       setUncontrolledValue(domValue);
     }
-  });
+  }, [value, uncontrolledValue]);
 
   const currentValue = typeof value === 'string' ? value : uncontrolledValue;
   const requirementLength = minLength ?? PASSWORD_MIN_LENGTH;

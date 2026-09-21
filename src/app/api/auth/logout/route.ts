@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
 
-const COOKIE_NAMES = ['auth_token', 'auth_token_customer', 'auth_token_rider', 'auth_token_partner', 'auth_token_admin'];
+const COOKIE_NAMES = [
+  'auth_token',
+  'auth_token_customer',
+  'auth_token_rider',
+  'auth_token_partner',
+  'auth_token_admin',
+];
 
 export async function POST() {
   const response = NextResponse.json({ message: 'Logged out successfully' });

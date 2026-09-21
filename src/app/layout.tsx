@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Metadata, Viewport } from 'next';
+import { Toaster } from 'sonner';
 import '../styles/tailwind.css';
 
 export const viewport: Viewport = {
@@ -23,7 +24,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <Toaster position="top-center" richColors />
+        {children}
+      </body>
     </html>
   );
 }

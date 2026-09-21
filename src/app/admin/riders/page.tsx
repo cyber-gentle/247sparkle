@@ -255,7 +255,7 @@ export default function AdminRidersPage() {
                       </td>
                       <td className="px-5 py-4 text-slate-600">{rider._count.assignedOrders}</td>
                       <td className="px-5 py-4 font-semibold text-[#1A0A5E]">
-                        ₦{rider.walletBalance.toLocaleString()}
+                        ₦{(rider.walletBalance ?? 0).toLocaleString()}
                       </td>
                       <td className="px-5 py-4 text-slate-500">
                         {new Date(rider.createdAt).toLocaleDateString()}
@@ -344,7 +344,7 @@ export default function AdminRidersPage() {
                         <p className="text-xs text-slate-500">{w.rider.user.email}</p>
                       </td>
                       <td className="px-5 py-4 font-semibold text-[#1A0A5E]">
-                        ₦{w.amount.toLocaleString()}
+                        ₦{(w.amount ?? 0).toLocaleString()}
                       </td>
                       <td className="px-5 py-4 text-slate-500">
                         {new Date(w.requestedAt).toLocaleDateString()}

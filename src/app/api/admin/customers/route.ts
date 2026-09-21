@@ -17,6 +17,10 @@ export async function GET(request: NextRequest) {
         include: {
           user: { select: { fullName: true, email: true, phone: true, createdAt: true } },
           _count: { select: { orders: true } },
+          orders: {
+            select: { totalAmount: true, paymentStatus: true, createdAt: true },
+            orderBy: { createdAt: 'desc' },
+          },
         },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * PAGE_SIZE,
@@ -25,14 +29,23 @@ export async function GET(request: NextRequest) {
       prisma.customer.count(),
     ]);
 
-    const result = customers.map((c) => ({
-      id: c.id,
-      fullName: c.user.fullName,
-      email: c.user.email,
-      phone: c.user.phone ?? '—',
-      joinedAt: c.user.createdAt,
-      totalOrders: c._count.orders,
-    }));
+    const result = customers.map((c) => {
+      const totalSpend = c.orders
+        .filter((o) => o.paymentStatus === 'PAID')
+        .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+      const lastOrderDate = c.orders[0]?.createdAt ? c.orders[0].createdAt.toISOString() : null;
+
+      return {
+        id: c.id,
+        fullName: c.user.fullName,
+        email: c.user.email,
+        phone: c.user.phone ?? '—',
+        joinedAt: c.user.createdAt.toISOString(),
+        totalOrders: c._count.orders,
+        totalSpend,
+        lastOrderDate,
+      };
+    });
 
     return NextResponse.json({ customers: result, total, page, pageSize: PAGE_SIZE });
   } catch (error) {

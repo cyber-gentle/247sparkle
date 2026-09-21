@@ -126,9 +126,9 @@ export async function POST(request: NextRequest) {
             email: user.email,
             role: 'ADMIN',
           }),
-          // The otpauth URI is all the client needs to render the QR code.
-          // The raw secret is intentionally omitted from the response.
+          // The otpauth URI renders the QR code; secret provides the manual setup key.
           otpauthUri: totpUri(user.email, secret),
+          secret,
         },
         { status: 200 }
       );
