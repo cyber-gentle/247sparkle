@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { requireRole } from '@/lib/api-auth';
+import { formatOrderNumber } from '@/lib/order-utils';
 
 // Laundry jobs the assigned rider still needs to act on. COMPLETED/CANCELLED
 // and later-stage partner work is history, not an actionable job.
@@ -103,7 +104,7 @@ export async function GET(request: NextRequest) {
 
     const toJobDTO = (order: (typeof availableJobs)[number]) => ({
       id: order.id,
-      orderNumber: `ORD-${order.id.slice(0, 6).toUpperCase()}`,
+      orderNumber: formatOrderNumber(order.id),
       serviceType: order.serviceType,
       status: order.status,
       totalAmount: order.totalAmount,

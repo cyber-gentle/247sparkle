@@ -5,6 +5,7 @@ import ServiceBadge from '@/components/ui/ServiceBadge';
 import { Eye, UserPlus, RefreshCw, ChevronRight, Loader } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { formatOrderNumber } from '@/lib/order-utils';
 
 type Order = {
   id: string;
@@ -117,7 +118,7 @@ export default function AdminOrdersFeed() {
                 >
                   <td className="px-5 py-3">
                     <span className="text-xs font-bold text-[#1A0A5E] font-mono-nums">
-                      ORD-{order.id.slice(0, 6).toUpperCase()}
+                      {formatOrderNumber(order.id)}
                     </span>
                     {order.paymentStatus === 'FAILED' && (
                       <span className="ml-1.5 text-[9px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">
@@ -164,7 +165,7 @@ export default function AdminOrdersFeed() {
                       {!order.rider && order.serviceType === 'LAUNDRY' && (
                         <button
                           onClick={() =>
-                            toast.info(`Assign rider to ORD-${order.id.slice(0, 6).toUpperCase()}`)
+                            toast.info(`Assign rider to ${formatOrderNumber(order.id)}`)
                           }
                           className="p-1.5 rounded-lg hover:bg-[#F5C200]/20 text-[#D4A800] transition-colors"
                           title="Assign rider"

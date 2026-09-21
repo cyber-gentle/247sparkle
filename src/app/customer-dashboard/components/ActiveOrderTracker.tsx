@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   ArrowRight,
 } from 'lucide-react';
+import { formatOrderNumber } from '@/lib/order-utils';
 
 interface ActiveOrderTrackerProps {
   order?: any | null;
@@ -88,7 +89,7 @@ export default function ActiveOrderTracker({ order, isLoading = false }: ActiveO
 
   const isFumigation = order.serviceType === 'FUMIGATION';
   const stageIndex = getStageIndex(order.status);
-  const orderNumber = `ORD-${order.id.slice(0, 6).toUpperCase()}`;
+  const orderNumber = formatOrderNumber(order.id);
 
   const itemsSummary = isFumigation
     ? order.items?.[0]?.itemName || 'Residential Fumigation'
@@ -106,7 +107,7 @@ export default function ActiveOrderTracker({ order, isLoading = false }: ActiveO
             <span className="text-sm font-bold text-[#1A0A5E]">Active Order Tracker</span>
           </div>
           <span className="text-xs text-gray-500 font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-lg">
-            #{orderNumber}
+            {orderNumber}
           </span>
         </div>
         <button

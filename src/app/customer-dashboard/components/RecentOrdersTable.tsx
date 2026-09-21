@@ -5,6 +5,7 @@ import StatusBadge, { OrderStatus } from '@/components/ui/StatusBadge';
 import ServiceBadge, { ServiceType } from '@/components/ui/ServiceBadge';
 import { Eye, RotateCcw, Download, ChevronRight, Loader } from 'lucide-react';
 import { toast } from 'sonner';
+import { formatOrderNumber } from '@/lib/order-utils';
 
 interface Order {
   id: string;
@@ -34,7 +35,7 @@ export default function RecentOrdersTable() {
 
         const formattedOrders = ordersArray.slice(0, 5).map((order: any) => ({
           id: order.id,
-          orderNumber: `ORD-${order.id.slice(0, 6).toUpperCase()}`,
+          orderNumber: formatOrderNumber(order.id),
           service: (order.serviceType?.toLowerCase() || 'laundry') as ServiceType,
           items: order.items?.map((i: any) => `${i.itemName} ×${i.quantity}`).join(', ') || 'N/A',
           amount: `₦${(order.totalAmount || 0).toLocaleString()}`,

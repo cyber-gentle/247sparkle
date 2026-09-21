@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Loader, TrendingUp, Wallet, DollarSign, Clock } from 'lucide-react';
 import { toast } from 'sonner';
+import { formatOrderNumber } from '@/lib/order-utils';
 
 type Order = {
   id: string;
@@ -183,7 +184,7 @@ export default function AdminFinancePage() {
                             className="border-b border-slate-100 hover:bg-slate-50"
                           >
                             <td className="px-5 py-3 font-mono text-xs text-slate-500">
-                              ORD-{order.id.slice(0, 6).toUpperCase()}
+                              {formatOrderNumber(order.id)}
                             </td>
                             <td className="px-5 py-3 text-slate-600">
                               {order.serviceType.replace(/_/g, ' ')}

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import AppLogo from '@/components/ui/AppLogo';
+import { formatOrderNumber } from '@/lib/order-utils';
 
 interface Commission {
   id: string;
@@ -254,7 +255,7 @@ export default function RiderEarningsPage() {
                         {commission.order?.serviceType?.replace(/_/g, ' ') || 'Service'}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {formatDate(commission.createdAt)} • Order #{commission.orderId.slice(-6)}
+                        {formatDate(commission.createdAt)} • {formatOrderNumber(commission.orderId)}
                       </p>
                     </div>
                   </div>
