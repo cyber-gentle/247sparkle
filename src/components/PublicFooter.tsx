@@ -18,7 +18,6 @@ const FOOTER_QUICK_LINKS = [
   { label: 'Track Your Order', href: '/customer/orders' },
   { label: 'Become a Partner', href: '/become-a-partner' },
   { label: 'Verify Certificate', href: '/verify' },
-  { label: 'Admin Login', href: '/admin/login' },
 ];
 
 const FOOTER_TABS = [

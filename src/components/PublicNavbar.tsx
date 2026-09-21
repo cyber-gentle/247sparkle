@@ -12,7 +12,6 @@ import {
   User,
   Handshake,
   Bike,
-  ShieldCheck,
 } from 'lucide-react';
 
 const NAV_LINKS = [
@@ -156,16 +155,6 @@ export default function PublicNavbar() {
                         {portal.label}
                       </Link>
                     ))}
-                    <div className="my-1.5 border-t border-slate-100" role="separator" />
-                    <Link
-                      href="/admin/login"
-                      role="menuitem"
-                      onClick={() => setLoginOpen(false)}
-                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-500 hover:bg-[#F5C200]/15 hover:text-[#1A0A5E] transition-colors"
-                    >
-                      <ShieldCheck size={16} className="shrink-0" />
-                      Admin
-                    </Link>
                   </div>
                 )}
               </div>
