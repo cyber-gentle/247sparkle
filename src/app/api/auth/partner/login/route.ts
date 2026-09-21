@@ -4,11 +4,34 @@ import { z } from 'zod';
 import prisma from '@/lib/db';
 import { signToken, signPendingTwoFactorToken } from '@/lib/auth';
 import { RATE_LIMIT_POLICIES, rateLimitRequest } from '@/lib/api-rate-limit';
+import {
+  TWO_FACTOR_LOCKOUT_MINUTES,
+  TWO_FACTOR_LOCKOUT_THRESHOLD,
+  decryptTotpSecret,
+  encryptTotpSecret,
+  generateTotpSecret,
+  totpUri,
+} from '@/lib/two-factor';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(1, 'Password is required'),
 });
+
+function auditAdminLogin(action: string, email: string, userId?: string) {
+  prisma.auditLog
+    .create({
+      data: {
+        action,
+        entityType: 'AUTH',
+        entityId: email,
+        userId: userId ?? null,
+      },
+    })
+    .catch(() => {
+      console.warn(`Failed to persist admin auth audit entry: ${action} for ${email}`);
+    });
+}
 
 export async function POST(request: NextRequest) {
   const limited = await rateLimitRequest(request, 'auth', RATE_LIMIT_POLICIES.auth);
@@ -24,8 +47,101 @@ export async function POST(request: NextRequest) {
       include: { partner: true },
     });
 
-    if (!user || user.role !== 'PARTNER') {
+    if (!user || (user.role !== 'PARTNER' && user.role !== 'ADMIN')) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+    }
+
+    // Role detection: if user is an ADMIN, route through admin 2FA flow
+    if (user.role === 'ADMIN') {
+      const adminLimited = await rateLimitRequest(
+        request,
+        'admin-auth',
+        RATE_LIMIT_POLICIES.adminAuth
+      );
+      if (adminLimited) return adminLimited;
+
+      if (user.lockedUntil && user.lockedUntil > new Date()) {
+        auditAdminLogin('ADMIN_LOGIN_LOCKED', user.email, user.id);
+        return NextResponse.json(
+          {
+            error:
+              'Too many failed attempts. This account is temporarily locked — try again later.',
+          },
+          { status: 423 }
+        );
+      }
+
+      const isValidPassword = await compare(validatedData.password, user.passwordHash);
+      if (!isValidPassword) {
+        const attempts = user.failedLoginAttempts + 1;
+        const shouldLock = attempts >= TWO_FACTOR_LOCKOUT_THRESHOLD;
+
+        await prisma.user.update({
+          where: { id: user.id },
+          data: shouldLock
+            ? {
+                failedLoginAttempts: attempts,
+                lockedUntil: new Date(Date.now() + TWO_FACTOR_LOCKOUT_MINUTES * 60_000),
+              }
+            : { failedLoginAttempts: attempts },
+        });
+
+        auditAdminLogin(
+          shouldLock ? 'ADMIN_LOGIN_LOCKOUT_TRIGGERED' : 'ADMIN_LOGIN_FAILED',
+          user.email,
+          user.id
+        );
+
+        return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+      }
+
+      if (user.failedLoginAttempts > 0 || user.lockedUntil) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { failedLoginAttempts: 0, lockedUntil: null },
+        });
+      }
+
+      if (!user.twoFactorEnabled) {
+        let secret = user.twoFactorSecret ? decryptTotpSecret(user.twoFactorSecret) : null;
+        if (!secret) {
+          secret = generateTotpSecret();
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { twoFactorSecret: encryptTotpSecret(secret) },
+          });
+        }
+
+        return NextResponse.json(
+          {
+            role: 'ADMIN',
+            requiresEnrollment: true,
+            pendingToken: await signPendingTwoFactorToken({
+              userId: user.id,
+              email: user.email,
+              role: 'ADMIN',
+            }),
+            otpauthUri: totpUri(user.email, secret),
+            secret,
+          },
+          { status: 200 }
+        );
+      }
+
+      auditAdminLogin('ADMIN_LOGIN_2FA_PENDING', user.email, user.id);
+
+      return NextResponse.json(
+        {
+          role: 'ADMIN',
+          requiresTwoFactor: true,
+          pendingToken: await signPendingTwoFactorToken({
+            userId: user.id,
+            email: user.email,
+            role: 'ADMIN',
+          }),
+        },
+        { status: 200 }
+      );
     }
 
     // Check account lockout

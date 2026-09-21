@@ -65,6 +65,17 @@ export default function PartnerLoginPage() {
         return;
       }
 
+      // If user is an ADMIN, route directly to admin 2FA authentication
+      if (result.role === 'ADMIN') {
+        try {
+          sessionStorage.setItem('sparkle:admin-2fa-handoff', JSON.stringify(result));
+        } catch {
+          // ignore storage error if unavailable
+        }
+        router.push('/admin/login?routed=partner');
+        return;
+      }
+
       if (result.requiresTwoFactor && result.pendingToken) {
         setTwoFactorToken(result.pendingToken);
         setTwoFactorCode('');
