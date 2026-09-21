@@ -180,7 +180,7 @@ export async function POST(request: NextRequest) {
     const forwardedProto = request.headers.get('x-forwarded-proto') || 'https';
     const dynamicBase = forwardedHost
       ? `${forwardedProto}://${forwardedHost.split(',')[0].trim()}`
-      : (process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, '') || request.nextUrl.origin);
+      : process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, '') || request.nextUrl.origin;
     const callbackUrl = `${dynamicBase}/customer/orders/${order.id}?payment=return`;
     try {
       const paystackResponse = await initializePayment(
