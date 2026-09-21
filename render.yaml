@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: sparkle247
+    name: two47sparkle
     runtime: node
     plan: starter
     region: frankfurt
