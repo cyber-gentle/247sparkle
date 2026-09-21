@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { compare } from 'bcryptjs';
 import { z } from 'zod';
 import prisma from '@/lib/db';
-import { signToken } from '@/lib/auth';
+import { signToken, signPendingTwoFactorToken } from '@/lib/auth';
 import { RATE_LIMIT_POLICIES, rateLimitRequest } from '@/lib/api-rate-limit';
 
 const loginSchema = z.object({
@@ -28,6 +28,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
+    // Check account lockout
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      return NextResponse.json(
+        { error: 'Too many failed attempts. This account is temporarily locked.' },
+        { status: 423 }
+      );
+    }
+
     // Verify password FIRST — revealing approval status before proving
     // knowledge of the password would let anyone enumerate partner accounts.
     const isValidPassword = await compare(validatedData.password, user.passwordHash);
@@ -44,6 +52,31 @@ export async function POST(request: NextRequest) {
             'Your partner account is pending approval or has been suspended. Please contact support.',
         },
         { status: 403 }
+      );
+    }
+
+    // Password accepted — reset any failed login attempts/lockout
+    if (user.failedLoginAttempts > 0 || user.lockedUntil) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { failedLoginAttempts: 0, lockedUntil: null },
+      });
+    }
+
+    // Second factor check: if partner has 2FA enabled, require TOTP code
+    if (user.twoFactorEnabled) {
+      const pendingToken = await signPendingTwoFactorToken({
+        userId: user.id,
+        email: user.email,
+        role: 'PARTNER',
+      });
+
+      return NextResponse.json(
+        {
+          requiresTwoFactor: true,
+          pendingToken,
+        },
+        { status: 200 }
       );
     }
 

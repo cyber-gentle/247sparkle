@@ -112,13 +112,20 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     await notifyOrderStatusChange(id, status as OrderStatus);
 
     // Auto-issue fumigation certificate when order is completed.
-    if (status === 'COMPLETED' && order.serviceType === 'FUMIGATION' && order.paymentStatus === 'PAID') {
+    if (
+      status === 'COMPLETED' &&
+      order.serviceType === 'FUMIGATION' &&
+      order.paymentStatus === 'PAID'
+    ) {
       try {
         const existingCert = await prisma.certificate.findUnique({ where: { orderId: id } });
         if (!existingCert) {
           const fullOrder = await prisma.order.findUnique({
             where: { id },
-            include: { customer: { include: { user: { select: { fullName: true } } } }, items: true },
+            include: {
+              customer: { include: { user: { select: { fullName: true } } } },
+              items: true,
+            },
           });
           if (fullOrder) {
             const currentYear = new Date().getFullYear();
@@ -140,7 +147,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
                     customerId: fullOrder.customerId,
                     certificateNumber: `${prefix}${String(nextSeq).padStart(5, '0')}`,
                     customerName: fullOrder.customer.user.fullName,
-                    propertyAddress: (fullOrder.deliveryAddress || fullOrder.pickupAddress || 'Address not specified').trim(),
+                    propertyAddress: (
+                      fullOrder.deliveryAddress ||
+                      fullOrder.pickupAddress ||
+                      'Address not specified'
+                    ).trim(),
                     propertyType: (fullOrder.items?.[0]?.itemName || 'Residential Property').trim(),
                     serviceDate: fullOrder.scheduledDate || fullOrder.createdAt,
                   },

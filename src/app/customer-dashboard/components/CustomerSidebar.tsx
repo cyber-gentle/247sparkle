@@ -148,11 +148,19 @@ export default function CustomerSidebar({
           <div className="flex items-center gap-3 px-3 py-2.5 mb-1">
             <div className="w-8 h-8 rounded-full bg-[#F5C200] flex items-center justify-center text-[#1A0A5E] text-xs font-bold shrink-0">
               {customer?.fullName
-                ? customer.fullName.split(' ').filter(Boolean).map((n) => n[0]).slice(0, 2).join('').toUpperCase()
+                ? customer.fullName
+                    .split(' ')
+                    .filter(Boolean)
+                    .map((n) => n[0])
+                    .slice(0, 2)
+                    .join('')
+                    .toUpperCase()
                 : '?'}
             </div>
             <div className="overflow-hidden">
-              <div className="text-xs font-bold text-white truncate">{customer?.fullName ?? ''}</div>
+              <div className="text-xs font-bold text-white truncate">
+                {customer?.fullName ?? ''}
+              </div>
               <div className="text-[10px] text-white/40 truncate">{customer?.email ?? ''}</div>
             </div>
           </div>

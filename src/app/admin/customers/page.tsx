@@ -41,9 +41,9 @@ export default function AdminCustomersPage() {
     const q = search.toLowerCase();
     return (
       !q ||
-      c.fullName.toLowerCase().includes(q) ||
-      c.email.toLowerCase().includes(q) ||
-      c.phone.includes(q)
+      c.fullName?.toLowerCase().includes(q) ||
+      c.email?.toLowerCase().includes(q) ||
+      c.phone?.toLowerCase().includes(q)
     );
   });
 
@@ -112,19 +112,21 @@ export default function AdminCustomersPage() {
                       className="border-b border-slate-100 hover:bg-slate-50 transition"
                     >
                       <td className="px-5 py-4">
-                        <p className="font-semibold text-slate-800">{c.fullName}</p>
-                        <p className="text-xs text-slate-500">{c.email}</p>
+                        <p className="font-semibold text-slate-800">{c.fullName ?? '—'}</p>
+                        <p className="text-xs text-slate-500">{c.email ?? '—'}</p>
                       </td>
-                      <td className="px-5 py-4 text-slate-600">{c.phone}</td>
-                      <td className="px-5 py-4 text-slate-700 font-semibold">{c.totalOrders}</td>
+                      <td className="px-5 py-4 text-slate-600">{c.phone ?? '—'}</td>
+                      <td className="px-5 py-4 text-slate-700 font-semibold">
+                        {c.totalOrders ?? 0}
+                      </td>
                       <td className="px-5 py-4 font-semibold text-[#1A0A5E]">
-                        ₦{c.totalSpend.toLocaleString()}
+                        ₦{(c.totalSpend ?? 0).toLocaleString()}
                       </td>
                       <td className="px-5 py-4 text-slate-500">
                         {c.lastOrderDate ? new Date(c.lastOrderDate).toLocaleDateString() : '—'}
                       </td>
                       <td className="px-5 py-4 text-slate-500">
-                        {new Date(c.joinedAt).toLocaleDateString()}
+                        {c.joinedAt ? new Date(c.joinedAt).toLocaleDateString() : '—'}
                       </td>
                     </tr>
                   ))}

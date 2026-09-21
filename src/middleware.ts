@@ -135,9 +135,12 @@ export async function middleware(request: NextRequest) {
   // react to it — e.g. by routing to the portal login page.
   const unauthorized = () => {
     if (isApiRoute) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    if (pathname.startsWith('/rider/')) return NextResponse.redirect(new URL('/rider/login', request.url));
-    if (pathname.startsWith('/partner/')) return NextResponse.redirect(new URL('/partner/login', request.url));
-    if (pathname.startsWith('/admin/') || pathname.startsWith('/admin-dashboard')) return NextResponse.redirect(new URL('/admin/login', request.url));
+    if (pathname.startsWith('/rider/'))
+      return NextResponse.redirect(new URL('/rider/login', request.url));
+    if (pathname.startsWith('/partner/'))
+      return NextResponse.redirect(new URL('/partner/login', request.url));
+    if (pathname.startsWith('/admin/') || pathname.startsWith('/admin-dashboard'))
+      return NextResponse.redirect(new URL('/admin/login', request.url));
     return NextResponse.redirect(new URL('/customer/login', request.url));
   };
 

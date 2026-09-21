@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/db';
 
+import { getSessionFromRequest } from '@/lib/auth';
+
 const updateProfileSchema = z.object({
   businessName: z.string().min(2),
   ownerName: z.string().min(2),
@@ -20,13 +22,19 @@ const updateProfileSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id');
+    let userId = request.headers.get('x-user-id');
+    if (!userId) {
+      const session = await getSessionFromRequest(request);
+      if (session?.role === 'PARTNER') {
+        userId = session.userId;
+      }
+    }
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const partner = await prisma.partner.findUnique({
       where: { userId },
       include: {
-        user: { select: { fullName: true, email: true, phone: true } },
+        user: { select: { fullName: true, email: true, phone: true, twoFactorEnabled: true } },
       },
     });
 
@@ -50,6 +58,7 @@ export async function GET(request: NextRequest) {
         accountName: partner.accountName,
         approvalStatus: partner.approvalStatus,
         workloadStatus: partner.workloadStatus,
+        twoFactorEnabled: partner.user.twoFactorEnabled ?? false,
       },
     });
   } catch (error) {

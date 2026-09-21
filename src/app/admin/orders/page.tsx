@@ -340,7 +340,7 @@ export default function AdminOrdersPage() {
                         </span>
                       </td>
                       <td className="px-5 py-4 font-semibold text-[#1A0A5E]">
-                        ₦{order.totalAmount.toLocaleString()}
+                        ₦{(order.totalAmount ?? 0).toLocaleString()}
                       </td>
                       <td className="px-5 py-4 text-slate-600">
                         {order.rider?.user.fullName ?? '—'}

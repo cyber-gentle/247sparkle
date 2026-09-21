@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
       status: o.status,
       serviceType: o.serviceType,
       paymentStatus: o.paymentStatus,
-      totalAmount: o.totalAmount,
+      partnerPayout: Math.round(o.totalAmount * PARTNER_REVENUE_SHARE),
       createdAt: o.createdAt,
       // "Ready for pickup" is actionable while the items are still being
       // cleaned at the shop.

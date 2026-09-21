@@ -104,28 +104,28 @@ export default function AdminFinancePage() {
               {[
                 {
                   label: 'Total Revenue',
-                  value: `₦${stats!.totalRevenue.toLocaleString()}`,
-                  sub: `${stats!.orderCount} orders`,
+                  value: `₦${(stats?.totalRevenue ?? 0).toLocaleString()}`,
+                  sub: `${stats?.orderCount ?? 0} orders`,
                   icon: TrendingUp,
                   color: 'text-[#1A0A5E]',
                 },
                 {
                   label: 'Paid Revenue',
-                  value: `₦${stats!.paidRevenue.toLocaleString()}`,
-                  sub: `${stats!.paidOrderCount} paid orders`,
+                  value: `₦${(stats?.paidRevenue ?? 0).toLocaleString()}`,
+                  sub: `${stats?.paidOrderCount ?? 0} paid orders`,
                   icon: DollarSign,
                   color: 'text-green-600',
                 },
                 {
                   label: 'Total Commissions',
-                  value: `₦${stats!.totalCommissions.toLocaleString()}`,
+                  value: `₦${(stats?.totalCommissions ?? 0).toLocaleString()}`,
                   sub: 'Rider + partner',
                   icon: Wallet,
                   color: 'text-purple-600',
                 },
                 {
                   label: 'Pending Commissions',
-                  value: `₦${stats!.pendingCommissions.toLocaleString()}`,
+                  value: `₦${(stats?.pendingCommissions ?? 0).toLocaleString()}`,
                   sub: 'Awaiting payout',
                   icon: Clock,
                   color: 'text-amber-600',
@@ -189,7 +189,7 @@ export default function AdminFinancePage() {
                               {order.serviceType.replace(/_/g, ' ')}
                             </td>
                             <td className="px-5 py-3 font-semibold text-[#1A0A5E]">
-                              ₦{order.totalAmount.toLocaleString()}
+                              ₦{(order.totalAmount ?? 0).toLocaleString()}
                             </td>
                             <td className="px-5 py-3 text-purple-600 font-semibold">
                               {commission > 0 ? `₦${commission.toLocaleString()}` : '—'}

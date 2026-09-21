@@ -38,9 +38,21 @@ const NAV_GROUPS = [
     id: 'group-operations',
     label: 'Operations',
     items: [
-      { id: 'admin-nav-orders', label: 'Orders', icon: ShoppingBag, href: '/admin/orders', badge: null },
+      {
+        id: 'admin-nav-orders',
+        label: 'Orders',
+        icon: ShoppingBag,
+        href: '/admin/orders',
+        badge: null,
+      },
       { id: 'admin-nav-riders', label: 'Riders', icon: Bike, href: '/admin/riders', badge: null },
-      { id: 'admin-nav-partners', label: 'Partners', icon: Store, href: '/admin/partners', badge: null },
+      {
+        id: 'admin-nav-partners',
+        label: 'Partners',
+        icon: Store,
+        href: '/admin/partners',
+        badge: null,
+      },
       {
         id: 'admin-nav-customers',
         label: 'Customers',
@@ -68,7 +80,13 @@ const NAV_GROUPS = [
         href: '/admin/certificates',
         badge: null,
       },
-      { id: 'admin-nav-quotations', label: 'Quotations', icon: MessageSquare, href: '/admin/quotations', badge: null },
+      {
+        id: 'admin-nav-quotations',
+        label: 'Quotations',
+        icon: MessageSquare,
+        href: '/admin/quotations',
+        badge: null,
+      },
       {
         id: 'admin-nav-testimonials',
         label: 'Testimonials',
@@ -102,8 +120,10 @@ export default function AdminSidebar({
 
   useEffect(() => {
     fetch('/api/auth/me')
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => { if (data) setUser(data); })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data) setUser(data);
+      })
       .catch(() => {});
   }, []);
 
@@ -168,9 +188,7 @@ export default function AdminSidebar({
                           <span className="text-sm font-semibold">{item.label}</span>
                           {item.badge && (
                             <span
-                              className={`ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center ${
-                                'bg-white/15 text-white'
-                              }`}
+                              className={`ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center ${'bg-white/15 text-white'}`}
                             >
                               {item.badge}
                             </span>
@@ -195,7 +213,13 @@ export default function AdminSidebar({
           <div className="flex items-center gap-3 px-3 py-2.5 mb-1">
             <div className="w-8 h-8 rounded-full bg-[#CC0000] flex items-center justify-center text-white text-xs font-bold shrink-0">
               {user?.fullName
-                ? user.fullName.split(' ').filter(Boolean).map((n) => n[0]).slice(0, 2).join('').toUpperCase()
+                ? user.fullName
+                    .split(' ')
+                    .filter(Boolean)
+                    .map((n) => n[0])
+                    .slice(0, 2)
+                    .join('')
+                    .toUpperCase()
                 : '?'}
             </div>
             <div className="overflow-hidden">

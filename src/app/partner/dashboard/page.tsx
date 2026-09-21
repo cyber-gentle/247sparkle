@@ -30,7 +30,7 @@ interface PartnerOrder {
   id: string;
   status: string;
   serviceType: string;
-  totalAmount: number;
+  partnerPayout: number;
   createdAt: string;
   canMarkReady: boolean;
   customer: { name: string; phone: string };
@@ -302,11 +302,11 @@ export default function PartnerDashboardPage() {
           </Link>
 
           <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-            <p className="font-bold text-[#1A0A5E]">Revenue This Month</p>
+            <p className="font-bold text-[#1A0A5E]">Total Amount This Month</p>
             <p className="text-2xl font-bold text-gray-900 mt-1">
               ₦{revenueThisMonth.toLocaleString('en-NG', { maximumFractionDigits: 0 })}
             </p>
-            <p className="text-sm text-gray-500 mt-1">Your share of paid orders this month</p>
+            <p className="text-sm text-gray-500 mt-1">Total amount from paid orders this month</p>
           </div>
         </div>
 
@@ -386,7 +386,12 @@ export default function PartnerDashboardPage() {
                           </a>
                         </span>
                       )}
-                      <span>₦{order.totalAmount.toLocaleString('en-NG')}</span>
+                      <span>
+                        Payout:{' '}
+                        <strong className="text-gray-900">
+                          ₦{(order.partnerPayout ?? 0).toLocaleString('en-NG')}
+                        </strong>
+                      </span>
                     </div>
 
                     {order.canMarkReady && (
@@ -427,8 +432,10 @@ export default function PartnerDashboardPage() {
                       #{order.id.slice(-8)} · {order.customer.name}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {new Date(order.createdAt).toLocaleDateString()} · ₦
-                      {order.totalAmount.toLocaleString('en-NG')}
+                      {new Date(order.createdAt).toLocaleDateString()} · Payout:{' '}
+                      <strong className="text-gray-800 font-semibold">
+                        ₦{(order.partnerPayout ?? 0).toLocaleString('en-NG')}
+                      </strong>
                     </p>
                   </div>
                   <span
