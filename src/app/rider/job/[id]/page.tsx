@@ -523,93 +523,106 @@ export default function RiderJobPage({ params: paramPromise }: RiderJobPageProps
               </div>
             )}
 
-            {/* PHASE 3: IN CLEANING (Partner is Cleaning - Rider waits) */}
+            {/* PHASE 3: IN CLEANING (Pickup Leg Completed) */}
             {order.status === 'IN_CLEANING' && (
               <div className="p-5 bg-purple-50 border border-purple-200 rounded-xl space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 shrink-0">
-                    <Sparkles size={20} />
+                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0">
+                    <CheckCircle size={22} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-purple-900">Order is Being Cleaned</h4>
-                    <p className="text-xs text-purple-700">Step 3: Partner Processing</p>
+                    <h4 className="font-bold text-purple-900">Pickup & Drop-off Completed!</h4>
+                    <p className="text-xs text-purple-700">
+                      Leg 1 Finished — Handed to Partner Shop
+                    </p>
                   </div>
                 </div>
 
                 <p className="text-sm text-gray-700 leading-relaxed">
-                  The clothes were received at{' '}
+                  You have successfully delivered the items to{' '}
                   <span className="font-semibold text-gray-900">
                     {order.partner?.businessName || 'the assigned partner shop'}
-                  </span>{' '}
-                  and are currently being washed.
+                  </span>
+                  . Your task fee of{' '}
+                  <strong className="text-green-700">
+                    ₦{(order.taskFee ?? 200).toLocaleString()}
+                  </strong>{' '}
+                  has been credited to your wallet balance.
                 </p>
 
                 <div className="p-3 bg-white rounded-lg border border-purple-100 text-xs text-gray-600 space-y-1">
                   <p className="font-semibold text-gray-800">What happens next?</p>
                   <p>
-                    Once cleaning is complete, the partner shop will mark the order ready for
-                    pickup. This screen will automatically update to show customer delivery
-                    instructions.
+                    The partner shop is currently washing and packing the laundry. Once ready, admin
+                    will assign an on-duty rider for the final return delivery to the customer.
                   </p>
                 </div>
 
-                {order.partner?.phone && (
-                  <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-purple-100 text-sm">
-                    <span className="text-gray-600">Partner shop contact:</span>
-                    <a
-                      href={`tel:${order.partner.phone}`}
-                      className="inline-flex items-center gap-1.5 text-purple-700 font-semibold hover:underline"
-                    >
-                      <Phone size={14} />
-                      {order.partner.phone}
-                    </a>
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between text-xs text-purple-700 pt-1">
-                  <span className="flex items-center gap-1">
-                    <Clock size={12} />
-                    Checking for partner readiness...
-                  </span>
-                  <button
-                    onClick={() => fetchOrder(false)}
-                    className="text-purple-800 font-semibold underline hover:text-purple-900"
-                  >
-                    Refresh Now
-                  </button>
-                </div>
+                <Link
+                  href="/rider/dashboard"
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm text-sm"
+                >
+                  <ArrowLeft size={16} />
+                  Back to Jobs Dashboard
+                </Link>
               </div>
             )}
 
-            {/* PHASE 4: OUT FOR DELIVERY (Customer Drop-off) */}
+            {/* PHASE 4: OUT FOR DELIVERY (Customer Drop-off Leg) */}
             {order.status === 'OUT_FOR_DELIVERY' && (
               <div className="space-y-4">
                 <div className="p-4 bg-cyan-50 border border-cyan-200 rounded-xl space-y-3">
                   <div className="flex items-center gap-2 text-cyan-900 font-semibold">
                     <MapPin size={18} className="text-cyan-600" />
-                    <span>Leg 3: Deliver to Customer</span>
+                    <span>Return Delivery: Partner Shop to Customer</span>
                   </div>
-                  <p className="text-sm text-gray-700">
-                    Cleaning is complete! Collect the finished items from{' '}
-                    <span className="font-semibold text-gray-900">
-                      {order.partner?.businessName || 'the partner shop'}
-                    </span>{' '}
-                    and deliver them to the customer at:
-                  </p>
-                  <div className="p-3 bg-white rounded-lg border border-cyan-100 text-sm font-medium text-gray-900">
-                    {order.deliveryAddress}
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <span>
-                      Customer: <strong className="text-gray-900">{order.customer.fullName}</strong>
+
+                  {/* Partner Shop Collection Info */}
+                  {order.partner && (
+                    <div className="p-3 bg-white rounded-lg border border-cyan-100 text-sm space-y-1">
+                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide block">
+                        Step 1: Collect Finished Laundry
+                      </span>
+                      <p className="font-bold text-gray-900">{order.partner.businessName}</p>
+                      {order.partner.address && (
+                        <p className="text-xs text-gray-600 flex items-start gap-1 pt-0.5">
+                          <MapPin size={13} className="text-cyan-600 shrink-0 mt-0.5" />
+                          <span>{order.partner.address}</span>
+                        </p>
+                      )}
+                      {order.partner.phone && (
+                        <div className="pt-1">
+                          <a
+                            href={`tel:${order.partner.phone}`}
+                            className="text-xs text-cyan-700 font-semibold hover:underline inline-flex items-center gap-1"
+                          >
+                            <Phone size={12} />
+                            {order.partner.phone}
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Customer Drop-off Info */}
+                  <div className="p-3 bg-white rounded-lg border border-cyan-100 text-sm space-y-1">
+                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide block">
+                      Step 2: Deliver to Customer
                     </span>
-                    <span>•</span>
-                    <a
-                      href={`tel:${order.customer.phone}`}
-                      className="text-cyan-700 font-semibold hover:underline"
-                    >
-                      {order.customer.phone}
-                    </a>
+                    <p className="font-bold text-gray-900">{order.customer.fullName}</p>
+                    <p className="text-xs text-gray-600 flex items-start gap-1 pt-0.5">
+                      <MapPin size={13} className="text-green-600 shrink-0 mt-0.5" />
+                      <span>{order.deliveryAddress}</span>
+                    </p>
+                    <div className="pt-1">
+                      <a
+                        href={`tel:${order.customer.phone}`}
+                        className="text-xs text-cyan-700 font-semibold hover:underline inline-flex items-center gap-1"
+                      >
+                        <Phone size={12} />
+                        {order.customer.phone}
+                      </a>
+                    </div>
                   </div>
                 </div>
 
@@ -635,13 +648,20 @@ export default function RiderJobPage({ params: paramPromise }: RiderJobPageProps
 
             {/* PHASE 5: COMPLETED */}
             {order.status === 'COMPLETED' && (
-              <div className="p-5 bg-green-50 border border-green-200 rounded-xl text-center space-y-2">
+              <div className="p-5 bg-green-50 border border-green-200 rounded-xl text-center space-y-3">
                 <CheckCircle className="mx-auto text-green-600" size={32} />
                 <p className="text-green-900 font-bold text-lg">Delivery Completed!</p>
                 <p className="text-xs text-green-700">
                   You have earned ₦{(order.taskFee ?? 200).toLocaleString()} for completing this
-                  job.
+                  delivery task.
                 </p>
+                <Link
+                  href="/rider/dashboard"
+                  className="inline-flex items-center gap-1.5 text-xs text-green-800 font-semibold underline hover:text-green-900 pt-1"
+                >
+                  <ArrowLeft size={14} />
+                  Return to Dashboard
+                </Link>
               </div>
             )}
           </div>

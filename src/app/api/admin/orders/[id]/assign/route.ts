@@ -63,12 +63,18 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // Pre-check for clearer errors; the transaction re-guards atomically.
-    if (order.paymentStatus !== 'PAID' || order.status !== 'PAID_UNASSIGNED' || order.riderId) {
+    const isAssignable =
+      order.paymentStatus === 'PAID' &&
+      ((order.status === 'PAID_UNASSIGNED' && !order.riderId) ||
+        order.status === 'OUT_FOR_DELIVERY');
+
+    if (!isAssignable) {
       return NextResponse.json(
         {
-          error: order.riderId
-            ? 'This order already has a rider assigned'
-            : 'Only paid, unassigned orders can be assigned a rider',
+          error:
+            order.status === 'PAID_UNASSIGNED' && order.riderId
+              ? 'This order already has a rider assigned'
+              : 'Only paid unassigned orders or orders ready for delivery can be assigned a rider',
         },
         { status: 409 }
       );
@@ -88,7 +94,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // Best-effort customer notification; never fails a committed assignment.
-    await notifyOrderStatusChange(id, 'RIDER_ASSIGNED');
+    if (order.status === 'PAID_UNASSIGNED') {
+      await notifyOrderStatusChange(id, 'RIDER_ASSIGNED');
+    } else if (order.status === 'OUT_FOR_DELIVERY') {
+      await notifyOrderStatusChange(id, 'OUT_FOR_DELIVERY');
+    }
 
     return NextResponse.json(
       {

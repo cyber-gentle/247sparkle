@@ -365,9 +365,9 @@ export default function AdminOrdersPage() {
                         {busyId === order.id ? (
                           <Loader size={16} className="animate-spin text-slate-400" />
                         ) : order.paymentStatus === 'PAID' &&
-                          order.status === 'PAID_UNASSIGNED' &&
-                          !order.rider &&
-                          order.serviceType === 'LAUNDRY' ? (
+                          order.serviceType === 'LAUNDRY' &&
+                          (order.status === 'PAID_UNASSIGNED' ||
+                            (order.status === 'OUT_FOR_DELIVERY' && !order.rider)) ? (
                           <div className="flex items-center gap-1.5">
                             <select
                               value={riderSelections[order.id] ?? ''}
@@ -383,7 +383,9 @@ export default function AdminOrdersPage() {
                               <option value="">
                                 {riders.length === 0
                                   ? 'No riders on duty'
-                                  : 'Select available rider…'}
+                                  : order.status === 'OUT_FOR_DELIVERY'
+                                    ? 'Assign delivery rider…'
+                                    : 'Assign pickup rider…'}
                               </option>
                               {riders.map((r) => (
                                 <option key={r.id} value={r.id}>
@@ -393,7 +395,11 @@ export default function AdminOrdersPage() {
                             </select>
                             <button
                               onClick={() => assignRider(order.id)}
-                              title="Assign rider to this order"
+                              title={
+                                order.status === 'OUT_FOR_DELIVERY'
+                                  ? 'Assign delivery rider'
+                                  : 'Assign pickup rider'
+                              }
                               className="rounded-lg bg-[#1A0A5E] p-1.5 text-white hover:bg-[#2a1a7e]"
                             >
                               <UserPlus size={14} />

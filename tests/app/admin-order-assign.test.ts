@@ -87,6 +87,36 @@ describe('Admin manual rider assignment', () => {
     });
   });
 
+  it('assigns an approved rider to an order that is OUT_FOR_DELIVERY', async () => {
+    db.rider.findUnique.mockResolvedValue({
+      id: 'rider-2',
+      approvalStatus: 'APPROVED',
+      availabilityStatus: 'WORKING',
+    });
+    db.order.findUnique.mockResolvedValue({
+      id: 'order-1',
+      paymentStatus: 'PAID',
+      status: 'OUT_FOR_DELIVERY',
+      riderId: null,
+    });
+    orderIntegrity.assignRiderToPaidOrder.mockResolvedValue({
+      id: 'order-1',
+      status: 'OUT_FOR_DELIVERY',
+      rider: { id: 'rider-2', user: { fullName: 'Delivery Rider', phone: '08099998888' } },
+    });
+
+    const response = await assignRider(request('order-1', 'rider-2'), params('order-1'));
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.order.status).toBe('OUT_FOR_DELIVERY');
+    expect(orderIntegrity.assignRiderToPaidOrder).toHaveBeenCalledWith({
+      orderId: 'order-1',
+      riderId: 'rider-2',
+      actorUserId: 'admin-user',
+    });
+  });
+
   it('returns 404 for an unknown rider', async () => {
     db.rider.findUnique.mockResolvedValue(null);
 
