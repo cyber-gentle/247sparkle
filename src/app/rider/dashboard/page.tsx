@@ -24,7 +24,7 @@ interface Job {
   orderNumber: string;
   serviceType: string;
   status: string;
-  totalAmount: number;
+  taskFee: number;
   pickupAddress: string;
   deliveryAddress: string;
   scheduledDate: string;
@@ -278,10 +278,15 @@ export default function RiderDashboardPage() {
                       <MapPin size={14} className="text-gray-400 mt-0.5 shrink-0" />
                       <span className="truncate">{job.pickupAddress}</span>
                     </p>
-                    <p className="flex items-center gap-2">
-                      <Clock size={14} className="text-gray-400 shrink-0" />
-                      {job.itemCount} item{job.itemCount !== 1 ? 's' : ''}
-                    </p>
+                    <div className="flex items-center justify-between pt-1">
+                      <p className="flex items-center gap-2">
+                        <Clock size={14} className="text-gray-400 shrink-0" />
+                        {job.itemCount} item{job.itemCount !== 1 ? 's' : ''}
+                      </p>
+                      <span className="text-xs font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded border border-green-100">
+                        Fee: ₦{job.taskFee.toLocaleString()}
+                      </span>
+                    </div>
                   </div>
                   <Link
                     href={`/rider/job/${job.id}`}
@@ -331,7 +336,7 @@ export default function RiderDashboardPage() {
                       </p>
                     </div>
                     <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-semibold">
-                      ₦{job.totalAmount.toLocaleString()}
+                      Fee: ₦{job.taskFee.toLocaleString()}
                     </span>
                   </div>
 

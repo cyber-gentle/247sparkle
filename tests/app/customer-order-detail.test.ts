@@ -129,4 +129,37 @@ describe('GET /api/orders/[id] (order detail payload)', () => {
 
     expect(response.status).toBe(401);
   });
+
+  it('hides totalAmount and item prices from riders, exposing only taskFee', async () => {
+    db.order.findUnique.mockResolvedValue(
+      orderRecord({
+        totalAmount: 9500,
+        items: [{ id: 'item-1', itemName: 'Shirt', quantity: 3, unitPrice: 1500, subtotal: 4500 }],
+        commissions: [{ riderId: 'rider-1', amount: 200 }],
+      })
+    );
+
+    const riderRequest = new NextRequest('http://localhost/api/orders/order-1', {
+      headers: {
+        'x-user-id': 'rider-user',
+        'x-user-email': 'rider@test',
+        'x-user-role': 'RIDER',
+      },
+    });
+
+    const response = await getOrderDetails(riderRequest, routeParams());
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.order.totalAmount).toBeUndefined();
+    expect(data.order.taskFee).toBe(200);
+    expect(data.order.items[0]).toEqual({
+      id: 'item-1',
+      itemName: 'Shirt',
+      quantity: 3,
+      unitPrice: undefined,
+      subtotal: undefined,
+      isWhiteGroup: undefined,
+    });
+  });
 });

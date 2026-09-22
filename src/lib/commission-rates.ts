@@ -8,8 +8,11 @@
  * partner. 247Sparkle keeps the remainder as its platform margin.
  */
 
+import { koboToNaira } from '@/lib/money';
+
 /** Rider earns a flat ₦200 per completed delivery. */
 export const RIDER_COMMISSION_KOBO = 20_000; // ₦200
+export const RIDER_TASK_FEE_NAIRA = koboToNaira(RIDER_COMMISSION_KOBO); // ₦200
 
 /** Partner keeps this fraction of the order total (1.0 = 100%). */
 export const PARTNER_REVENUE_SHARE = 0.85;

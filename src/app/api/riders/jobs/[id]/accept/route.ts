@@ -6,6 +6,7 @@ import { RATE_LIMIT_POLICIES, rateLimitRequest } from '@/lib/api-rate-limit';
 import { assignRiderToPaidOrder } from '@/lib/order-integrity';
 import { notifyOrderStatusChange } from '@/lib/order-notifications';
 import { formatOrderNumber } from '@/lib/order-utils';
+import { RIDER_TASK_FEE_NAIRA } from '@/lib/commission-rates';
 
 const acceptJobSchema = z.object({
   orderId: z.string(),
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           id: updatedOrder.id,
           orderNumber: formatOrderNumber(updatedOrder.id),
           status: updatedOrder.status,
-          totalAmount: updatedOrder.totalAmount,
+          taskFee: RIDER_TASK_FEE_NAIRA,
           customer: {
             name: updatedOrder.customer?.user.fullName,
             phone: updatedOrder.customer?.user.phone,

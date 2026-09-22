@@ -20,7 +20,7 @@ interface Order {
   id: string;
   serviceType: string;
   status: string;
-  totalAmount: number;
+  taskFee?: number;
   pickupAddress: string;
   deliveryAddress: string;
   scheduledDate: string;
@@ -312,12 +312,15 @@ export default function RiderJobPage({ params: paramPromise }: RiderJobPageProps
             </div>
           )}
 
-          {/* Total & Actions */}
+          {/* Task Fee & Actions */}
           <div className="px-6 py-6 space-y-4">
-            <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-              <span className="text-gray-700 font-semibold">Total Amount</span>
-              <span className="text-2xl font-bold text-blue-600">
-                ₦{order.totalAmount.toLocaleString()}
+            <div className="flex items-center justify-between p-4 bg-green-50 rounded-xl border border-green-100">
+              <div>
+                <span className="text-gray-800 font-semibold block">Delivery Task Fee</span>
+                <span className="text-xs text-gray-500">Your earning upon completion</span>
+              </div>
+              <span className="text-2xl font-bold text-green-700">
+                ₦{(order.taskFee ?? 200).toLocaleString()}
               </span>
             </div>
 

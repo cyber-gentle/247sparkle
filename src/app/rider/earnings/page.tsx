@@ -26,7 +26,6 @@ interface Commission {
   createdAt: string;
   order?: {
     serviceType: string;
-    totalAmount: number;
   };
 }
 
