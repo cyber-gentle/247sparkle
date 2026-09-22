@@ -99,9 +99,18 @@ export default function AdminOrdersPage() {
 
   async function loadRiders() {
     try {
-      const res = await fetch('/api/admin/riders');
+      const res = await fetch(
+        '/api/admin/riders?approvalStatus=APPROVED&availabilityStatus=WORKING',
+        {
+          cache: 'no-store',
+        }
+      );
       const data = await res.json();
-      setRiders((data.riders ?? []).filter((r: RiderOption) => r.approvalStatus === 'APPROVED'));
+      setRiders(
+        (data.riders ?? []).filter(
+          (r: RiderOption) => r.approvalStatus === 'APPROVED' && r.availabilityStatus === 'WORKING'
+        )
+      );
     } catch {
       // Non-fatal: assignment UI simply shows no options until retried.
     }
@@ -362,6 +371,7 @@ export default function AdminOrdersPage() {
                           <div className="flex items-center gap-1.5">
                             <select
                               value={riderSelections[order.id] ?? ''}
+                              onFocus={() => loadRiders()}
                               onChange={(e) =>
                                 setRiderSelections((prev) => ({
                                   ...prev,
@@ -370,11 +380,14 @@ export default function AdminOrdersPage() {
                               }
                               className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1A0A5E]"
                             >
-                              <option value="">Select rider…</option>
+                              <option value="">
+                                {riders.length === 0
+                                  ? 'No riders on duty'
+                                  : 'Select available rider…'}
+                              </option>
                               {riders.map((r) => (
                                 <option key={r.id} value={r.id}>
-                                  {r.user.fullName}
-                                  {r.availabilityStatus === 'WORKING' ? ' ●' : ' ○'}
+                                  {r.user.fullName} (On Duty)
                                 </option>
                               ))}
                             </select>
