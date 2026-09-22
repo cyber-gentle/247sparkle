@@ -13,6 +13,7 @@ const ALLOWED_FOLDERS = new Set([
   '247sparkle/onboarding',
   '247sparkle/riders',
   '247sparkle/partners',
+  '247sparkle/partners/nin',
   '247sparkle/customers',
 ]);
 

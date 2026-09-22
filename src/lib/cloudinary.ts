@@ -50,14 +50,12 @@ export async function uploadImageBuffer(
   const cld = getCloudinary();
 
   if (!cld) {
-    // Production must have real Cloudinary credentials — storing multi-MB
-    // base64 data URIs in the database is unacceptable.
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error(
-        'Cloudinary credentials are not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.'
-      );
-    }
-    // Development / test fallback: encode as a data URI
+    // Fallback: encode as a data URI when Cloudinary is not configured.
+    // This allows partner/rider signups and document uploads to proceed gracefully
+    // even before CLOUDINARY_* environment variables have been provisioned.
+    console.warn(
+      '[Cloudinary] Credentials not configured. Falling back to data URI encoding for upload.'
+    );
     const base64 = buffer.toString('base64');
     const dataUrl = `data:image/jpeg;base64,${base64}`;
     return {

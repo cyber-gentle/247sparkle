@@ -126,4 +126,37 @@ describe('POST /api/upload', () => {
     const res = await POST(uploadRequest(formData));
     expect(res.status).toBe(200);
   });
+
+  it('accepts upload to 247sparkle/partners/nin folder for partner NIN document', async () => {
+    const formData = new FormData();
+    const file = new File([JPEG_BYTES], 'nin-card.jpg', { type: 'image/jpeg' });
+    formData.append('file', file);
+    formData.append('folder', '247sparkle/partners/nin');
+
+    const res = await POST(uploadRequest(formData));
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.success).toBe(true);
+    expect(typeof data.url).toBe('string');
+  });
+
+  it('gracefully falls back to data URI in production when Cloudinary is not configured', async () => {
+    const originalEnv = process.env.NODE_ENV;
+    try {
+      (process.env as any).NODE_ENV = 'production';
+      const formData = new FormData();
+      const file = new File([JPEG_BYTES], 'passport.jpg', { type: 'image/jpeg' });
+      formData.append('file', file);
+      formData.append('folder', '247sparkle/partners');
+
+      const res = await POST(uploadRequest(formData));
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.success).toBe(true);
+      expect(data.simulated).toBe(true);
+      expect(data.url).toMatch(/^data:image\/jpeg;base64,/);
+    } finally {
+      (process.env as any).NODE_ENV = originalEnv;
+    }
+  });
 });
