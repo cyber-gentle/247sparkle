@@ -48,9 +48,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: 'Rider not approved to accept jobs' }, { status: 403 });
     }
 
-    // Check if rider is available
+    // If rider is approved but currently OFF_DUTY, automatically activate them to WORKING upon accepting a job
     if (rider.availabilityStatus !== 'WORKING') {
-      return NextResponse.json({ error: 'Rider is not available' }, { status: 400 });
+      await prisma.rider.update({
+        where: { id: rider.id },
+        data: { availabilityStatus: 'WORKING' },
+      });
     }
 
     const updatedOrder = await assignRiderToPaidOrder({

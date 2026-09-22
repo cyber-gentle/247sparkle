@@ -171,6 +171,11 @@ export async function assignRiderToPaidOrder({
       update: {},
     });
 
+    await tx.rider.update({
+      where: { id: riderId },
+      data: { availabilityStatus: 'WORKING' },
+    });
+
     await tx.auditLog.create({
       data: {
         action: 'RIDER_ASSIGNED',

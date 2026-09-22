@@ -14,7 +14,7 @@ describe('database-backed rider fulfilment routes', () => {
     const { customer } = await createCustomer();
     const order = await createPaidUnassignedOrder(customer.id);
     const unapproved = await createRider({ approvalStatus: 'PENDING' });
-    const approved = await createRider();
+    const approved = await createRider({ availabilityStatus: 'OFF_DUTY' });
 
     const denied = await acceptJob(
       await authenticatedJsonRequest(
@@ -58,6 +58,9 @@ describe('database-backed rider fulfilment routes', () => {
     expect(await prisma.order.findUnique({ where: { id: order.id } })).toMatchObject({
       riderId: approved.rider.id,
       status: 'RIDER_ASSIGNED',
+    });
+    expect(await prisma.rider.findUnique({ where: { id: approved.rider.id } })).toMatchObject({
+      availabilityStatus: 'WORKING',
     });
   });
 
