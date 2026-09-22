@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { requireSession } from '@/lib/api-auth';
+import { RIDER_TASK_FEE_NAIRA } from '@/lib/commission-rates';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireSession(request);
@@ -47,6 +48,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           },
         },
         certificate: true,
+        commissions: {
+          select: {
+            riderId: true,
+            amount: true,
+          },
+        },
       },
     });
 
@@ -64,6 +71,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    const isRider = userRole === 'RIDER';
+    const riderCommission = isRider
+      ? order.commissions?.find((c) => c.riderId === order.rider?.id)
+      : null;
+    const taskFee = isRider ? (riderCommission?.amount ?? RIDER_TASK_FEE_NAIRA) : undefined;
+
     // Format the response
     const formattedOrder = {
       id: order.id,
@@ -72,8 +85,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       paymentStatus: order.paymentStatus,
       // Needed by the order page to verify payment after returning from
       // Paystack checkout (the callback_url lands there with ?payment=return).
-      paystackReference: order.paystackReference,
-      totalAmount: order.totalAmount,
+      paystackReference: isRider ? undefined : order.paystackReference,
+      // Total amount is confidential: never exposed to riders.
+      totalAmount: isRider ? undefined : order.totalAmount,
+      taskFee,
       createdAt: order.createdAt,
       pickupOption: order.pickupOption,
       pickupAddress: order.pickupAddress,
@@ -81,10 +96,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       scheduledDate: order.scheduledDate,
       scheduledTime: order.scheduledTime,
       items: order.items.map((item) => ({
+        id: item.id,
         itemName: item.itemName,
         quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        subtotal: item.subtotal,
+        unitPrice: isRider ? undefined : item.unitPrice,
+        subtotal: isRider ? undefined : item.subtotal,
         isWhiteGroup: item.isWhiteGroup,
       })),
       customer: {

@@ -112,8 +112,12 @@ describe('GET /api/riders/jobs (rider dashboard payload)', () => {
     expect(data.earnings).toEqual({ today: 1000, thisWeek: 2500, allTime: 4200 });
     expect(data.jobs).toHaveLength(1);
     expect(data.jobs[0].orderNumber).toBe('Order #ILABLE');
+    expect(data.jobs[0].taskFee).toBe(200);
+    expect(data.jobs[0]).not.toHaveProperty('totalAmount');
     expect(data.assignedJobs).toHaveLength(1);
     expect(data.assignedJobs[0].customer).toEqual({ name: 'Tunde Afolayan', phone: '08034567890' });
+    expect(data.assignedJobs[0].taskFee).toBe(200);
+    expect(data.assignedJobs[0]).not.toHaveProperty('totalAmount');
   });
 
   it('only lists unassigned laundry jobs as available', async () => {

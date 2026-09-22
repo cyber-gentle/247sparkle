@@ -24,7 +24,6 @@ export async function GET(request: NextRequest) {
           order: {
             select: {
               serviceType: true,
-              totalAmount: true,
             },
           },
         },

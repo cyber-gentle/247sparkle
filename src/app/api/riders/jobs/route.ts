@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { requireRole } from '@/lib/api-auth';
 import { formatOrderNumber } from '@/lib/order-utils';
+import { RIDER_TASK_FEE_NAIRA } from '@/lib/commission-rates';
 
 // Laundry jobs the assigned rider still needs to act on. COMPLETED/CANCELLED
 // and later-stage partner work is history, not an actionable job.
@@ -77,6 +78,10 @@ export async function GET(request: NextRequest) {
           },
         },
         items: true,
+        commissions: {
+          where: { riderId: rider.id },
+          select: { amount: true },
+        },
       },
       orderBy: { createdAt: 'asc' }, // Oldest first: act on what you accepted first
     });
@@ -102,12 +107,16 @@ export async function GET(request: NextRequest) {
       _sum: { amount: true },
     });
 
-    const toJobDTO = (order: (typeof availableJobs)[number]) => ({
+    const toJobDTO = (
+      order: (typeof availableJobs)[number] & {
+        commissions?: Array<{ amount: number }>;
+      }
+    ) => ({
       id: order.id,
       orderNumber: formatOrderNumber(order.id),
       serviceType: order.serviceType,
       status: order.status,
-      totalAmount: order.totalAmount,
+      taskFee: order.commissions?.[0]?.amount ?? RIDER_TASK_FEE_NAIRA,
       pickupAddress: order.pickupAddress,
       deliveryAddress: order.deliveryAddress,
       scheduledDate: order.scheduledDate,
