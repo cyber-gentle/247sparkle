@@ -87,7 +87,10 @@ export default function RiderJobPage({ params: paramPromise }: RiderJobPageProps
     const fetchOrder = async () => {
       try {
         const response = await fetch(`/api/orders/${params.id}`);
-        if (!response.ok) throw new Error('Failed to fetch order');
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || 'Failed to fetch order');
+        }
         const data = await response.json();
         if (data.order) {
           setOrder(data.order);
@@ -95,7 +98,7 @@ export default function RiderJobPage({ params: paramPromise }: RiderJobPageProps
           toast.error('Order not found');
         }
       } catch (error: any) {
-        toast.error('Failed to load order details');
+        toast.error(error.message || 'Failed to load order details');
         console.error(error);
       } finally {
         setIsLoading(false);
