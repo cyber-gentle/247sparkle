@@ -43,6 +43,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             user: {
               select: {
                 fullName: true,
+                phone: true,
               },
             },
           },
@@ -125,6 +126,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         ? {
             id: order.partner.id,
             businessName: order.partner.businessName,
+            address: order.partner.address,
+            phone: order.partner.user.phone,
           }
         : null,
       certificate: order.certificate
