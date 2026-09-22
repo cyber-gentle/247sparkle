@@ -132,17 +132,43 @@ export async function assignRiderToPaidOrder({
   actorUserId: string;
 }) {
   return prisma.$transaction(async (tx: DatabaseTransaction) => {
-    const assignment = await tx.order.updateMany({
-      where: {
-        id: orderId,
-        riderId: null,
-        paymentStatus: 'PAID',
-        status: 'PAID_UNASSIGNED',
-      },
-      data: { riderId, status: 'RIDER_ASSIGNED' },
+    const currentOrder = await tx.order.findUnique({
+      where: { id: orderId },
+      select: { status: true, paymentStatus: true, riderId: true },
     });
 
-    if (assignment.count !== 1) {
+    if (!currentOrder || currentOrder.paymentStatus !== 'PAID') {
+      return null;
+    }
+
+    if (currentOrder.status === 'PAID_UNASSIGNED') {
+      const assignment = await tx.order.updateMany({
+        where: {
+          id: orderId,
+          riderId: null,
+          paymentStatus: 'PAID',
+          status: 'PAID_UNASSIGNED',
+        },
+        data: { riderId, status: 'RIDER_ASSIGNED' },
+      });
+
+      if (assignment.count !== 1) {
+        return null;
+      }
+    } else if (currentOrder.status === 'OUT_FOR_DELIVERY') {
+      const assignment = await tx.order.updateMany({
+        where: {
+          id: orderId,
+          paymentStatus: 'PAID',
+          status: 'OUT_FOR_DELIVERY',
+        },
+        data: { riderId },
+      });
+
+      if (assignment.count !== 1) {
+        return null;
+      }
+    } else {
       return null;
     }
 
@@ -252,15 +278,23 @@ export async function transitionPaidOrder({
       throw new Error(`On-site service orders cannot transition to ${nextStatus}`);
     }
 
+    // Laundry pickup and return delivery legs require an assigned rider;
+    // IN_CLEANING -> OUT_FOR_DELIVERY is partner-handled and requires no rider.
+    const requiresRider = isLaundry && currentStatus !== 'IN_CLEANING';
+
     const transition = await tx.order.updateMany({
       where: {
         id: orderId,
         status: currentStatus,
         paymentStatus: 'PAID',
-        // Laundry fulfilment requires a rider; on-site orders have none.
-        ...(isLaundry ? { riderId: { not: null } } : {}),
+        ...(requiresRider ? { riderId: { not: null } } : {}),
       },
-      data: { status: nextStatus },
+      data: {
+        status: nextStatus,
+        // Clear riderId when entering IN_CLEANING so the order is unassigned while
+        // in cleaning, and available for admin to assign any rider for return delivery.
+        ...(nextStatus === 'IN_CLEANING' ? { riderId: null } : {}),
+      },
     });
 
     if (transition.count !== 1) {
@@ -279,10 +313,7 @@ export async function transitionPaidOrder({
 
     // Pickup is the trigger for partner auto-routing: the rider has the
     // clothes, so the system immediately routes them to an available shop
-    // instead of waiting for an admin. Failure to find a partner is NOT an
-    // error — the order simply stays PICKED_UP for manual routing.
-    // Guarded on partnerId: null so this is idempotent and can never
-    // overwrite a manual routing decision made concurrently.
+    // instead of waiting for an admin.
     if (nextStatus === 'PICKED_UP') {
       const partner = await findAvailablePartner(tx);
       if (partner) {

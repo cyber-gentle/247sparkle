@@ -53,6 +53,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           select: {
             riderId: true,
             amount: true,
+            rider: {
+              select: {
+                userId: true,
+              },
+            },
           },
         },
       },
@@ -65,7 +70,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const isAuthorized =
       userRole === 'ADMIN' ||
       (userRole === 'CUSTOMER' && order.customer.userId === userId) ||
-      (userRole === 'RIDER' && order.rider?.userId === userId) ||
+      (userRole === 'RIDER' &&
+        (order.rider?.userId === userId ||
+          order.commissions?.some((c) => c.rider?.userId === userId))) ||
       (userRole === 'PARTNER' && order.partner?.userId === userId);
 
     if (!isAuthorized) {
@@ -74,7 +81,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const isRider = userRole === 'RIDER';
     const riderCommission = isRider
-      ? order.commissions?.find((c) => c.riderId === order.rider?.id)
+      ? order.commissions?.find((c) => c.rider?.userId === userId)
       : null;
     const taskFee = isRider ? (riderCommission?.amount ?? RIDER_TASK_FEE_NAIRA) : undefined;
 
