@@ -57,6 +57,9 @@ function createTransaction(overrides: Record<string, unknown> = {}): Transaction
     auditLog: {
       create: vi.fn().mockResolvedValue({ id: 'audit-1' }),
     },
+    rider: {
+      update: vi.fn().mockResolvedValue({ id: 'rider-1' }),
+    },
     ...overrides,
   };
 }
