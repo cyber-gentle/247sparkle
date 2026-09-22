@@ -67,6 +67,25 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       if ((ON_SITE_STATUSES as readonly string[]).includes(status)) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
+
+      // Rider cannot mark delivered to partner if no partner has been assigned yet
+      if (status === 'IN_CLEANING' && !order.partnerId) {
+        return NextResponse.json(
+          {
+            error:
+              'Cannot mark as delivered to partner: No partner shop has been assigned to this order yet.',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Only the assigned cleaning partner (or admin) can mark an in-cleaning order ready
+      if (status === 'OUT_FOR_DELIVERY') {
+        return NextResponse.json(
+          { error: 'Only the assigned partner or admin can mark cleaning ready for delivery' },
+          { status: 403 }
+        );
+      }
     } else if (userRole !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
