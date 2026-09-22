@@ -11,8 +11,10 @@ function requiredApiRoles(pathname: string, method: string): readonly Role[] | n
   if (pathname.startsWith('/api/rider/') || pathname.startsWith('/api/riders/')) return ['RIDER'];
   if (pathname.startsWith('/api/orders/') && pathname.endsWith('/status'))
     return ['RIDER', 'ADMIN'];
-  if (pathname === '/api/orders' || pathname.startsWith('/api/orders/'))
+  if (pathname.startsWith('/api/orders/') && pathname.endsWith('/pay'))
     return ['CUSTOMER', 'ADMIN'];
+  if (pathname === '/api/orders') return ['CUSTOMER', 'ADMIN'];
+  if (pathname.startsWith('/api/orders/')) return ['CUSTOMER', 'RIDER', 'PARTNER', 'ADMIN'];
   if (pathname.startsWith('/api/payment/verify/')) return ['CUSTOMER', 'ADMIN'];
   if (pathname === '/api/pricing' && method !== 'GET') return ['ADMIN'];
   if (pathname.startsWith('/api/certificates/customer')) return ['CUSTOMER', 'ADMIN'];
@@ -121,6 +123,31 @@ export async function middleware(request: NextRequest) {
     }
     if (pathname.startsWith('/admin/') || pathname.startsWith('/admin-dashboard')) {
       return request.cookies.get(cookieNameForRole('ADMIN'))?.value;
+    }
+    // For API routes, if referer is present, prefer the cookie matching the origin portal
+    const referer = request.headers.get('referer');
+    if (referer) {
+      try {
+        const refPath = new URL(referer).pathname;
+        if (refPath.startsWith('/rider/')) {
+          const val = request.cookies.get(cookieNameForRole('RIDER'))?.value;
+          if (val) return val;
+        }
+        if (refPath.startsWith('/partner/')) {
+          const val = request.cookies.get(cookieNameForRole('PARTNER'))?.value;
+          if (val) return val;
+        }
+        if (refPath.startsWith('/admin/') || refPath.startsWith('/admin-dashboard')) {
+          const val = request.cookies.get(cookieNameForRole('ADMIN'))?.value;
+          if (val) return val;
+        }
+        if (refPath.startsWith('/customer/') || refPath.startsWith('/customer-dashboard')) {
+          const val = request.cookies.get(cookieNameForRole('CUSTOMER'))?.value;
+          if (val) return val;
+        }
+      } catch {
+        // ignore malformed referer
+      }
     }
     // API routes and public paths: try all role cookies then legacy.
     for (const role of USER_ROLES) {

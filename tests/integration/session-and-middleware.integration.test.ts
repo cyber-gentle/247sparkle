@@ -79,6 +79,19 @@ describe('database-backed session and middleware behavior', () => {
     );
     expect(renderProxyAllowed.status).toBe(200);
 
+    const riderToken = await signToken({
+      userId: 'actual-rider-id',
+      email: 'rider@example.test',
+      role: 'RIDER',
+    });
+    const riderOrderAccess = await middleware(
+      new NextRequest('http://localhost:4028/api/orders/order-123', {
+        headers: { cookie: `auth_token_rider=${riderToken}` },
+      })
+    );
+    expect(riderOrderAccess.status).toBe(200);
+    expect(riderOrderAccess.headers.get('x-middleware-request-x-user-role')).toBe('RIDER');
+
     const admin = await middleware(
       new NextRequest('http://localhost:4028/api/admin/users', {
         headers: {
