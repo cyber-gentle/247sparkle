@@ -105,6 +105,21 @@ describe('Admin manual rider assignment', () => {
     expect(orderIntegrity.assignRiderToPaidOrder).not.toHaveBeenCalled();
   });
 
+  it('refuses to assign a rider who is off duty', async () => {
+    db.rider.findUnique.mockResolvedValue({
+      id: 'rider-1',
+      approvalStatus: 'APPROVED',
+      availabilityStatus: 'OFF_DUTY',
+    });
+
+    const response = await assignRider(request('order-1', 'rider-1'), params('order-1'));
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.error).toBe('Selected rider is currently off duty and cannot be assigned');
+    expect(orderIntegrity.assignRiderToPaidOrder).not.toHaveBeenCalled();
+  });
+
   it('returns 409 when the order already has a rider', async () => {
     db.rider.findUnique.mockResolvedValue({ id: 'rider-1', approvalStatus: 'APPROVED' });
     db.order.findUnique.mockResolvedValue({

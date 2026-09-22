@@ -3,6 +3,8 @@ import { z } from 'zod';
 import prisma from '@/lib/db';
 import { requireRole } from '@/lib/api-auth';
 
+export const dynamic = 'force-dynamic';
+
 const availabilitySchema = z.object({
   availabilityStatus: z.enum(['WORKING', 'OFF_DUTY']),
 });
@@ -21,7 +23,13 @@ export async function PUT(request: NextRequest) {
       data: { availabilityStatus: validatedData.availabilityStatus },
     });
 
-    return NextResponse.json({ rider });
+    return NextResponse.json(
+      { rider },
+      {
+        status: 200,
+        headers: { 'Cache-Control': 'no-store, max-age=0' },
+      }
+    );
   } catch (error) {
     console.error('Update availability error:', error);
     return NextResponse.json({ error: 'Failed to update availability' }, { status: 500 });

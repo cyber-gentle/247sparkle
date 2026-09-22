@@ -136,6 +136,7 @@ export default function RiderDashboardPage() {
       const response = await fetch('/api/rider/availability', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ availabilityStatus: newStatus }),
       });
       if (!response.ok) throw new Error('Failed to update status');

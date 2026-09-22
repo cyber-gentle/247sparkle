@@ -46,6 +46,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       );
     }
 
+    if (rider.availabilityStatus === 'OFF_DUTY') {
+      return NextResponse.json(
+        { error: 'Selected rider is currently off duty and cannot be assigned' },
+        { status: 400 }
+      );
+    }
+
     const order = await prisma.order.findUnique({
       where: { id },
       select: { id: true, paymentStatus: true, status: true, riderId: true },
