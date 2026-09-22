@@ -57,6 +57,8 @@ describe('provider signup submission safeguards', () => {
       email: 'partner@example.com',
       phone: '08012345678',
       address: '24 Commercial Avenue, Otukpo',
+      ownerPhotoUrl: 'https://res.cloudinary.com/demo/image/upload/v1/owner.jpg',
+      ninPhotoUrl: 'https://res.cloudinary.com/demo/image/upload/v1/nin.jpg',
       openingTime: '08:00',
       closingTime: '18:00',
     };
@@ -133,6 +135,8 @@ describe('provider signup submission safeguards', () => {
       email: ' ',
       phone: ' ',
       address: ' ',
+      ownerPhotoUrl: ' ',
+      ninPhotoUrl: ' ',
       openingTime: '',
       closingTime: '',
       password: '',
@@ -148,6 +152,12 @@ describe('provider signup submission safeguards', () => {
       expect(result.error.issues.map((issue) => issue.message)).toContain(
         'Business address is required'
       );
+      expect(result.error.issues.map((issue) => issue.message)).toContain(
+        'Owner / Manager photo is required'
+      );
+      expect(result.error.issues.map((issue) => issue.message)).toContain(
+        'National Identity Card (NIN) photo is required'
+      );
       expect(result.error.issues.map((issue) => issue.message)).toContain('Password is required');
     }
   });
@@ -160,6 +170,8 @@ describe('provider signup submission safeguards', () => {
         email: 'partner@example.com',
         phone: '08012345678',
         address: '1 Main Street, Otukpo',
+        ownerPhotoUrl: 'https://res.cloudinary.com/demo/image/upload/v1/owner.jpg',
+        ninPhotoUrl: 'https://res.cloudinary.com/demo/image/upload/v1/nin.jpg',
         openingTime: '08:00',
         closingTime: '17:00',
         password: 'password123',
@@ -188,7 +200,7 @@ describe('provider signup submission safeguards', () => {
     }
   });
 
-  it('accepts valid partner signup with ownerPhotoUrl', () => {
+  it('accepts valid partner signup with ownerPhotoUrl and ninPhotoUrl', () => {
     const result = partnerSignupRequestSchema.safeParse({
       businessName: 'Sparkle Laundry Hub',
       ownerName: 'Jane Partner',
@@ -196,6 +208,7 @@ describe('provider signup submission safeguards', () => {
       phone: '08012345678',
       address: '24 Commercial Avenue, Otukpo',
       ownerPhotoUrl: 'https://res.cloudinary.com/demo/image/upload/v1/owner.jpg',
+      ninPhotoUrl: 'https://res.cloudinary.com/demo/image/upload/v1/nin.jpg',
       openingTime: '08:00',
       closingTime: '18:00',
       daysOfOpening: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
@@ -207,6 +220,57 @@ describe('provider signup submission safeguards', () => {
     if (result.success) {
       expect(result.data.ownerPhotoUrl).toBe(
         'https://res.cloudinary.com/demo/image/upload/v1/owner.jpg'
+      );
+      expect(result.data.ninPhotoUrl).toBe(
+        'https://res.cloudinary.com/demo/image/upload/v1/nin.jpg'
+      );
+    }
+  });
+
+  it('rejects partner signup when ownerPhotoUrl or ninPhotoUrl is missing', () => {
+    const base = {
+      businessName: 'Sparkle Laundry Hub',
+      ownerName: 'Jane Partner',
+      email: 'partner@example.com',
+      phone: '08012345678',
+      address: '24 Commercial Avenue, Otukpo',
+      openingTime: '08:00',
+      closingTime: '18:00',
+      daysOfOpening: ['Mon', 'Tue', 'Wed'],
+      password: 'password123',
+      confirmPassword: 'password123',
+    };
+
+    const missingBoth = partnerSignupRequestSchema.safeParse(base);
+    expect(missingBoth.success).toBe(false);
+    if (!missingBoth.success) {
+      expect(missingBoth.error.issues.map((i) => i.message)).toContain(
+        'Owner / Manager photo is required'
+      );
+      expect(missingBoth.error.issues.map((i) => i.message)).toContain(
+        'National Identity Card (NIN) photo is required'
+      );
+    }
+
+    const missingNin = partnerSignupRequestSchema.safeParse({
+      ...base,
+      ownerPhotoUrl: 'https://res.cloudinary.com/demo/image/upload/v1/owner.jpg',
+    });
+    expect(missingNin.success).toBe(false);
+    if (!missingNin.success) {
+      expect(missingNin.error.issues.map((i) => i.message)).toContain(
+        'National Identity Card (NIN) photo is required'
+      );
+    }
+
+    const missingOwner = partnerSignupRequestSchema.safeParse({
+      ...base,
+      ninPhotoUrl: 'https://res.cloudinary.com/demo/image/upload/v1/nin.jpg',
+    });
+    expect(missingOwner.success).toBe(false);
+    if (!missingOwner.success) {
+      expect(missingOwner.error.issues.map((i) => i.message)).toContain(
+        'Owner / Manager photo is required'
       );
     }
   });

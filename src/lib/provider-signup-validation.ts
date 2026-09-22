@@ -63,8 +63,14 @@ export const partnerSignupSchema = z
       .trim()
       .min(1, 'Business address is required')
       .min(5, 'Business address must be at least 5 characters'),
-    ownerPhotoUrl: z.string().trim().optional().or(z.literal('')),
-    ninPhotoUrl: z.string().trim().optional().or(z.literal('')),
+    ownerPhotoUrl: z
+      .string({ error: 'Owner / Manager photo is required' })
+      .trim()
+      .min(1, 'Owner / Manager photo is required'),
+    ninPhotoUrl: z
+      .string({ error: 'National Identity Card (NIN) photo is required' })
+      .trim()
+      .min(1, 'National Identity Card (NIN) photo is required'),
     openingTime: z.string().trim().min(1, 'Opening time is required'),
     closingTime: z.string().trim().min(1, 'Closing time is required'),
     password: z

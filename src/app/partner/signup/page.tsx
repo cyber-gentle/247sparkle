@@ -60,6 +60,10 @@ export default function PartnerSignupPage() {
     formState: { errors },
   } = useForm<PartnerSignupFormData>({
     resolver: zodResolver(partnerSignupSchema),
+    defaultValues: {
+      ownerPhotoUrl: '',
+      ninPhotoUrl: '',
+    },
     mode: 'onBlur',
     reValidateMode: 'onChange',
     shouldFocusError: true,
@@ -245,6 +249,7 @@ export default function PartnerSignupPage() {
                 }
                 folder="247sparkle/partners"
                 error={errors.ownerPhotoUrl?.message}
+                required
               />
             </div>
             <div className="sm:col-span-2">
@@ -258,6 +263,7 @@ export default function PartnerSignupPage() {
                 }
                 folder="247sparkle/partners/nin"
                 error={errors.ninPhotoUrl?.message}
+                required
               />
             </div>
           </div>
