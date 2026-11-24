@@ -4,7 +4,8 @@ services:
     runtime: node
     plan: starter
     region: frankfurt
-    buildCommand: npm install && npx prisma generate && npm run build
+    buildCommand: npm ci && npx prisma generate && npm run build
+    releaseCommand: npx prisma migrate deploy
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:

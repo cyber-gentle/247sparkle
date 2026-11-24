@@ -48,3 +48,50 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+      # Non-blocking while two known build-toolchain advisories remain
+      # (postcss bundled inside Next 15; fixed by the Next 16 upgrade).
+      # Flip to blocking once that upgrade lands.
+      - name: Dependency audit (production, non-blocking)
+        run: npm audit --omit=dev --audit-level=high
+        continue-on-error: true
+
+  integration:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: sparkle247_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      JWT_SECRET: ci-only-secret-not-for-production
+      NEXT_PUBLIC_SITE_URL: http://localhost:4028
+      NEXT_PUBLIC_API_URL: http://localhost:4028/api
+      # The runner enforces a local sparkle247_test database and derives
+      # DATABASE_URL / DIRECT_URL from this value.
+      TEST_DATABASE_URL: postgresql://ci:ci@localhost:5432/sparkle247_test
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Integration tests
+        run: npm run test:integration
