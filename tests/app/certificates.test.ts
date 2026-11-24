@@ -41,6 +41,7 @@ vi.mock('@/lib/api-rate-limit', () => ({
 import { GET as getCustomerCertificates } from '@/app/api/certificates/customer/[userId]/route';
 import { GET as getAllCertificates, POST as issueCertificate } from '@/app/api/certificates/route';
 import { GET as downloadCertificate } from '@/app/api/certificates/[id]/download/route';
+import { createCertificateDownloadToken } from '@/lib/certificate-token';
 
 describe('Fumigation Certificate Lifecycle APIs', () => {
   beforeEach(() => {
@@ -362,6 +363,53 @@ describe('Fumigation Certificate Lifecycle APIs', () => {
       expect(data.error).toBe('Certificate not found');
     });
 
+    it('returns 403 when the signed download token is missing', async () => {
+      db.certificate.findFirst.mockResolvedValue({
+        id: 'cert-1',
+        certificateNumber: 'SPKFUM-2026-00001',
+        customerName: 'Adaeze Okonkwo',
+        propertyAddress: '12 Ochacho Avenue, Otukpo, Benue State',
+        propertyType: '2 Rooms Apartment',
+        serviceDate: new Date(),
+        issuedAt: new Date(),
+      });
+
+      const request = new NextRequest(
+        'http://localhost/api/certificates/SPKFUM-2026-00001/download'
+      );
+      const response = await downloadCertificate(request, {
+        params: Promise.resolve({ id: 'SPKFUM-2026-00001' }),
+      });
+
+      expect(response.status).toBe(403);
+      const data = await response.json();
+      expect(data.error).toBe('Invalid or missing download token');
+    });
+
+    it('returns 403 when the signed download token does not match the certificate', async () => {
+      db.certificate.findFirst.mockResolvedValue({
+        id: 'cert-1',
+        certificateNumber: 'SPKFUM-2026-00001',
+        customerName: 'Adaeze Okonkwo',
+        propertyAddress: '12 Ochacho Avenue, Otukpo, Benue State',
+        propertyType: '2 Rooms Apartment',
+        serviceDate: new Date(),
+        issuedAt: new Date(),
+      });
+
+      const wrongToken = createCertificateDownloadToken('SPKFUM-2026-00002');
+      const request = new NextRequest(
+        `http://localhost/api/certificates/SPKFUM-2026-00001/download?token=${wrongToken}`
+      );
+      const response = await downloadCertificate(request, {
+        params: Promise.resolve({ id: 'SPKFUM-2026-00001' }),
+      });
+
+      expect(response.status).toBe(403);
+      const data = await response.json();
+      expect(data.error).toBe('Invalid or missing download token');
+    });
+
     it('streams PDF buffer with appropriate headers when certificate exists', async () => {
       const now = new Date();
       db.certificate.findFirst.mockResolvedValue({
@@ -374,8 +422,9 @@ describe('Fumigation Certificate Lifecycle APIs', () => {
         issuedAt: now,
       });
 
+      const token = createCertificateDownloadToken('SPKFUM-2026-00001');
       const request = new NextRequest(
-        'http://localhost/api/certificates/SPKFUM-2026-00001/download'
+        `http://localhost/api/certificates/SPKFUM-2026-00001/download?token=${token}`
       );
       const response = await downloadCertificate(request, {
         params: Promise.resolve({ id: 'SPKFUM-2026-00001' }),

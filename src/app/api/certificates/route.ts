@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/db';
 import { requireRole } from '@/lib/api-auth';
+import { createCertificateDownloadToken } from '@/lib/certificate-token';
 import { RATE_LIMIT_POLICIES, rateLimitRequest } from '@/lib/api-rate-limit';
 
 const issueCertificateSchema = z.object({
@@ -238,6 +239,7 @@ export async function GET(request: NextRequest) {
         orderId: c.orderId,
         customerEmail: c.customer.user.email,
         customerPhone: c.customer.user.phone,
+        downloadUrl: `/api/certificates/${encodeURIComponent(c.certificateNumber)}/download?token=${createCertificateDownloadToken(c.certificateNumber)}`,
       })),
     });
   } catch (error) {

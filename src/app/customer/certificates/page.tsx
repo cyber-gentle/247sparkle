@@ -12,6 +12,7 @@ type Certificate = {
   propertyAddress: string;
   propertyType: string;
   serviceDate: string;
+  downloadUrl: string;
 };
 
 function formatServiceDate(dateString: string) {
@@ -130,7 +131,7 @@ export default function CustomerCertificatesPage() {
                             Verify <ExternalLink size={11} />
                           </Link>
                           <a
-                            href={`/api/certificates/${encodeURIComponent(item.certificateNumber)}/download`}
+                            href={item.downloadUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-2.5 py-1 rounded-lg transition-colors"

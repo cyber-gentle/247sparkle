@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { requireRole } from '@/lib/api-auth';
+import { createCertificateDownloadToken } from '@/lib/certificate-token';
 
 /**
  * GET /api/certificates/customer/[userId] — customer's certificates.
@@ -72,6 +73,7 @@ export async function GET(
         propertyType: c.propertyType,
         serviceDate: c.serviceDate.toISOString(),
         issuedAt: c.issuedAt.toISOString(),
+        downloadUrl: `/api/certificates/${encodeURIComponent(c.certificateNumber)}/download?token=${createCertificateDownloadToken(c.certificateNumber)}`,
       })),
     });
   } catch (error) {

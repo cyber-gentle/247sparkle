@@ -3,6 +3,7 @@ import { imageHosts } from './image-hosts.config.mjs';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   distDir: process.env.DIST_DIR || '.next',
+  poweredByHeader: false,
   eslint: {
     // Lint failures are dominated by prettier formatting noise; type safety is
     // enforced via `tsc --noEmit` (type-check script) and the build itself.

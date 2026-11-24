@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { generateCertificatePDF } from '@/lib/certificate-pdf';
+import { verifyCertificateDownloadToken } from '@/lib/certificate-token';
 import { RATE_LIMIT_POLICIES, rateLimitRequest } from '@/lib/api-rate-limit';
 
 export const runtime = 'nodejs';
@@ -33,6 +34,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (!certificate) {
       return NextResponse.json({ error: 'Certificate not found' }, { status: 404 });
+    }
+
+    // Certificate numbers are sequential, so the PDF (which carries the
+    // customer's name and property address) must not be fetchable by ID alone.
+    // The download link issued by the API includes a signed token.
+    const token = request.nextUrl.searchParams.get('token');
+    if (!verifyCertificateDownloadToken(certificate.certificateNumber, token)) {
+      return NextResponse.json({ error: 'Invalid or missing download token' }, { status: 403 });
     }
 
     const pdfBuffer = await generateCertificatePDF({
